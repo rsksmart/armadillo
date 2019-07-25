@@ -1,0 +1,16 @@
+{
+    "appenders": {
+        "file": {
+            "type": "file",
+            "filename": "output.log"
+        },
+        "console": {
+            "type": "console"
+        }
+    },
+    "categories": {
+        "default": {
+            "appenders": ["file", "console"],
+            "level": "all" }
+    }
+}
