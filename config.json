@@ -15,7 +15,7 @@
         "port": "27017",
         "host": "localhost",
         "databaseName": "forkDetection",
-        "tagsStorage":{
+        "branchStorage":{
             "collectionName": "tags"
         }
     }

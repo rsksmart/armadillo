@@ -7,11 +7,11 @@ export class StoreConfig {
 
     public static fromObject(config: any): StoreConfig {
         return new StoreConfig(
-            new MongoConfig(config.host, config.port, config.databaseName, config.blockStorage.collectionName),
+            new MongoConfig(config.host, config.port, config.databaseName, config.branchStorage.collectionName),
         )
     }
 
-    constructor(blockStorage: MongoConfig) {
-        this.branches = blockStorage;
+    constructor(branchStorage: MongoConfig) {
+        this.branches = branchStorage;
     }
 }
