@@ -4,6 +4,9 @@ function detectTag() {
 }
 
 class ForkDetectionData {
+    static getObject(tag: string): ForkDetectionData {
+        return new ForkDetectionData(tag);
+    }
 
     public prefixHash: string;
     public CPV: string;
@@ -44,6 +47,23 @@ class BlockRSK {
     }
 }
 
+class Branch {
+    public itemsTags: ForkDetectionData[];
+
+    constructor(initialItem?: ForkDetectionData) {
+        this.itemsTags = new ForkDetectionData[];
+        this.itemsTags.push(initialItem);
+    }
+
+    public getTop(): ForkDetectionData {
+        return this.itemsTags.pop(); //get last item
+    }
+
+    public pushTop(tag: ForkDetectionData) {
+        this.itemsTags.push(tag); //push to last item
+    }
+}
+
 
 let lastBTCheck: BlockBTC;
 
@@ -55,20 +75,19 @@ function getBlocksFromRSK() {
 
     let listBLocks: BlockRSK[];
 
-    listBLocks.push(new BlockRSK(5985954, "hash1rsk", "tagHere"))
-    listBLocks.push(new BlockRSK(5985954, "hash1rsk", "tagHere1"))
-    listBLocks.push(new BlockRSK(5985954, "hash1rsk", "tagHere3232"))
-    listBLocks.push(new BlockRSK(5985954, "hash1rsk", "tagHere2"))
-    listBLocks.push(new BlockRSK(5985954, "hash1rsk", "tagHere3223s"));
+    listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag1")));
+    listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag2")));
+    listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag3")));
+    listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag4")));
+    listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag5")));
 
     return listBLocks;
 }
 
-
 function rskTagIsInSomeBlock(blocks: BlockRSK[], rskTag: ForkDetectionData): boolean {
 
     for (const block of blocks) {
-        if(block.rskTag == rskTag){
+        if (block.rskTag == rskTag) {
             return true;
         }
     }
@@ -76,47 +95,79 @@ function rskTagIsInSomeBlock(blocks: BlockRSK[], rskTag: ForkDetectionData): boo
     return false;
 }
 
-function getPossibleForks(blockNumber: number) : ForkDetectionData[]{
+function getHeightforPossibleBranches(numberBlock: number): number {
+    let maxBlocksBackwardsToSearch = 448;
 
+    if (numberBlock > maxBlocksBackwardsToSearch) {
+        return numberBlock - maxBlocksBackwardsToSearch;
+    } else {
+        return 0;
+    }
+}
+
+function getPossibleForks(blockNumber: number): ForkDetectionData[] {
+    //No necesitamos los branches si no los ultimos "nodos" que se agregaron
     let minimunHeightToSearch = getHeightforPossibleBranches(blockNumber);
-    //connect to the database to get possible branches forks
-    service.getPossibleForks()
+
+    //connect to the database to get possible branches forks , 
+    //No deberiamos traer todo, solo hasta un maximo hacia atras
+    let forks: ForkDetectionData[] = this.service.getForksDetected(minimunHeightToSearch);
+
+    return forks;
 }
 
 function getBranchesThatOverlap(rskTag: ForkDetectionData) {
     let branchesThatOverlap = []
+    // Hay que renombrar mejor
+    let lastTopsDetected: ForkDetectionData[] = getPossibleForks(rskTag.BN);
 
-    //Get possible branches given a height
-    let branches: ForkDetectionData[] = getPossibleForks(rskTag.BN);
-
-    for (const branch of branches) {
-        let last = branch.last();
-
-        if(overlapsInXPosition(last, cpvToCheck)){
+    for (const branch of lastTopsDetected) {
+        if (overlapCPV(branch, rskTag)) {
             branchesThatOverlap.push(branch)
         }
     }
 
-    return branchesThatOverlap
+    return branchesThatOverlap;
 }
 
-function createNewBranch(){
+function overlapCPV(existingTag: ForkDetectionData, tagToCheck: ForkDetectionData): boolean {
+    let countCPVtoMatch = 3; // I think we can say that 3 is enaugh to say that is in the same branch
 
-    
+    let cpvInFork = existingTag.CPV.split("");
+    let cpvToCheck = tagToCheck.CPV.split("");
+
+    var numberOfMatch = 0;
+
+    for (var i = 0; i < cpvToCheck.length; i++) {
+        if (cpvInFork[cpvInFork.length - i] == cpvToCheck[i]) {
+            numberOfMatch++;
+        } else {
+            break;
+        }
+    }
+
+    if (numberOfMatch >= countCPVtoMatch) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function addOrCreateInTemporalLine(rskTag: ForkDetectionData){
-    let cpvToCheck = rskTag.CPV;
-
-    const branches: ForkDetectionData[] = getBranchesThatOverlap(rskTag)
+function addOrCreateInTemporalLine(rskTag: ForkDetectionData) {
+    let branchToSave: Branch;
+    const branches: Branch[] = getBranchesThatOverlap(rskTag)
 
     if (branches.length > 0) {
         // por ahora solo usamos el primero
-        const branch = branches[0]
-        branch.push(rskTag)
+        branchToSave = branches[0];
+        branchToSave.pushTop(rskTag);
     } else {
-        createNewBranch(rskTag);
+        branchToSave = new Branch(rskTag);
     }
+
+
+    //Deberia crear o editar un branch existente en db
+    service.saveBranch(branchToSave);
 }
 
 function main() {
