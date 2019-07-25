@@ -51,7 +51,7 @@ class Branch {
     public itemsTags: ForkDetectionData[];
 
     constructor(initialItem?: ForkDetectionData) {
-        this.itemsTags = new ForkDetectionData[];
+        this.itemsTags = [];
         this.itemsTags.push(initialItem);
     }
 

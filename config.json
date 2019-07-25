@@ -2,19 +2,18 @@
     "logger": {
         "configFile": "./log-config.json"
     },
-    "apiRsk": {
+    "apiRSK": {
         "host": "localhost",
-        "port": 31592,
-      
+        "port": 31592
     },
     "apiBTC": {
-        "host": "190.19.97.250",
-        "port": 8333
+        "host": "34.67.238.129",
+        "port": 5000
     },
     "store": {
         "port": "27017",
         "host": "localhost",
-        "databaseName": "forkDetection",
+        "databaseName": "armadillo",
         "branchStorage":{
             "collectionName": "tags"
         }
