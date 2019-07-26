@@ -4,9 +4,10 @@ import { getLogger } from 'log4js';
 import { BranchService } from './services/branch-service';
 import { BtcMonitor } from './services/btc-monitor';
 import { RskApiService } from './services/rsk-api-service';
+import { ForkDetector } from './services/fork-detector';
 
 
-export class MonitorRunner {
+class MonitorRunner {
 
     private DEFAULT_CONFIG_PATH = './config.json';
     private mainConfig: MainConfig;
@@ -14,13 +15,16 @@ export class MonitorRunner {
     private btcMonitor: BtcMonitor;
     private rskApiService: RskApiService;
     private logger;
+    private forkDetector: ForkDetector;
 
     constructor() {
         this.mainConfig = MainConfig.getMainConfig(this.DEFAULT_CONFIG_PATH);
-        this.branchService = new BranchService(new MongoStore(this.mainConfig.store.branches));
+        let mongoStore = new MongoStore(this.mainConfig.store.branches);
+        this.branchService = new BranchService(mongoStore);
         this.btcMonitor = new BtcMonitor(this.mainConfig.btcMonitor);
         this.rskApiService = new RskApiService(this.mainConfig.rskApi);
-        this.logger = getLogger("daemon-runner.ts");
+        this.forkDetector = new ForkDetector(this.branchService);
+        this.logger = getLogger("monitor-runner.ts");
 
         this.run();
 
@@ -29,17 +33,18 @@ export class MonitorRunner {
         });
     }
 
-    public stop(){
+    private stop() {
         this.logger.debug("STOP Connections!!!");
         this.btcMonitor.stop();
         this.rskApiService.disconnect();
         this.branchService.disconnect();
     }
 
-    public async run(): Promise<void> {
+    private run() {
         this.btcMonitor.run();
         this.rskApiService.connect();
         this.branchService.connect();
+        this.forkDetector.start();
     }
 }
 
