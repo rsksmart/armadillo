@@ -7,7 +7,7 @@ export class StoreConfig {
 
     public static fromObject(config: any): StoreConfig {
         return new StoreConfig(
-            new MongoConfig(config.host, config.port, config.databaseName, config.branchStorage.collectionName),
+            new MongoConfig(config.host, config.port, config.databaseName, config.collectionName),
         )
     }
 
