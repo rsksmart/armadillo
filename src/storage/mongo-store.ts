@@ -1,4 +1,3 @@
-// import { Store } from './store';
 import { MongoClient, Db, Collection } from 'mongodb';
 import { MongoConfig } from '../config/mongo-config';
 import { getLogger, Logger } from 'log4js';

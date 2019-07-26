@@ -2,11 +2,11 @@
     "logger": {
         "configFile": "./log-config.json"
     },
-    "apiRSK": {
+    "rskApi": {
         "host": "localhost",
         "port": 31592
     },
-    "apiBTC": {
+    "btcMonitor": {
         "host": "34.67.238.129",
         "port": 5000
     },
@@ -14,8 +14,6 @@
         "port": "27017",
         "host": "localhost",
         "databaseName": "armadillo",
-        "branchStorage":{
-            "collectionName": "tags"
-        }
+        "collectionName": "tags"
     }
 }
