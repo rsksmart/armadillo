@@ -2,37 +2,42 @@ import { BlockBTC, BlockRSK } from "../common/block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
 import Branch from "../common/branch";
+import { BtcMonitor } from "./btc-monitor";
+import { RskApiService } from "./rsk-api-service";
 
 export class ForkDetector {
-    private service: BranchService;
-    private lastBTCheck: BlockBTC;
 
-    constructor(branchService: BranchService) {
+    private branchService: BranchService;
+    private lastBTCheck: BlockBTC;
+    private rskApiService: RskApiService;
+    private btcMonitor: BtcMonitor;
+    private lastBlockChecked: BlockBTC;
+
+    constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApiService) {
         this.lastBTCheck = new BlockBTC(0, "", "");
-        this.service = branchService;
+        this.branchService = branchService;
+        this.btcMonitor = btcMonitor;
+        this.rskApiService = rskApiService;
+        this.btcMonitor.on('onBlock', (block: BlockBTC) => this.onNewBlock(block))
     }
 
-    start() {
-        //for now we just do a polling to get last btc block
-        let lastBlock: BlockBTC = this.getLastBlockFromBTC();
-
-        if (lastBlock.hash != this.lastBTCheck.hash) {
-
-            if (lastBlock.rskTag == null) {
+    private onNewBlock(newBlock: BlockBTC) {
+        if (this.lastBlockChecked.hash != newBlock.hash) {
+            if (this.lastBlockChecked.rskTag == null) {
                 //this block doesn't have rsktag, nothing to do
                 return;
             }
             //is a new block, let's detect rsk tag
 
-            let rskTag: ForkDetectionData = lastBlock.rskTag;
+            let rskTag: ForkDetectionData = this.lastBlockChecked.rskTag;
 
             let hashPrefix = rskTag.prefixHash;
             let CPV = rskTag.CPV;
             let NU = rskTag.NU;
-            let BN = rskTag.BN
+            let BN = rskTag.BN;
 
             //Should we get rsk block from height:
-            let blocks: BlockRSK[] = this.getBlocksFromRSK(BN);
+            let blocks: BlockRSK[] = this.rskApiService.getBlocksByHeight(BN);
 
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
@@ -46,21 +51,17 @@ export class ForkDetector {
         }
     }
 
-    private getLastBlockFromBTC() {
-        return new BlockBTC(1, "hash", "tag loco");
+    public stop() {
+        this.rskApiService.disconnect();
+        this.btcMonitor.stop();
+        this.branchService.disconnect();
     }
 
-    private getBlocksFromRSK(blockNumber: number) {
+    start() {
 
-        let listBLocks: BlockRSK[] = [];
+        this.btcMonitor.run();
+        this.rskApiService.connect();
 
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag1")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag2")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag3")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag4")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag5")));
-
-        return listBLocks;
     }
 
     private rskTagIsInSomeBlock(blocks: BlockRSK[], rskTag: ForkDetectionData): boolean {
@@ -84,21 +85,19 @@ export class ForkDetector {
         }
     }
 
-    private getPossibleForks(blockNumber: number): ForkDetectionData[] {
+    private async getPossibleForks(blockNumber: number): Promise<ForkDetectionData[]> {
         //No necesitamos los branches si no los ultimos "nodos" que se agregaron
         let minimunHeightToSearch = this.getHeightforPossibleBranches(blockNumber);
 
         //connect to the database to get possible branches forks , 
         //No deberiamos traer todo, solo hasta un maximo hacia atras
-        let forks: ForkDetectionData[] = this.service.getForksDetected(minimunHeightToSearch);
-
-        return forks;
+        return this.branchService.getForksDetected(minimunHeightToSearch);
     }
 
-    private getBranchesThatOverlap(rskTag: ForkDetectionData) {
+    private async getBranchesThatOverlap(rskTag: ForkDetectionData) {
         let branchesThatOverlap = []
         // Hay que renombrar mejor
-        let lastTopsDetected: ForkDetectionData[] = this.getPossibleForks(rskTag.BN);
+        let lastTopsDetected: ForkDetectionData[] = await this.getPossibleForks(rskTag.BN);
 
         for (const branch of lastTopsDetected) {
             if (this.overlapCPV(branch, rskTag)) {
@@ -132,9 +131,9 @@ export class ForkDetector {
         }
     }
 
-    private addOrCreateInTemporalLine(rskTag: ForkDetectionData) {
+    private async addOrCreateInTemporalLine(rskTag: ForkDetectionData) {
         let branchToSave: Branch;
-        const branches: Branch[] = this.getBranchesThatOverlap(rskTag)
+        const branches: Branch[] = await this.getBranchesThatOverlap(rskTag)
 
         if (branches.length > 0) {
             // por ahora solo usamos el primero
@@ -145,6 +144,6 @@ export class ForkDetector {
         }
 
         //Deberia crear o editar un branch existente en db
-        this.service.saveBranch(branchToSave);
+        this.branchService.saveBranch(branchToSave);
     }
 }

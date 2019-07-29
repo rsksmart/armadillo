@@ -23,7 +23,7 @@ class MonitorRunner {
         this.branchService = new BranchService(mongoStore);
         this.btcMonitor = new BtcMonitor(this.mainConfig.btcMonitor);
         this.rskApiService = new RskApiService(this.mainConfig.rskApi);
-        this.forkDetector = new ForkDetector(this.branchService);
+        this.forkDetector = new ForkDetector(this.branchService, this.btcMonitor, this.rskApiService);
         this.logger = getLogger("monitor-runner.ts");
 
         this.run();
@@ -35,16 +35,15 @@ class MonitorRunner {
 
     private stop() {
         this.logger.debug("STOP Connections!!!");
-        this.btcMonitor.stop();
-        this.rskApiService.disconnect();
-        this.branchService.disconnect();
+
+        this.forkDetector.stop();
     }
 
     private run() {
-        this.btcMonitor.run();
-        this.rskApiService.connect();
-        this.branchService.connect();
-        this.forkDetector.start();
+        let that = this;
+        this.branchService.connect().then(function () {
+            that.forkDetector.start();
+        });
     }
 }
 
