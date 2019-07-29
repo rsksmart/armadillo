@@ -4,7 +4,7 @@
     },
     "rskApi": {
         "host": "localhost",
-        "port": 31592
+        "port": 4444
     },
     "btcMonitor": {
         "host": "34.67.238.129",

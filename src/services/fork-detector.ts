@@ -3,17 +3,17 @@ import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
 import Branch from "../common/branch";
 import { BtcMonitor } from "./btc-monitor";
-import { RskApiService } from "./rsk-api-service";
+import { RskApiService, RskApi } from "./rsk-api-service";
 
 export class ForkDetector {
 
     private branchService: BranchService;
     private lastBTCheck: BlockBTC;
-    private rskApiService: RskApiService;
+    private rskApiService: RskApi;
     private btcMonitor: BtcMonitor;
     private lastBlockChecked: BlockBTC;
 
-    constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApiService) {
+    constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApi) {
         this.lastBTCheck = new BlockBTC(0, "", "");
         this.branchService = branchService;
         this.btcMonitor = btcMonitor;
@@ -21,7 +21,7 @@ export class ForkDetector {
         this.btcMonitor.on('onBlock', (block: BlockBTC) => this.onNewBlock(block))
     }
 
-    private onNewBlock(newBlock: BlockBTC) {
+    private async onNewBlock(newBlock: BlockBTC) {
         if (this.lastBlockChecked.hash != newBlock.hash) {
             if (this.lastBlockChecked.rskTag == null) {
                 //this block doesn't have rsktag, nothing to do
@@ -37,7 +37,7 @@ export class ForkDetector {
             let BN = rskTag.BN;
 
             //Should we get rsk block from height:
-            let blocks: BlockRSK[] = this.rskApiService.getBlocksByHeight(BN);
+            let blocks: BlockRSK[] = await this.rskApiService.getBlocksByNumber(BN);
 
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
@@ -52,16 +52,12 @@ export class ForkDetector {
     }
 
     public stop() {
-        this.rskApiService.disconnect();
         this.btcMonitor.stop();
         this.branchService.disconnect();
     }
 
     start() {
-
         this.btcMonitor.run();
-        this.rskApiService.connect();
-
     }
 
     private rskTagIsInSomeBlock(blocks: BlockRSK[], rskTag: ForkDetectionData): boolean {
