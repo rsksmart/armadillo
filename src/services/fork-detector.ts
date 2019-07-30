@@ -3,19 +3,20 @@ import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
 import { Branch, BranchItem } from "../common/branch";
-import { BtcMonitor, BTCEvents } from "./btc-monitor";
+import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { RskApi } from "./rsk-api-service";
 
 export class ForkDetector {
 
     private branchService: BranchService;
     private rskApiService: RskApi;
-    private btcMonitor: BtcMonitor;
+    private btcMonitor: BtcWatcher;
     private lastBlockChecked: BtcBlock;
     private maxBlocksBackwardsToSearch : number = 448;
     private minimunOverlapCPV : number = 3;
 
-    constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApi) {
+    constructor(branchService: BranchService, btcMonitor: BtcWatcher, rskApiService: RskApi) {
+        this.lastBlockChecked = new BtcBlock(0, "", "");
         this.branchService = branchService;
         this.btcMonitor = btcMonitor;
         this.rskApiService = rskApiService;
