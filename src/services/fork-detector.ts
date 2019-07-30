@@ -58,10 +58,8 @@ export class ForkDetector {
     }
 
     start() {
-
         this.btcMonitor.run();
         this.rskApiService.connect();
-
     }
 
     private rskTagIsInSomeBlock(blocks: BlockRSK[], rskTag: ForkDetectionData): boolean {
