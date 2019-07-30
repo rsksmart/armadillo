@@ -1,4 +1,5 @@
-import { BlockBTC, BlockRSK } from "../common/block";
+import { RskBlock } from "../common/rsk-block";
+import { BtcBlock } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
 import Branch from "../common/branch";
@@ -8,21 +9,21 @@ import { RskApiService, RskApi } from "./rsk-api-service";
 export class ForkDetector {
 
     private branchService: BranchService;
-    private lastBTCheck: BlockBTC;
+    private lastBTCheck: BtcBlock;
     private rskApiService: RskApi;
     private btcMonitor: BtcMonitor;
-    private lastBlockChecked: BlockBTC;
+    private lastBlockChecked: BtcBlock;
 
     constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApi) {
-        this.lastBTCheck = new BlockBTC(0, "", "");
+        this.lastBTCheck = new BtcBlock(0, "", "");
         this.branchService = branchService;
         this.btcMonitor = btcMonitor;
         this.rskApiService = rskApiService;
 
-        this.btcMonitor.on(BTCEvents.NEW_BLOCK, (block: BlockBTC) => this.onNewBlock(block))
+        this.btcMonitor.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
 
-    private async onNewBlock(newBlock: BlockBTC) {
+    private async onNewBlock(newBlock: BtcBlock) {
         if (this.lastBlockChecked.hash != newBlock.hash) {
             if (this.lastBlockChecked.rskTag == null) {
                 //this block doesn't have rsktag, nothing to do
@@ -38,7 +39,7 @@ export class ForkDetector {
             let BN = rskTag.BN;
 
             //Should we get rsk block from height:
-            let blocks: BlockRSK[] = await this.rskApiService.getBlocksByNumber(BN);
+            let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(BN);
 
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
@@ -61,7 +62,7 @@ export class ForkDetector {
         this.btcMonitor.run();
     }
 
-    private rskTagIsInSomeBlock(blocks: BlockRSK[], rskTag: ForkDetectionData): boolean {
+    private rskTagIsInSomeBlock(blocks: RskBlock[], rskTag: ForkDetectionData): boolean {
 
         for (const block of blocks) {
             if (block.rskTag == rskTag) {
