@@ -10,7 +10,6 @@ export default class BranchController {
     // this.service.createIndex({ "header.height": 1 }, { unique: false });
   }
 
-
   public async getAllBranches(req: any, res: any): Promise<any> {
     var branches: any = await this.service.getAll();
 
