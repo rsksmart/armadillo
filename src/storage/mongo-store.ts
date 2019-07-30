@@ -20,8 +20,8 @@ export class MongoStore {
     }
 
     public async disconnect(): Promise<void> {
-        this.mongoClient.close()
         this.isConnected = false;
+        return this.mongoClient.close()
     }
 
     private sleep(ms) {

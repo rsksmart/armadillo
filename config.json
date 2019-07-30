@@ -15,5 +15,8 @@
         "host": "localhost",
         "databaseName": "armadillo",
         "collectionName": "tags"
+    },
+    "forkApi": {
+        "port": "5000"
     }
 }

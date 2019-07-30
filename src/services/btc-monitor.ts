@@ -11,9 +11,10 @@ export class BtcMonitor extends EventEmitter {
 
     }
 
-    public onNewBlock() {
+    public checkForNewBlock() {
         let block = new BlockBTC(1, "hash", "tag loco");
 
+        //Here for know we should be polling to check if there is a new block
         this.emit('onBlock', block);
     }
 
