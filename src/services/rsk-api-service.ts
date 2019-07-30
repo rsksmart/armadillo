@@ -1,10 +1,10 @@
 import { RskApiConfig } from "../config/rsk-api-config";
-import { BlockRSK } from "../common/block";
+import { RskBlock } from "../common/rsk-block";
 import Nod3 from 'nod3';
 import { ForkDetectionData } from "../common/fork-detection-data";
 
 export interface RskApi {
-    getBlocksByNumber(height: number) : Promise<BlockRSK[]>;
+    getBlocksByNumber(height: number) : Promise<RskBlock[]>;
 }
 
 export class RskApiService implements RskApi {
@@ -21,7 +21,7 @@ export class RskApiService implements RskApi {
         );
     }
 
-    getBlocksByNumber(height: number): Promise<BlockRSK[]> {
+    getBlocksByNumber(height: number): Promise<RskBlock[]> {
         return this.nod3.rsk.getBlocksByNumber(height);
     }
 }
@@ -33,14 +33,14 @@ export class DummyRskApiService implements RskApi {
         this.config = config;
     }
 
-    public getBlocksByNumber(height: number): Promise<BlockRSK[]> {
-        let listBLocks: BlockRSK[] = [];
+    public getBlocksByNumber(height: number): Promise<RskBlock[]> {
+        let listBLocks: RskBlock[] = [];
 
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag1")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag2")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag3")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag4")));
-        listBLocks.push(new BlockRSK(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag5")));
+        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag1")));
+        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag2")));
+        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag3")));
+        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag4")));
+        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag5")));
 
         return Promise.resolve(listBLocks);
     }
