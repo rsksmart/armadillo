@@ -9,7 +9,7 @@ const mainConfig = MainConfig.getMainConfig(DEFAULT_CONFIG_PATH);
 const branches : MongoStore = new MongoStore(mainConfig.store.branches);
 
 branches.connect().then(function(){
-        starBtcApi();
+    starBtcApi();
 });
 
 function starBtcApi(){

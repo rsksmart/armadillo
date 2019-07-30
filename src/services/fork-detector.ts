@@ -1,10 +1,10 @@
 import { RskBlock } from "../common/rsk-block";
-import { BtcBlock } from "../common/btc-block";
+import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
-import Branch from "../common/branch";
+import Branch, { BranchItem } from "../common/branch";
 import { BtcMonitor, BTCEvents } from "./btc-monitor";
-import { RskApiService, RskApi } from "./rsk-api-service";
+import { RskApi } from "./rsk-api-service";
 
 export class ForkDetector {
 
@@ -24,7 +24,7 @@ export class ForkDetector {
     }
 
     private async onNewBlock(newBlock: BtcBlock) {
-        if (this.lastBlockChecked.hash != newBlock.hash) {
+        if (this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
             if (this.lastBlockChecked.rskTag == null) {
                 //this block doesn't have rsktag, nothing to do
                 return;
@@ -45,7 +45,7 @@ export class ForkDetector {
 
             if (!tagIsInblock) {
                 //save it into db to temporal line, we have to know which is the miner ? 
-                this.addOrCreateInTemporalLine(rskTag);
+                this.addOrCreateInTemporalLine(rskTag, newBlock.btcInfo);
             } else {
                 //Should we do something with this information ? 
                 // if CPV is in main chain or in rsk uncles ? 
@@ -129,16 +129,16 @@ export class ForkDetector {
         }
     }
 
-    private async addOrCreateInTemporalLine(rskTag: ForkDetectionData) {
+    private async addOrCreateInTemporalLine(rskTag: ForkDetectionData, btcInfo: BtcHeaderInfo) {
         let branchToSave: Branch;
         const branches: Branch[] = await this.getBranchesThatOverlap(rskTag)
 
         if (branches.length > 0) {
             // por ahora solo usamos el primero
             branchToSave = branches[0];
-            branchToSave.pushTop(rskTag);
+            branchToSave.pushTop(new BranchItem(btcInfo, rskTag));
         } else {
-            branchToSave = new Branch(rskTag);
+            branchToSave = new Branch(new BranchItem(btcInfo, rskTag));
         }
 
         //Deberia crear o editar un branch existente en db

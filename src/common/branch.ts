@@ -1,41 +1,47 @@
 import { ForkDetectionData } from "./fork-detection-data";
+import { BtcHeaderInfo } from "./btc-block";
 
 export default class Branch {
-    public _id: number;
-    public startHeight: number;
-    public lastHeight: number;
-    private items: ForkDetectionData[];
+    public firstDetected: ForkDetectionData; //rsk item when fork started
+    public lastDetectedHeight: number;  
+   
+    private items: BranchItem[];
 
-    constructor(initialItem?: ForkDetectionData) {
+    constructor(branchItem: BranchItem) {
         this.items = [];
-        this.items.push(initialItem);
+        this.firstDetected = branchItem.forkDetectionData;
+        this.items.push(branchItem);
     }
 
-    public getTop(): ForkDetectionData {
-        return this.items.pop(); //get last item
+    public getTop(): BranchItem {
+        return this.items[this.items.length -1];
     }
 
-    public pushTop(tag: ForkDetectionData) {
-        
-        if(this.items.length == 0){
-            this.startHeight = tag.BN;
-        }
+    public pushTop(branch: BranchItem) {
+        this.lastDetectedHeight = branch.forkDetectionData.BN;
 
-        this.lastHeight = tag.BN;
-        this.items.push(tag);
+        this.items.push(branch);
     }
 
-    public getStart(): ForkDetectionData {
-        if(this.items.length > 0 ){
-            return this.items[0];
-        }
+    public getStart(): BranchItem {
+        return this.items[0];
     }
 
-    public getLast(): ForkDetectionData {
+    public getLast(): BranchItem {
         return this.items[this.lengh()];
     }
 
     public lengh(): number {
         return this.items.length;
+    }
+}
+
+export class BranchItem {
+    public btcInfo: BtcHeaderInfo;
+    public forkDetectionData: ForkDetectionData
+
+    constructor(btcInfo: BtcHeaderInfo, forkDetectionData: ForkDetectionData){
+        btcInfo  = btcInfo;
+        forkDetectionData = forkDetectionData;
     }
 }

@@ -20,7 +20,7 @@ export class BranchService {
     }
 
     public saveBranch(branchToSave: Branch) {
-        this.store.getCollection().update({'_id': branchToSave._id }, {$push: { 'items': branchToSave } } );
+        this.store.getCollection().update({'firstDetected.prefixHash': branchToSave.firstDetected.prefixHash }, {$push: { 'items': branchToSave } } );
     }
 
     public async getForksDetected(minimunHeightToSearch: number): Promise<ForkDetectionData[]> {
