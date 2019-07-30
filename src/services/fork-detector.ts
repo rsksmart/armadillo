@@ -2,7 +2,7 @@ import { BlockBTC, BlockRSK } from "../common/block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
 import Branch from "../common/branch";
-import { BtcMonitor } from "./btc-monitor";
+import { BtcMonitor, BTCEvents } from "./btc-monitor";
 import { RskApiService, RskApi } from "./rsk-api-service";
 
 export class ForkDetector {
@@ -18,7 +18,8 @@ export class ForkDetector {
         this.branchService = branchService;
         this.btcMonitor = btcMonitor;
         this.rskApiService = rskApiService;
-        this.btcMonitor.on('onBlock', (block: BlockBTC) => this.onNewBlock(block))
+
+        this.btcMonitor.on(BTCEvents.NEW_BLOCK, (block: BlockBTC) => this.onNewBlock(block))
     }
 
     private async onNewBlock(newBlock: BlockBTC) {
