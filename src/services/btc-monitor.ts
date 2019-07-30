@@ -2,6 +2,10 @@ import { BtcMonitorConfig } from "../config/btc-monitor-config";
 import { BlockBTC } from "../common/block";
 import { EventEmitter } from "events";
 
+export enum BTCEvents {
+    NEW_BLOCK = 'newBlock'
+}
+
 //This service emit a new block
 export class BtcMonitor extends EventEmitter {
 
@@ -15,7 +19,7 @@ export class BtcMonitor extends EventEmitter {
         let block = new BlockBTC(1, "hash", "tag loco");
 
         //Here for know we should be polling to check if there is a new block
-        this.emit('onBlock', block);
+        this.emit(BTCEvents.NEW_BLOCK, block);
     }
 
     run() {
