@@ -7,7 +7,7 @@ export enum BTCEvents {
 }
 
 //This service emit a new block
-export class BtcMonitor extends EventEmitter {
+export class BtcWatcher extends EventEmitter {
 
     constructor(config: BtcMonitorConfig) {
         super();
