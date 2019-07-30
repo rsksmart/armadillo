@@ -3,6 +3,7 @@ import Branch from "../common/branch";
 import { ForkDetectionData } from "../common/fork-detection-data";
 
 export class BranchService {
+  
 
     private store: MongoStore;
 
@@ -15,15 +16,20 @@ export class BranchService {
     }
 
     public disconnect() {
-
+        this.store.disconnect();
     }
 
     public saveBranch(branchToSave: Branch) {
+        this.store.getCollection().update({'_id': branchToSave._id }, {$push: { 'items': branchToSave } } );
     }
 
     public async getForksDetected(minimunHeightToSearch: number): Promise<ForkDetectionData[]> {
 
         let branches: ForkDetectionData[] = await this.store.getCollection().find().toArray();
         return branches;
+    }
+
+    public getAll(): any {
+        return [];
     }
 }
