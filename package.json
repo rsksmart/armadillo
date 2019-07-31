@@ -37,10 +37,11 @@
     "nod3": "git+https://github.com/rsksmart/nod3.git"
   },
   "dependencies": {
-    "express": "^4.17.1",
-    "mongodb": "^3.1.13",
-    "log4js": "^3.0.6",
     "argh": "^0.1.4",
+    "express": "^4.17.1",
+    "log4js": "^3.0.6",
+    "mongodb": "^3.1.13",
+    "ts-sinon": "^1.0.17",
     "web3": "~1.0.0-beta.36"
   }
 }
