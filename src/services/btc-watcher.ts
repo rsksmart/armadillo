@@ -1,6 +1,7 @@
 import { BtcMonitorConfig } from "../config/btc-monitor-config";
 import { BtcBlock } from "../common/btc-block";
 import { EventEmitter } from "events";
+import { HttpBtcApi, BtcApi } from "./btc-api";
 
 export enum BTCEvents {
     NEW_BLOCK = 'newBlock'
@@ -9,22 +10,33 @@ export enum BTCEvents {
 //This service emit a new block
 export class BtcWatcher extends EventEmitter {
 
+    private blocks: BtcBlock[];
+    private config: BtcMonitorConfig;
+    private btcApi: BtcApi;
+
     constructor(config: BtcMonitorConfig) {
         super();
-        //config hash port and host to connect btc 
 
+        this.config = config;
+        this.blocks = []
+        this.btcApi = new HttpBtcApi();
     }
 
-    public checkForNewBlock() {
-        let block = new BtcBlock(1, "hash", "tag loco");
+    private saveBest(block: BtcBlock) {
+        this.blocks.push(block);
 
-        //Here for know we should be polling to check if there is a new block
         this.emit(BTCEvents.NEW_BLOCK, block);
     }
 
-    run() {
+    public async run() {
+        while (true) {
+            console.log('Fetching')
+            const block: BtcBlock = await this.btcApi.getBestBlock();
+            console.log('Fetched', block)
+            this.saveBest(block);
+        }
     }
 
-    stop() {
+    public stop() {
     }
 }
