@@ -9,13 +9,11 @@ import { RskApi } from "./rsk-api-service";
 export class ForkDetector {
 
     private branchService: BranchService;
-    private lastBTCheck: BtcBlock;
     private rskApiService: RskApi;
     private btcMonitor: BtcMonitor;
     private lastBlockChecked: BtcBlock;
 
     constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApi) {
-        this.lastBTCheck = new BtcBlock(0, "", "");
         this.branchService = branchService;
         this.btcMonitor = btcMonitor;
         this.rskApiService = rskApiService;
@@ -33,13 +31,8 @@ export class ForkDetector {
 
             let rskTag: ForkDetectionData = this.lastBlockChecked.rskTag;
 
-            let hashPrefix = rskTag.prefixHash;
-            let CPV = rskTag.CPV;
-            let NU = rskTag.NU;
-            let BN = rskTag.BN;
-
             //Should we get rsk block from height:
-            let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(BN);
+            let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
 
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
@@ -58,7 +51,7 @@ export class ForkDetector {
         this.branchService.disconnect();
     }
 
-    start() {
+    public start() {
         this.btcMonitor.run();
     }
 
@@ -98,7 +91,7 @@ export class ForkDetector {
         let lastTopsDetected: ForkDetectionData[] = await this.getPossibleForks(rskTag.BN);
 
         for (const branch of lastTopsDetected) {
-            if (this.overlapCPV(branch, rskTag)) {
+            if (branch.overlapCPV(rskTag.CPV, 3)) {
                 branchesThatOverlap.push(branch)
             }
         }
@@ -106,28 +99,6 @@ export class ForkDetector {
         return branchesThatOverlap;
     }
 
-    private overlapCPV(existingTag: ForkDetectionData, tagToCheck: ForkDetectionData): boolean {
-        let countCPVtoMatch = 3; // I think we can say that 3 is enaugh to say that is in the same branch
-
-        let cpvInFork = existingTag.CPV.split("");
-        let cpvToCheck = tagToCheck.CPV.split("");
-
-        var numberOfMatch = 0;
-
-        for (var i = 0; i < cpvToCheck.length; i++) {
-            if (cpvInFork[cpvInFork.length - i] == cpvToCheck[i]) {
-                numberOfMatch++;
-            } else {
-                break;
-            }
-        }
-
-        if (numberOfMatch >= countCPVtoMatch) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     private async addOrCreateInTemporalLine(rskTag: ForkDetectionData, btcInfo: BtcHeaderInfo) {
         let branchToSave: Branch;
