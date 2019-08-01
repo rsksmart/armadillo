@@ -1,39 +1,65 @@
-import { BtcMonitorConfig } from "../config/btc-monitor-config";
+import { BtcApiConfig } from "../config/btc-api-config";
 import { BtcBlock } from "../common/btc-block";
 import { EventEmitter } from "events";
-import { HttpBtcApi, BtcApi } from "./btc-api";
+import { BtcApi, PlainBtcBlock } from "./btc-api";
+import { Logger, getLogger } from "log4js";
 
 export enum BTCEvents {
     NEW_BLOCK = 'newBlock'
 }
 
-//This service emit a new block
+async function sleep(ms) : Promise<void> {
+    return new Promise((res, rej) => {
+        setTimeout(res, ms);
+    });
+}
+
 export class BtcWatcher extends EventEmitter {
 
-    private blocks: BtcBlock[];
-    private config: BtcMonitorConfig;
+    private logger: Logger;
+    private blocks: BtcBlock[]; // TODO: move this to a blockchain abstraction
     private btcApi: BtcApi;
 
-    constructor(config: BtcMonitorConfig) {
+    constructor(btcApi: BtcApi) {
         super();
 
-        this.config = config;
         this.blocks = []
-        this.btcApi = new HttpBtcApi();
+        this.btcApi = btcApi;
+        this.logger = getLogger('btc-watcher');
     }
 
     private saveBest(block: BtcBlock) {
+        this.logger.info('New block:', block)
+
         this.blocks.push(block);
 
         this.emit(BTCEvents.NEW_BLOCK, block);
     }
 
+    private getLastBlock() : BtcBlock {
+        if (this.blocks.length === 0) {
+            return null;
+        }
+
+        return this.blocks[this.blocks.length - 1]
+    }
+
     public async run() {
         while (true) {
-            console.log('Fetching')
-            const block: BtcBlock = await this.btcApi.getBestBlock();
-            console.log('Fetched', block)
-            this.saveBest(block);
+            const plainBlock: PlainBtcBlock = await this.btcApi.getBestBlock();
+            const lastBlock: BtcBlock = this.getLastBlock();
+
+            if (!lastBlock || lastBlock.btcInfo.hash == plainBlock.header.previousHash) {
+                const newBlock: BtcBlock = new BtcBlock(plainBlock.header.height,
+                                                        plainBlock.header.hash,
+                                                        plainBlock.rskTag)
+
+                this.saveBest(newBlock);
+            } else {
+                // TODO: handle reorg
+            }
+
+            await sleep(5000);
         }
     }
 
