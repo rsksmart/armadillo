@@ -2,7 +2,7 @@ import { RskBlock } from "../common/rsk-block";
 import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
-import Branch, { BranchItem } from "../common/branch";
+import { Branch, BranchItem } from "../common/branch";
 import { BtcMonitor, BTCEvents } from "./btc-monitor";
 import { RskApi } from "./rsk-api-service";
 
@@ -101,14 +101,13 @@ export class ForkDetector {
         const branches: Branch[] = await this.getBranchesThatOverlap(rskTag)
 
         if (branches.length > 0) {
-            // por ahora solo usamos el primero
+            // For now, we get the first branch, there is a minimun change to get 2 items that match
             branchToSave = branches[0];
             branchToSave.pushTop(new BranchItem(btcInfo, rskTag));
+            this.branchService.updateBranch(branchToSave);
         } else {
             branchToSave = new Branch(new BranchItem(btcInfo, rskTag));
+            this.branchService.saveNewBranch(branchToSave);
         }
-
-        //Deberia crear o editar un branch existente en db
-        this.branchService.saveBranch(branchToSave);
     }
 }
