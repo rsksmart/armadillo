@@ -5,7 +5,31 @@
     ],
     "jsRules": {},
     "rules": {
-        "no-console": false
-    },
-    "rulesDirectory": []
+        "no-relative-imports": false,
+        "completed-docs": false,
+        "no-require-imports": false,
+        "ordered-imports": [
+            true,
+            {
+                "import-sources-order": "any",
+                "named-imports-order": "case-insensitive"
+            }
+        ],
+        "mocha-no-side-effect-code": false,
+        "missing-jsdoc": false,
+        "export-name": false,
+        "promise-function-async": false,
+        "no-void-expression": false,
+        "no-redundant-jsdoc": false,
+        "prefer-type-cast": false,
+        "no-suspicious-comment": false,
+        "no-unused-variable": false,
+        "typedef": [
+            true,
+            "parameter",
+            "arrow-parameter",
+            "property-declaration",
+            "member-variable-declaration"
+        ]
+    }
 }

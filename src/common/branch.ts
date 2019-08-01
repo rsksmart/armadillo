@@ -1,7 +1,7 @@
 import { ForkDetectionData } from "./fork-detection-data";
 import { BtcHeaderInfo } from "./btc-block";
 
-export default class Branch {
+export class Branch {
     public firstDetected: ForkDetectionData; //rsk item when fork started
     public lastDetectedHeight: number;  
    
