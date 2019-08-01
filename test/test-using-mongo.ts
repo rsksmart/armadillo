@@ -1,12 +1,8 @@
 import "mocha";
 import { BtcHeaderInfo } from "../src/common/btc-block";
-import { BtcMonitor } from "../src/services/btc-monitor";
 import { Branch, BranchItem } from "../src/common/branch";
 import { expect } from "chai";
-import { ForkDetector } from "../src/services/fork-detector";
 import { ForkDetectionData } from "../src/common/fork-detection-data";
-import { stubObject } from "ts-sinon";
-import sinon from "sinon";
 import { MainConfig } from "../src/config/main-config";
 import { MongoStore } from "../src/storage/mongo-store";
 import { BranchService } from "../src/services/branch-service";

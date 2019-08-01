@@ -11,6 +11,8 @@ export class ForkDetectionData {
     public BN: number;
 
     constructor(rskTag: string) {
+        // TODO: throw error if length is not 32 bytes
+
         let tag = checkTag(rskTag);
 
         if(tag != null){
