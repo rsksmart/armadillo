@@ -1,9 +1,8 @@
 import { MongoStore } from "../storage/mongo-store";
-import Branch from "../common/branch";
-import { ForkDetectionData } from "../common/fork-detection-data";
+import { Branch } from "../common/branch";
 
 export class BranchService {
-  
+
 
     private store: MongoStore;
 
@@ -20,7 +19,7 @@ export class BranchService {
     }
 
     public saveBranch(branchToSave: Branch) {
-        this.store.getCollection().update({'firstDetected.prefixHash': branchToSave.firstDetected.prefixHash }, {$push: { 'items': branchToSave } } );
+        this.store.getCollection().update({ 'firstDetected.prefixHash': branchToSave.firstDetected.prefixHash }, { $push: { 'items': branchToSave } });
     }
 
     public async getForksDetected(minimunHeightToSearch: number): Promise<Branch[]> {
