@@ -3,24 +3,25 @@ import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { BranchService } from "./branch-service";
 import { Branch, BranchItem } from "../common/branch";
-import { BtcMonitor, BTCEvents } from "./btc-monitor";
+import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { RskApi } from "./rsk-api-service";
 
 export class ForkDetector {
 
     private branchService: BranchService;
     private rskApiService: RskApi;
-    private btcMonitor: BtcMonitor;
+    private btcWatcher: BtcWatcher;
     private lastBlockChecked: BtcBlock;
     private maxBlocksBackwardsToSearch : number = 448;
     private minimunOverlapCPV : number = 3;
 
-    constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApi) {
+    constructor(branchService: BranchService, btcWatcher: BtcWatcher, rskApiService: RskApi) {
+        this.lastBlockChecked = new BtcBlock(0, "", "");
         this.branchService = branchService;
-        this.btcMonitor = btcMonitor;
+        this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
 
-        this.btcMonitor.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
+        this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
 
     private async onNewBlock(newBlock: BtcBlock) {
@@ -46,12 +47,12 @@ export class ForkDetector {
     }
 
     public stop() {
-        this.btcMonitor.stop();
+        this.btcWatcher.stop();
         this.branchService.disconnect();
     }
 
     public start() {
-        this.btcMonitor.run();
+        this.btcWatcher.run();
     }
 
     private rskTagIsInSomeBlock(blocks: RskBlock[], rskTag: ForkDetectionData): boolean {
