@@ -20,10 +20,10 @@ export class BranchService {
         this.store.getCollection().save(branch);
     }
 
-    public updateBranch(branch: Branch): void {
+    public addBranchItem(prefixHash: string, branchItem: BranchItem): void {
         this.store.getCollection().updateOne(
-            { 'firstDetected.prefixHash': branch.firstDetected.prefixHash },
-            { $push: { 'items': branch.getLast() } });
+            { 'firstDetected.prefixHash': prefixHash },
+            { $push: { 'items': branchItem} });
     }
 
     public async getForksDetected(minimunHeightToSearch: number): Promise<Branch[]> {
