@@ -5,7 +5,10 @@ export class BtcBlock {
     public rskTag: ForkDetectionData;
     constructor(_height: number, _hash: string, _rskTag: string) {
         this.btcInfo = new BtcHeaderInfo(_height, _hash);
-        this.rskTag = new ForkDetectionData(_rskTag);
+
+        if (_rskTag && _rskTag.length > 0) {
+            this.rskTag = new ForkDetectionData(_rskTag);
+        }
     }
 }
 

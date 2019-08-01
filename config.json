@@ -6,7 +6,7 @@
         "host": "localhost",
         "port": 4444
     },
-    "btcMonitor": {
+    "btcApi": {
         "host": "34.67.238.129",
         "port": 5000
     },
