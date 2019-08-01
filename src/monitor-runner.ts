@@ -11,7 +11,7 @@ class MonitorRunner {
     private DEFAULT_CONFIG_PATH = './config.json';
     private mainConfig: MainConfig;
     private branchService: BranchService;
-    private btcMonitor: BtcWatcher;
+    private btcWatcher: BtcWatcher;
     private rskApiService: RskApi;
     private logger;
     private forkDetector: ForkDetector;
@@ -20,9 +20,9 @@ class MonitorRunner {
         this.mainConfig = MainConfig.getMainConfig(this.DEFAULT_CONFIG_PATH);
         let mongoStore = new MongoStore(this.mainConfig.store.branches);
         this.branchService = new BranchService(mongoStore);
-        this.btcMonitor = new BtcWatcher(new HttpBtcApi(this.mainConfig.btcApi));
+        this.btcWatcher = new BtcWatcher(new HttpBtcApi(this.mainConfig.btcApi));
         this.rskApiService = new RskApiService(this.mainConfig.rskApi);
-        this.forkDetector = new ForkDetector(this.branchService, this.btcMonitor, this.rskApiService);
+        this.forkDetector = new ForkDetector(this.branchService, this.btcWatcher, this.rskApiService);
         this.logger = getLogger("monitor-runner.ts");
 
         this.run();
