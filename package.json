@@ -7,7 +7,7 @@
     "start": "ts-node ./src/monitor-runner.ts",
     "start-api": "ts-node ./src/api-runner.ts",
     "start-monitor": "ts-node ./src/monitor-runner.ts",
-    "lint": "tslint -t stylish -c tslint.json 'test/**/*.ts'",
+    "lint": "tslint -t stylish -c tslint.json 'src/**/*.ts' & tslint -t stylish -c tslint.json 'test/**/*.ts'",
     "test": "mocha -r ts-node/register test/**/*.ts",
     "build": "tsc -p tsconfig.json"
   },
