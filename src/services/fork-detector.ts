@@ -12,6 +12,8 @@ export class ForkDetector {
     private rskApiService: RskApi;
     private btcMonitor: BtcMonitor;
     private lastBlockChecked: BtcBlock;
+    private maxBlocksBackwardsToSearch : number = 448;
+    private minimunOverlapCPV : number = 3;
 
     constructor(branchService: BranchService, btcMonitor: BtcMonitor, rskApiService: RskApi) {
         this.branchService = branchService;
@@ -30,18 +32,15 @@ export class ForkDetector {
             //is a new block, let's detect rsk tag
 
             let rskTag: ForkDetectionData = this.lastBlockChecked.rskTag;
-
-            //Should we get rsk block from height:
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
-
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
             if (!tagIsInblock) {
-                //save it into db to temporal line, we have to know which is the miner ? 
+                //save it into db, into a new o existing temporal line 
                 this.addOrCreateInTemporalLine(rskTag, newBlock.btcInfo);
             } else {
-                //Should we do something with this information ? 
-                // if CPV is in main chain or in rsk uncles ? 
+                //Should we do something with this information
+                //if CPV is in main chain or in rsk uncles?
             }
         }
     }
@@ -67,16 +66,14 @@ export class ForkDetector {
     }
 
     private getHeightforPossibleBranches(numberBlock: number): number {
-        let maxBlocksBackwardsToSearch = 448;
-
-        if (numberBlock > maxBlocksBackwardsToSearch) {
-            return numberBlock - maxBlocksBackwardsToSearch;
+        if (numberBlock > this.maxBlocksBackwardsToSearch) {
+            return numberBlock - this.maxBlocksBackwardsToSearch;
         } else {
             return 0;
         }
     }
 
-    private async getPossibleForks(blockNumber: number): Promise<ForkDetectionData[]> {
+    private async getPossibleForks(blockNumber: number): Promise<Branch[]> {
         //No necesitamos los branches si no los ultimos "nodos" que se agregaron
         let minimunHeightToSearch = this.getHeightforPossibleBranches(blockNumber);
 
@@ -85,20 +82,19 @@ export class ForkDetector {
         return this.branchService.getForksDetected(minimunHeightToSearch);
     }
 
-    private async getBranchesThatOverlap(rskTag: ForkDetectionData) {
-        let branchesThatOverlap = []
+    public async getBranchesThatOverlap(rskTag: ForkDetectionData) : Promise<Branch[]> {
+        let branchesThatOverlap : Branch[] = []
         // Hay que renombrar mejor
-        let lastTopsDetected: ForkDetectionData[] = await this.getPossibleForks(rskTag.BN);
-
+        let lastTopsDetected: Branch[] = await this.getPossibleForks(rskTag.BN);
+        
         for (const branch of lastTopsDetected) {
-            if (branch.overlapCPV(rskTag.CPV, 3)) {
-                branchesThatOverlap.push(branch)
+            if (branch.getLast().forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
+                branchesThatOverlap.push(branch);
             }
         }
 
         return branchesThatOverlap;
     }
-
 
     private async addOrCreateInTemporalLine(rskTag: ForkDetectionData, btcInfo: BtcHeaderInfo) {
         let branchToSave: Branch;

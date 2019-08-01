@@ -1,28 +1,42 @@
 import { expect } from 'chai';
 import 'mocha';
 import { ForkDetectionData } from '../src/common/fork-detection-data';
+import { ForkDetector } from '../src/services/fork-detector';
+import { BtcMonitor } from '../src/services/btc-monitor';
+import { stubObject } from "ts-sinon";
+import sinon from "sinon";
+import { BtcHeaderInfo } from '../src/common/btc-block';
+import Branch, { BranchItem } from '../src/common/branch';
+
+const PREFIX = '9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0';
+const CPV = 'd89d8bf4d2e434'; //["d8", "9d", "8b", "f4", "d2", "e4", "34"]
+const CPV1 = '112233d89d8bf4'; 
+const NU = '00'; //0
+const BN = '000004c9'; //1225
+const RSKTAG_0X = '0x' + PREFIX + CPV + NU + BN;
+const RSKTAG = PREFIX + CPV + NU + BN;
+const RSKTAG1 = PREFIX + CPV1 + NU + BN;
+
 
 describe('For detection tag', () => {
+  after(function () {
+  });
 
   it('well form with 0x', () => {
-    let rskTag = '0x9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0d89d8bf4d2e43400000004c9'
+    let data: ForkDetectionData = new ForkDetectionData(RSKTAG_0X);
 
-    let data: ForkDetectionData = new ForkDetectionData(rskTag);
-
-    expect(data.prefixHash).to.equal('9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0');
-    expect(data.CPV).to.equal('d89d8bf4d2e434');
+    expect(data.prefixHash).to.equal(PREFIX);
+    expect(data.CPV).to.equal(CPV);
     expect(data.NU).to.equal(0);
     expect(data.BN).to.equal(1225);
 
   });
 
   it('well form', () => {
-    let rskTag = '9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0d89d8bf4d2e43400000004c9'
+    let data: ForkDetectionData = new ForkDetectionData(RSKTAG);
 
-    let data: ForkDetectionData = new ForkDetectionData(rskTag);
-
-    expect(data.prefixHash).to.equal('9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0');
-    expect(data.CPV).to.equal('d89d8bf4d2e434');
+    expect(data.prefixHash).to.equal(PREFIX);
+    expect(data.CPV).to.equal(CPV);
     expect(data.NU).to.equal(0);
     expect(data.BN).to.equal(1225);
   });
@@ -31,12 +45,8 @@ describe('For detection tag', () => {
 describe('Overlap CPV', () => {
 
   it('cpv match with differents lengh', () => {
-    const prefix = '9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0';
-    const cpv = 'd89d8bf4d2e434'; //["d8", "9d", "8b", "f4", "d2", "e4", "34"]
-    const nu = '00';
-    const bn = '000004c9';
 
-    let forkData = new ForkDetectionData(prefix + cpv + nu + bn);
+    let forkData = new ForkDetectionData(RSKTAG);
 
     //match with "d2", "e4", "34"
     let cpv1 = 'd89d8bf4d2e434';
@@ -66,12 +76,8 @@ describe('Overlap CPV', () => {
   });
 
   it('cpv match 3 lengh', () => {
-    const prefix = '9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0';
-    const cpv = 'd89d8bf4d2e434'; //["d8", "9d", "8b", "f4", "d2", "e4", "34"]
-    const nu = '00';
-    const bn = '000004c9';
 
-    let forkData = new ForkDetectionData(prefix + cpv + nu + bn);
+    let forkData = new ForkDetectionData(RSKTAG);
 
     //match with "d2", "e4", "34"
     let cpv1 = 'd2e43411223344'; //["d2", "e4", "34", "11", "22", "33", "44"]
@@ -92,5 +98,41 @@ describe('Overlap CPV', () => {
     cpv1 = '34112233445566'; //["11", "22", "33", "44", "55", "66", "77"]
     overlapped = forkData.overlapCPV(cpv1, 3);
     expect(overlapped).to.equal(false);
+  });
+
+  it('getBranchesThatOverlap return 1', async () => {
+    const forkData = new ForkDetectionData(RSKTAG);
+    const btcStub = stubObject<BtcMonitor>(BtcMonitor.prototype);
+    const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
+    const forkDetector = new ForkDetector(null, btcStub, null);
+   
+    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Branch(new BranchItem(btcInfo, forkData))]);
+    let posibleBranches : Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
+    
+    //Validations
+    expect(posibleBranches.length).to.equal(1);
+    expect(posibleBranches[0].getStart().forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getStart().btcInfo).to.equal(btcInfo);
+    expect(posibleBranches[0].getLast().btcInfo).to.equal(btcInfo);
+    expect(posibleBranches[0].getLast().btcInfo).to.equal(btcInfo);
+  });
+
+  it.only('getBranchesThatOverlap return 2', async () => {
+    
+    const forkData = new ForkDetectionData(RSKTAG);
+    const btcStub = stubObject<BtcMonitor>(BtcMonitor.prototype);
+    const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
+    const forkDetector = new ForkDetector(null, btcStub, null);
+    const forkData1 = new ForkDetectionData(RSKTAG1);
+
+    let list = [new Branch(new BranchItem(btcInfo, forkData)), new Branch(new BranchItem(btcInfo, forkData1))]
+   
+    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns(list);
+    let posibleBranches : Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
+    expect(posibleBranches.length).to.equal(2);
+    expect(posibleBranches[0].getStart().forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getLast().forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[1].getStart().forkDetectionData).to.equal(forkData1);
+    expect(posibleBranches[1].getLast().forkDetectionData).to.equal(forkData1);
   });
 });
