@@ -1,4 +1,5 @@
 import { BranchService } from '../../services/branch-service';
+import { Branch } from '../../common/branch';
 
 /* eslint-disable class-methods-use-this */
 
@@ -11,7 +12,7 @@ export default class BranchController {
   }
 
   public async getAllBranches(req: any, res: any): Promise<any> {
-    var branches: any = await this.service.getAll();
+    var branches : Branch[] =  await this.service.getAll();
 
     return res.status(200).send({
       success: 'true',
