@@ -26,7 +26,7 @@ export class BranchService {
             { $push: { 'items': branchItem} });
     }
 
-    public async getForksDetected(minimunHeightToSearch: number): Promise<Branch[]> {
+    public async getForksDetected(minimunHeightToSearch: number = 0): Promise<Branch[]> {
         let branches: any[] = await this.store.getCollection().find({
             "lastDetectedHeight": {
                 $gte: minimunHeightToSearch,
