@@ -23,9 +23,13 @@ export class BranchService {
         this.store.getCollection().update({'firstDetected.prefixHash': branchToSave.firstDetected.prefixHash }, {$push: { 'items': branchToSave } } );
     }
 
-    public async getForksDetected(minimunHeightToSearch: number): Promise<ForkDetectionData[]> {
+    public async getForksDetected(minimunHeightToSearch: number): Promise<Branch[]> {
+        let branches: Branch[] = await this.store.getCollection().find({
+            "firstDetected": {
+                $gte: minimunHeightToSearch,
+            }
+        }).toArray();
 
-        let branches: ForkDetectionData[] = await this.store.getCollection().find().toArray();
         return branches;
     }
 

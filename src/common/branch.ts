@@ -28,7 +28,7 @@ export default class Branch {
     }
 
     public getLast(): BranchItem {
-        return this.items[this.lengh()];
+        return this.items[this.items.length -1];
     }
 
     public lengh(): number {
@@ -41,7 +41,7 @@ export class BranchItem {
     public forkDetectionData: ForkDetectionData
 
     constructor(btcInfo: BtcHeaderInfo, forkDetectionData: ForkDetectionData){
-        btcInfo  = btcInfo;
-        forkDetectionData = forkDetectionData;
+        this.btcInfo  = btcInfo;
+        this.forkDetectionData = forkDetectionData;
     }
 }
