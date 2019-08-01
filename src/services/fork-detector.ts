@@ -102,9 +102,7 @@ export class ForkDetector {
 
         if (branches.length > 0) {
             // For now, we get the first branch, there is a minimun change to get 2 items that match
-            branchToSave = branches[0];
-            branchToSave.pushTop(new BranchItem(btcInfo, rskTag));
-            this.branchService.updateBranch(branchToSave);
+            this.branchService.addBranchItem(branches[0].firstDetected.prefixHash, new BranchItem(btcInfo, rskTag));
         } else {
             branchToSave = new Branch(new BranchItem(btcInfo, rskTag));
             this.branchService.saveNewBranch(branchToSave);
