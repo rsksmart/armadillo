@@ -40,6 +40,7 @@ class MonitorRunner {
 
     private run() {
         let that = this;
+
         this.branchService.connect().then(function () {
             that.forkDetector.start();
         });

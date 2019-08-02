@@ -19,6 +19,7 @@ export class BtcWatcher extends EventEmitter {
     private logger: Logger;
     private blocks: BtcBlock[]; // TODO: move this to a blockchain abstraction
     private btcApi: BtcApi;
+    private running: boolean;
 
     constructor(btcApi: BtcApi) {
         super();
@@ -26,26 +27,13 @@ export class BtcWatcher extends EventEmitter {
         this.blocks = []
         this.btcApi = btcApi;
         this.logger = getLogger('btc-watcher');
+        this.running = false;
     }
 
-    private saveBest(block: BtcBlock) {
-        this.logger.info('New block:', block)
+    public async start() : Promise<void> {
+        this.running = true;
 
-        this.blocks.push(block);
-
-        this.emit(BTCEvents.NEW_BLOCK, block);
-    }
-
-    private getLastBlock() : BtcBlock {
-        if (this.blocks.length === 0) {
-            return null;
-        }
-
-        return this.blocks[this.blocks.length - 1]
-    }
-
-    public async run() {
-        while (true) {
+        while (this.running) {
             const plainBlock: PlainBtcBlock = await this.btcApi.getBestBlock();
             const lastBlock: BtcBlock = this.getLastBlock();
 
@@ -63,6 +51,23 @@ export class BtcWatcher extends EventEmitter {
         }
     }
 
-    public stop() {
+    public async stop() : Promise<void> {
+        this.running = false;
+    }
+
+    private saveBest(block: BtcBlock) {
+        this.logger.info('New block:', block)
+
+        this.blocks.push(block);
+
+        this.emit(BTCEvents.NEW_BLOCK, block);
+    }
+
+    private getLastBlock() : BtcBlock {
+        if (this.blocks.length === 0) {
+            return null;
+        }
+
+        return this.blocks[this.blocks.length - 1]
     }
 }
