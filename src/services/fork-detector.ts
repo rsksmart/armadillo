@@ -52,7 +52,7 @@ export class ForkDetector {
     }
 
     public start() {
-        this.btcWatcher.run();
+        this.btcWatcher.start();
     }
 
     private rskTagIsInSomeBlock(blocks: RskBlock[], rskTag: ForkDetectionData): boolean {
