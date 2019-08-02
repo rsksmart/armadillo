@@ -24,21 +24,17 @@ class MonitorRunner {
         this.rskApiService = new RskApiService(this.mainConfig.rskApi);
         this.forkDetector = new ForkDetector(this.branchService, this.btcWatcher, this.rskApiService);
         this.logger = getLogger("monitor-runner.ts");
-
-        this.run();
-
-        process.on('SIGINT', async () => {
-            await this.stop();
-        });
     }
 
-    private stop() {
-        this.logger.debug("STOP Connections!!!");
+    public async stop() : Promise<void> {
+        this.logger.info("Stopping monitor");
 
         this.forkDetector.stop();
     }
 
-    private run() {
+    public async start() : Promise<void> {
+        this.logger.info("Starting monitor");
+
         let that = this;
 
         this.branchService.connect().then(function () {
@@ -47,4 +43,10 @@ class MonitorRunner {
     }
 }
 
-new MonitorRunner();
+const monitor = new MonitorRunner();
+
+process.on('SIGINT', async () => {
+    await monitor.stop();
+});
+
+monitor.start();
