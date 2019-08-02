@@ -31,6 +31,8 @@ export class BtcWatcher extends EventEmitter {
     }
 
     public async start() : Promise<void> {
+        this.logger.info('Starting btc watcher');
+
         this.running = true;
 
         while (this.running) {
@@ -52,6 +54,7 @@ export class BtcWatcher extends EventEmitter {
     }
 
     public async stop() : Promise<void> {
+        this.logger.info('Stopping btc watcher');
         this.running = false;
     }
 
