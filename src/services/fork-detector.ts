@@ -5,9 +5,11 @@ import { BranchService } from "./branch-service";
 import { Branch, BranchItem } from "../common/branch";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { RskApi } from "./rsk-api-service";
+import { getLogger, Logger } from "log4js";
 
 export class ForkDetector {
 
+    private logger: Logger;
     private branchService: BranchService;
     private rskApiService: RskApi;
     private btcWatcher: BtcWatcher;
@@ -20,6 +22,7 @@ export class ForkDetector {
         this.branchService = branchService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
+        this.logger = getLogger('fork-detector');
 
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
@@ -47,11 +50,15 @@ export class ForkDetector {
     }
 
     public stop() {
+        this.logger.info('Stopping fork detector')
+
         this.btcWatcher.stop();
         this.branchService.disconnect();
     }
 
     public start() {
+        this.logger.info('Starting fork detector');
+
         this.btcWatcher.start();
     }
 
