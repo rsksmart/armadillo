@@ -29,14 +29,16 @@ export class ForkDetector {
 
     private async onNewBlock(newBlock: BtcBlock) {
         if (this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
+            this.lastBlockChecked = newBlock;
             if (this.lastBlockChecked.rskTag == null) {
                 //this block doesn't have rsktag, nothing to do
                 return;
             }
+         
             //is a new block, let's detect rsk tag
-
             let rskTag: ForkDetectionData = this.lastBlockChecked.rskTag;
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
+
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
             if (!tagIsInblock) {
