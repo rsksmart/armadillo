@@ -66,14 +66,7 @@ export class ForkDetector {
     }
 
     private rskTagIsInSomeBlock(blocks: RskBlock[], rskTag: ForkDetectionData): boolean {
-
-        for (const block of blocks) {
-            if (block.rskTag == rskTag) {
-                return true;
-            }
-        }
-
-        return false;
+        return blocks.findIndex(b => b.rskTag.equals(rskTag)) != -1;
     }
 
     private getHeightforPossibleBranches(numberBlock: number): number {
