@@ -2,7 +2,6 @@ import { ForkDetectionData } from "./fork-detection-data";
 import { BtcHeaderInfo } from "./btc-block";
 
 export class Branch {
-
     public firstDetected: ForkDetectionData; //rsk item when fork started
     public lastDetectedHeight: number;
     private items: BranchItem[];
@@ -49,13 +48,16 @@ export class Branch {
         return this.items[this.items.length - 1];
     }
 
+    public getItems(): BranchItem[] {
+        return this.items;
+    }
+
     public lengh(): number {
         return this.items.length;
     }
 }
 
 export class BranchItem {
-
     public btcInfo: BtcHeaderInfo;
     public forkDetectionData: ForkDetectionData
 
@@ -65,6 +67,7 @@ export class BranchItem {
     }
 
     static fromObject(branchItem: any): BranchItem {
-        return new BranchItem(branchItem.btcInfo, branchItem.forkDetectionData);
+        let forkDetectionData = branchItem.forkDetectionData;
+        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), new ForkDetectionData(forkDetectionData));
     }
 }

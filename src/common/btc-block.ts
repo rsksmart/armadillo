@@ -20,5 +20,9 @@ export class BtcHeaderInfo {
         this.height = _height;
         this.hash = _hash;
     }
+
+    public static fromObject(btcInfo: any): BtcHeaderInfo {
+        return new BtcHeaderInfo(btcInfo.height, btcInfo.hash);
+    }
 }
 
