@@ -29,25 +29,26 @@ export class ForkDetector {
 
     private async onNewBlock(newBlock: BtcBlock) {
         if (this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
-            this.lastBlockChecked = newBlock;
-            if (this.lastBlockChecked.rskTag == null) {
-                //this block doesn't have rsktag, nothing to do
+            if (newBlock.rskTag == null) {
+                this.logger.info('Skipping block', newBlock.btcInfo.hash, '. No RSKTAG present')
                 return;
             }
-         
-            //is a new block, let's detect rsk tag
-            let rskTag: ForkDetectionData = this.lastBlockChecked.rskTag;
+
+            let rskTag: ForkDetectionData = newBlock.rskTag;
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
 
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
             if (!tagIsInblock) {
-                //save it into db, into a new o existing temporal line 
+                this.logger.info('RSKTAG', newBlock.rskTag.toString(),' found in block', newBlock.btcInfo.hash, 'not present in any RSK block at height', newBlock.rskTag.BN);
                 this.addOrCreateInTemporalLine(rskTag, newBlock.btcInfo);
             } else {
                 //Should we do something with this information
                 //if CPV is in main chain or in rsk uncles?
+                this.logger.info('RSKTAG', newBlock.rskTag.toString(),' found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
             }
+
+            this.lastBlockChecked = newBlock;
         }
     }
 
@@ -65,14 +66,7 @@ export class ForkDetector {
     }
 
     private rskTagIsInSomeBlock(blocks: RskBlock[], rskTag: ForkDetectionData): boolean {
-
-        for (const block of blocks) {
-            if (block.rskTag == rskTag) {
-                return true;
-            }
-        }
-
-        return false;
+        return blocks.findIndex(b => b.rskTag.equals(rskTag)) != -1;
     }
 
     private getHeightforPossibleBranches(numberBlock: number): number {
@@ -111,9 +105,15 @@ export class ForkDetector {
         const branches: Branch[] = await this.getBranchesThatOverlap(rskTag)
 
         if (branches.length > 0) {
+            const existingBranch: Branch = branches[0];
+
+            this.logger.info('Adding RSKTAG', rskTag.toString(), 'found in block', btcInfo.hash, 'to branch with start', existingBranch.firstDetected.toString());
+
             // For now, we get the first branch, there is a minimun change to get 2 items that match
-            this.branchService.addBranchItem(branches[0].firstDetected.prefixHash, new BranchItem(btcInfo, rskTag));
+            this.branchService.addBranchItem(existingBranch.firstDetected.prefixHash, new BranchItem(btcInfo, rskTag));
         } else {
+            this.logger.info('Creating branch for RSKTAG', rskTag.toString(), 'found in block', btcInfo.hash);
+
             branchToSave = new Branch(new BranchItem(btcInfo, rskTag));
             this.branchService.saveNewBranch(branchToSave);
         }

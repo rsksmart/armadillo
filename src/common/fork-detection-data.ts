@@ -41,6 +41,17 @@ export class ForkDetectionData {
         return this.getNumberOfOverlapInCPV(cpvToCheck) >= countCPVtoMatch;
     }
 
+    public toString() : string {
+        return '0x' + this.prefixHash + this.CPV + this.NU.toString(16) + this.BN.toString(16);
+    }
+
+    public equals(other: ForkDetectionData) : boolean {
+        return this.prefixHash === other.prefixHash &&
+            this.CPV === other.CPV &&
+            this.NU === other.NU &&
+            this.BN === other.BN;
+    }
+
     private getNumberOfOverlapInCPV(cpvToCheck: string): number {
         let cpvSplit = this.hexToBytes(this.CPV);
         let cpvToCheckSplit = this.hexToBytes(cpvToCheck);
