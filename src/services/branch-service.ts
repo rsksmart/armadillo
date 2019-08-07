@@ -17,11 +17,11 @@ export class BranchService {
     }
 
     public saveNewBranch(branch: Branch): void {
-        this.store.getCollection().save(branch);
+       this.store.getCollection().insertOne(branch);
     }
 
-    public addBranchItem(prefixHash: string, branchItem: BranchItem): void {
-        this.store.getCollection().updateOne(
+    public async addBranchItem(prefixHash: string, branchItem: BranchItem): Promise<void> {
+        await this.store.getCollection().updateOne(
             { 'firstDetected.prefixHash': prefixHash },
             { $push: { 'items': branchItem} });
     }
@@ -36,8 +36,17 @@ export class BranchService {
         return branches.map(x => Branch.fromObject(x));
     }
 
+    //FOR TESTING
+
     public async getAll(): Promise<Branch[]> {
         const branches: any[] = await this.store.getCollection().find().toArray();
         return branches.map(x => Branch.fromObject(x));
+    }
+
+    public async removeAll(): Promise<void> {
+
+        return  this.store.getCollection().drop()
+        .catch(function() {
+        });
     }
 }
