@@ -21,27 +21,16 @@ export class RskApiService implements RskApi {
         );
     }
 
-    getBlocksByNumber(height: number): Promise<RskBlock[]> {
-        return this.nod3.rsk.getBlocksByNumber(height);
-    }
-}
+    async getBlocksByNumber(height: number): Promise<RskBlock[]> {
 
-export class DummyRskApiService implements RskApi {
-    private config: RskApiConfig;
+        var blocksInfo : any[] = await this.nod3.rsk.getBlocksByNumber(height);
+        var blocks : RskBlock[] = [];
 
-    constructor(config: RskApiConfig) {
-        this.config = config;
-    }
+        for (const blockInfo of blocksInfo) {
+            var block = await this.nod3.eth.getBlock(blockInfo.hash);
+            blocks.push(RskBlock.fromObject(block));
+        }
 
-    public getBlocksByNumber(height: number): Promise<RskBlock[]> {
-        let listBLocks: RskBlock[] = [];
-
-        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag1")));
-        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag2")));
-        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag3")));
-        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag4")));
-        listBLocks.push(new RskBlock(5985954, "hash1rsk", ForkDetectionData.getObject("rskTag5")));
-
-        return Promise.resolve(listBLocks);
+        return blocks;
     }
 }

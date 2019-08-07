@@ -59,8 +59,7 @@ export class HttpBtcApi implements BtcApi {
 
     private extractTagFromCoinbase(coinbase: any) : string {
         const outputs: any[] = coinbase.transaction.outputs;
-        const output: any = outputs.find(o => o.rsktag);
-
-        return output ? output.rsktag : null;
+        const output: any = outputs.find(o => o.rskTag);
+        return output ? output.rskTag : null;
     }
 }
