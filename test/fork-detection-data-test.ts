@@ -22,8 +22,6 @@ afterEach(function () {
 });
 
 describe("For detection tag", () => {
-
-
   it("well form with 0x", () => {
     const data: ForkDetectionData = new ForkDetectionData(RSKTAG_0X);
 
@@ -45,9 +43,7 @@ describe("For detection tag", () => {
 });
 
 describe("Overlap CPV", () => {
-
   it("cpv match with differents lengh", () => {
-
     let forkData = new ForkDetectionData(RSKTAG);
 
     //match with "d2", "e4", "34"
@@ -138,3 +134,49 @@ describe("Overlap CPV", () => {
     expect(posibleBranches[1].getLast().forkDetectionData).to.equal(forkData1);
   });
 });
+
+describe('equals', () => {
+  it('returns true for the same instance', () => {
+    const data: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
+
+    const result: boolean = data.equals(data);
+    expect(result).to.be.true;
+  });
+
+  it('returns true for different instances', () => {
+    const data: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
+    const otherData: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
+
+    const result: boolean = data.equals(otherData);
+    expect(result).to.be.true;
+  });
+
+  it('returns false when preffix hash is not equal', () => {
+    const data: ForkDetectionData = new ForkDetectionData('9b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
+    const otherData: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
+
+    const result: boolean = data.equals(otherData);
+    expect(result).to.be.false;
+  });
+  it('returns false when CPV is not equal', () => {
+    const data: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269abd0ac8e711d44200000001c3');
+    const otherData: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
+
+    const result: boolean = data.equals(otherData);
+    expect(result).to.be.false;
+  });
+  it('returns false when NU is not equal', () => {
+    const data: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269abd0ac8e711d44201000001c3');
+    const otherData: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269abd0ac8e711d44200000001c3');
+
+    const result: boolean = data.equals(otherData);
+    expect(result).to.be.false;
+  });
+  it('returns false when BN is not equal', () => {
+    const data: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269abd0ac8e711d44200000001c4');
+    const otherData: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269abd0ac8e711d44200000001c3');
+
+    const result: boolean = data.equals(otherData);
+    expect(result).to.be.false;
+  });
+})
