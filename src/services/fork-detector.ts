@@ -28,6 +28,12 @@ export class ForkDetector {
     }
 
     private async onNewBlock(newBlock: BtcBlock) {
+
+        if(newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height){
+            //Nothing to do, already check previous blocks
+            return;
+        }
+
         if (this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
             if (newBlock.rskTag == null) {
                 this.logger.info('Skipping block', newBlock.btcInfo.hash, '. No RSKTAG present')
@@ -36,6 +42,16 @@ export class ForkDetector {
 
             let rskTag: ForkDetectionData = newBlock.rskTag;
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
+
+
+            if(blocks.length == 0){
+                //What should we do here? 
+                //if blocks are empty, could means that there are not height at that BN.
+                //maybe we have to check best block and compare the height to be sure if tag is well form
+                //Maybe the selfiish chain height is bigger than the main chain
+                this.logger.warn('Blocks are not in rsk at height', rskTag.BN, 'with tag in BTC', rskTag.toString())
+                return;
+            }
 
             let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
