@@ -18,7 +18,6 @@ export class ForkDetector {
     private minimunOverlapCPV : number = 3;
 
     constructor(branchService: BranchService, btcWatcher: BtcWatcher, rskApiService: RskApi) {
-        this.lastBlockChecked = new BtcBlock(0, "", "");
         this.branchService = branchService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
@@ -29,12 +28,12 @@ export class ForkDetector {
 
     private async onNewBlock(newBlock: BtcBlock) {
 
-        if(newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height){
+        if(!this.lastBlockChecked && newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height){
             //Nothing to do, already check previous blocks
             return;
         }
 
-        if (this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
+        if (!this.lastBlockChecked || this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
             if (newBlock.rskTag == null) {
                 this.logger.info('Skipping block', newBlock.btcInfo.hash, '. No RSKTAG present')
                 return;
