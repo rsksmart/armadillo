@@ -12,3 +12,19 @@ export const checkTag = (value: string) => {
   
     return null;
 };
+
+export const toHex = (val, inByte : number) => {
+    let hex = val.toString('16');
+    if (hex.length % 2 == 1)
+        hex = '0' + hex;
+
+    if(hex.length < (inByte * 2)){
+        var left = (inByte * 2) - hex.length;
+        console.log(left)
+        for(var i = 0; i < left; i++){
+            hex = '0' + hex;
+        }
+    }
+
+    return hex;
+}
