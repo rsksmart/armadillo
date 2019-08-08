@@ -1,4 +1,4 @@
-import { checkTag } from "../util/helper";
+import { checkTag, toHex } from "../util/helper";
 
 export class ForkDetectionData {
     public prefixHash: string;
@@ -42,7 +42,7 @@ export class ForkDetectionData {
     }
 
     public toString() : string {
-        return '0x' + this.prefixHash + this.CPV + this.NU.toString(16) + this.BN.toString(16);
+        return '0x' + this.prefixHash + this.CPV + toHex(this.NU, 1) + toHex(this.BN, 4);
     }
 
     public equals(other: ForkDetectionData) : boolean {
