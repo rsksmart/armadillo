@@ -67,7 +67,6 @@ export class BranchItem {
     }
 
     static fromObject(branchItem: any): BranchItem {
-        let forkDetectionData = branchItem.forkDetectionData;
-        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), new ForkDetectionData(forkDetectionData));
+        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), new ForkDetectionData(branchItem.forkDetectionData));
     }
 }
