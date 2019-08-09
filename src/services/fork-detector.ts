@@ -26,14 +26,16 @@ export class ForkDetector {
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
 
-    private async onNewBlock(newBlock: BtcBlock) {
-
-        if(!this.lastBlockChecked && newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height){
+    public async onNewBlock(newBlock: BtcBlock) {
+        if(this.lastBlockChecked && newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height){
             //Nothing to do, already check previous blocks
             return;
         }
 
         if (!this.lastBlockChecked || this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
+            
+            this.lastBlockChecked = newBlock;
+
             if (newBlock.rskTag == null) {
                 this.logger.info('Skipping block', newBlock.btcInfo.hash, '. No RSKTAG present')
                 return;
@@ -62,8 +64,6 @@ export class ForkDetector {
                 //if CPV is in main chain or in rsk uncles?
                 this.logger.info('RSKTAG', newBlock.rskTag.toString(),' found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
             }
-
-            this.lastBlockChecked = newBlock;
         }
     }
 
