@@ -55,17 +55,15 @@ export class ForkDetectionData {
     private getNumberOfOverlapInCPV(cpvToCheck: string): number {
         let cpvSplit = this.hexToBytes(this.CPV);
         let cpvToCheckSplit = this.hexToBytes(cpvToCheck);
-        var numberOfMatch = 0;
-
-        for (var i = 0; i < cpvSplit.length && numberOfMatch == 0; i++) {
-            for (var j = 0; j < cpvToCheckSplit.length; j++) {
-                if (cpvSplit[i] == cpvToCheckSplit[j]) {
-                    if (cpvSplit.slice(i).toString() == cpvToCheckSplit.slice(j, cpvToCheckSplit.length - i).toString()) {
-                        return cpvSplit.slice(i).length;
+        let cpvLength = cpvSplit.length;
+        for (var i = 0; i < cpvLength; i++) {
+            for (let j = 0; j < cpvLength; j++) {
+                if (cpvSplit[i] == cpvToCheckSplit[j]) {         
+                    let compareLength = (i>j) ? cpvLength-i : cpvLength-j;
+                    if (cpvSplit.slice(i,i+compareLength).toString() === cpvToCheckSplit.slice(j, j+compareLength).toString()) {
+                        return compareLength;
                     };
-                } else {
-                    break;
-                }
+                } 
             }
         }
 

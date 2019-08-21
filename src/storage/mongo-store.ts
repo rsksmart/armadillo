@@ -74,6 +74,7 @@ export class MongoStore {
             this.isConnected = true;
         }
         catch (error) {
+            console.error(`error: ${error.name}`);
         }
     }
 }
