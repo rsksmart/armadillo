@@ -3,7 +3,8 @@ import { ForkDetectionData } from "./fork-detection-data";
 export class BtcBlock {
     public btcInfo: BtcHeaderInfo;
     public rskTag: ForkDetectionData;
-    constructor(_height: number, _hash: string, _rskTag: string) {
+
+    constructor(_height: number, _hash: string, _prevHash: string, _rskTag: string) {
         this.btcInfo = new BtcHeaderInfo(_height, _hash);
 
         if (_rskTag && _rskTag.length > 0) {
@@ -13,10 +14,10 @@ export class BtcBlock {
 }
 
 export class BtcHeaderInfo {
-    public height: number;
-    public hash: string;
+    public height?: number;
+    public hash?: string;
 
-    constructor(_height: number, _hash: string) {
+    constructor(_height?: number, _hash?: string) {
         this.height = _height;
         this.hash = _hash;
     }

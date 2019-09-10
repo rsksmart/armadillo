@@ -42,6 +42,7 @@ export class BtcWatcher extends EventEmitter {
             if (!lastBlock || lastBlock.btcInfo.hash == plainBlock.header.previousHash) {
                 const newBlock: BtcBlock = new BtcBlock(plainBlock.header.height,
                                                         plainBlock.header.hash,
+                                                        plainBlock.header.previousHash,
                                                         plainBlock.rskTag)
 
                 this.saveBest(newBlock);

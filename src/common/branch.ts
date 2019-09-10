@@ -1,25 +1,29 @@
 import { ForkDetectionData } from "./fork-detection-data";
 import { BtcHeaderInfo } from "./btc-block";
+import { RskBlock } from "./rsk-block";
 
 export class Branch {
     public firstDetected: ForkDetectionData; //rsk item when fork started
     public lastDetectedHeight: number;
     private items: BranchItem[];
+    private isMainChain: boolean;
 
-    constructor(branchItems: BranchItem | BranchItem[]) {
+    constructor(branchItems: BranchItem | BranchItem[], isMainchain: boolean = false) {
         if (branchItems instanceof BranchItem) {
             this.items = [];
-            this.firstDetected = branchItems.forkDetectionData;
+            this.firstDetected = branchItems.rskInfo.forkDetectionData;
             this.pushTop(branchItems);
         } else {
             if (branchItems.length > 0) {
                 this.items = branchItems;
-                this.firstDetected = branchItems[0].forkDetectionData;
-                this.lastDetectedHeight = branchItems[branchItems.length - 1].forkDetectionData.BN;
+                this.firstDetected = branchItems[0].rskInfo.forkDetectionData;
+                this.lastDetectedHeight = branchItems[branchItems.length - 1].rskInfo.forkDetectionData.BN;
             } else {
                 throw "branchItems should have at least one item"
             }
         }
+
+        this.isMainChain = isMainchain;
     }
 
     static fromObject(branch: any): Branch {
@@ -27,7 +31,7 @@ export class Branch {
 
         branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
-        return new Branch(items);
+        return new Branch(items, branch.isMainChain);
     }
 
     public getTop(): BranchItem {
@@ -35,7 +39,7 @@ export class Branch {
     }
 
     public pushTop(branch: BranchItem) {
-        this.lastDetectedHeight = branch.forkDetectionData.BN;
+        this.lastDetectedHeight = branch.rskInfo.forkDetectionData.BN;
 
         this.items.push(branch);
     }
@@ -59,14 +63,14 @@ export class Branch {
 
 export class BranchItem {
     public btcInfo: BtcHeaderInfo;
-    public forkDetectionData: ForkDetectionData
+    public rskInfo: RskBlock;
 
-    constructor(btcInfo: BtcHeaderInfo, forkDetectionData: ForkDetectionData) {
+    constructor(btcInfo: BtcHeaderInfo, rskBlock: RskBlock) {
         this.btcInfo = btcInfo;
-        this.forkDetectionData = forkDetectionData;
+        this.rskInfo = rskBlock
     }
 
     static fromObject(branchItem: any): BranchItem {
-        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), new ForkDetectionData(branchItem.forkDetectionData));
+        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), RskBlock.fromObject(branchItem.rskInfo));
     }
 }
