@@ -2,10 +2,15 @@ import { MongoStore } from "../storage/mongo-store";
 import { Branch, BranchItem } from "../common/branch";
 
 export class BranchService {
+    
     private store: MongoStore;
 
     constructor(store: MongoStore) {
         this.store = store;
+    }
+
+    public getMainnetBranch(): PromiseLike<Branch> {
+        return this.store.getCollection().findOne({"isMainChain": true});
     }
 
     public connect(): Promise<void> {
