@@ -7,16 +7,20 @@
         "port": 4444
     },
     "btcApi": {
-        "host": "34.67.238.129",
+        "host": "localhost",
         "port": 5000
     },
     "store": {
         "port": "27017",
         "host": "localhost",
         "databaseName": "armadillo",
-        "collectionName": "tags"
+        "collections": {
+            "branches": "branches",
+            "mainchain": "mainchain"
+        }
+       
     },
     "forkApi": {
-        "port": "5000"
+        "port": "6000"
     }
 }

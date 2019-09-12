@@ -6,6 +6,7 @@ import { Branch, BranchItem } from "../common/branch";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { RskApi } from "./rsk-api-service";
 import { getLogger, Logger } from "log4js";
+import { MainchainService } from "./mainchain-service";
 
 export class ForkDetector {
 
@@ -14,26 +15,32 @@ export class ForkDetector {
     private rskApiService: RskApi;
     private btcWatcher: BtcWatcher;
     private lastBlockChecked: BtcBlock;
-    private maxBlocksBackwardsToSearch : number = 448;
-    private minimunOverlapCPV : number = 3;
+    private maxBlocksBackwardsToSearch: number = 448;
+    private minimunOverlapCPV: number = 3;
+    private mainchainService: MainchainService;
 
-    constructor(branchService: BranchService, btcWatcher: BtcWatcher, rskApiService: RskApi) {
+    constructor(branchService: BranchService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApi) {
         this.branchService = branchService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
+        this.mainchainService = mainchainService
         this.logger = getLogger('fork-detector');
 
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
 
     public async onNewBlock(newBlock: BtcBlock) {
-        if(this.lastBlockChecked && newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height){
-            //Nothing to do, already check previous blocks
+
+        if (this.lastBlockChecked && newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height) {
+            //Nothing to do, already check previous BTC blocks
+            // Is sure that we have to check if is same height or may happened a reorg 
+            // in btc that is pushing the same btc block height with different hash and we are missing the mainchain.
+            this.logger.warn("Some BTC block recieved hash:", newBlock.btcInfo.hash, "height:", newBlock.btcInfo.height);
             return;
         }
 
         if (!this.lastBlockChecked || this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
-            
+
             this.lastBlockChecked = newBlock;
 
             if (newBlock.rskTag == null) {
@@ -45,7 +52,7 @@ export class ForkDetector {
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
 
 
-            if(blocks.length == 0){
+            if (blocks.length == 0) {
                 //What should we do here? 
                 //if blocks are empty, could means that there are not height at that BN.
                 //maybe we have to check best block and compare the height to be sure if tag is well form
@@ -54,57 +61,78 @@ export class ForkDetector {
                 return;
             }
 
-            let rskBLockThatMatch : RskBlock = this.getBlockMatchWithRskTag(blocks, rskTag);
-            let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
+            let rskBLockThatMatch: RskBlock = this.getBlockMatchWithRskTag(blocks, rskTag);
+            // let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
-            if (!tagIsInblock) {
-                this.logger.info('RSKTAG', newBlock.rskTag.toString(),' found in block', newBlock.btcInfo.hash, 'not present in any RSK block at height', newBlock.rskTag.BN);
+            if (!rskBLockThatMatch) {
+                this.logger.info('RSKTAG', newBlock.rskTag.toString(), ' found in block', newBlock.btcInfo.hash, 'not present in any RSK block at height', newBlock.rskTag.BN);
                 this.addOrCreateInTemporalLine(rskBLockThatMatch, newBlock.btcInfo);
             } else {
                 //reconstruimos la cadena
                 this.addInMainchain(newBlock, rskBLockThatMatch);
 
-                this.logger.info('RSKTAG', newBlock.rskTag.toString(),' found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
+                this.logger.info('RSKTAG', newBlock.rskTag.toString(), ' found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
             }
         }
     }
-    
-    public async addInMainchain(block: BtcBlock, rskBlock : RskBlock): Promise<void> {
-        let mainnet : Branch = await this.branchService.getMainnetBranch();
 
-        let newItemInMainnet = new BranchItem(BtcHeaderInfo.fromObject(block), rskBlock);
+    public async addInMainchain(btcBlock: BtcBlock, rskBlock: RskBlock): Promise<void> {
+        let newItemInMainchain = new BranchItem(BtcHeaderInfo.fromObject(btcBlock), rskBlock);
+        let mainchain: BranchItem[] = await this.mainchainService.getLastItems(1);
 
-        if(mainnet == null){
+        if (mainchain.length == 0) {
             // there is no mainnet yet, we create it now.
 
-            let newMainnet = new Branch(newItemInMainnet, true);
+            let newMainnet = new Branch(newItemInMainchain, true);
 
             this.branchService.saveNewBranch(newMainnet);
 
             return;
         }
 
-        // search last tag find   
-        let prevTagFind = mainnet.getTop();
+        // search last block in mainchain   
+        let prevBlockFind = mainchain[0];
 
-        let lastRskBNInMainnetbranch = prevTagFind.rskInfo.forkDetectionData.BN;
+        let lastRskBNInMainnetbranch = prevBlockFind.rskInfo.forkDetectionData.BN;
 
-        //rebuilding the chain between last tag find and the new tag, to have the complete mainchain
+        //rebuilding the chain between last tag find up to the new tag, to have the complete mainchain
+        let rskHashToFind = newItemInMainchain.rskInfo.hash;
 
-        for(let i = lastRskBNInMainnetbranch + 1; i < newItemInMainnet.rskInfo.forkDetectionData.BN ; i++){
-            let blocksAtHeghti : RskBlock[] =  await this.rskApiService.getBlocksByNumber(i);
-            for(let j= 0; j < blocksAtHeghti.length; j++){
-                let rskBlock: RskBlock = blocksAtHeghti[j];
-                if(rskBlock.prevHash == newItemInMainnet.btcInfo.hash){
-                    //here we also can check that cpv overlap no less than 6 bytes (IMPORTANT)
-                    mainnet.pushTop(new BranchItem(new BtcHeaderInfo(), rskBlock));
+        for (let i = lastRskBNInMainnetbranch + 1; i < newItemInMainchain.rskInfo.forkDetectionData.BN; i++) {
+            let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(i);
 
-                }
-                
+            var blockThatShouldBeInMainchain: RskBlock = this.getBlockThatMatch(blocks, rskHashToFind);
+
+            if (!blockThatShouldBeInMainchain) {
+                this.logger.fatal("Mainchain: building mainchain can not find a block in rsk at heigth", i, "with hash", rskHashToFind)
+                process.exit();
+            }
+
+            rskHashToFind = blockThatShouldBeInMainchain.hash;
+
+            this.mainchainService.saveMainchainItem(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), blockThatShouldBeInMainchain));
+        }
+
+        const hashTopInMainchain = prevBlockFind.rskInfo.prevHash;
+
+        if (hashTopInMainchain != rskBlock.hash) {
+            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain", hashTopInMainchain, "block should connect chain", rskHashToFind)
+            process.exit();
+        }
+
+        this.mainchainService.saveMainchainItem(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), rskBlock));
+    }
+
+    private getBlockThatMatch(blocksAtHeghti: RskBlock[], rskHash: string): RskBlock {
+        for (let j = 0; j < blocksAtHeghti.length; j++) {
+            let rskBlock: RskBlock = blocksAtHeghti[j];
+            if (rskBlock.prevHash == rskHash) {
+                //here we also can check that cpv overlap no less than 6 bytes (IMPORTANT)
+                return rskBlock;
             }
         }
 
-        mainnet.pushTop(new BranchItem(BtcHeaderInfo.fromObject(block), rskBlock));
+        return null;
     }
 
     public stop() {
@@ -145,11 +173,11 @@ export class ForkDetector {
         return this.branchService.getForksDetected(minimunHeightToSearch);
     }
 
-    public async getBranchesThatOverlap(rskTag: ForkDetectionData) : Promise<Branch[]> {
-        let branchesThatOverlap : Branch[] = []
+    public async getBranchesThatOverlap(rskTag: ForkDetectionData): Promise<Branch[]> {
+        let branchesThatOverlap: Branch[] = []
         // Hay que renombrar mejor
         let lastTopsDetected: Branch[] = await this.getPossibleForks(rskTag.BN);
-        
+
         for (const branch of lastTopsDetected) {
             if (branch.getLast().rskInfo.forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
                 branchesThatOverlap.push(branch);

@@ -9,10 +9,6 @@ export class BranchService {
         this.store = store;
     }
 
-    public getMainnetBranch(): PromiseLike<Branch> {
-        return this.store.getCollection().findOne({"isMainChain": true});
-    }
-
     public connect(): Promise<void> {
         return this.store.connect();
     }
