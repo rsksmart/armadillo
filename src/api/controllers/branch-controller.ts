@@ -11,13 +11,24 @@ export default class BranchController {
     // this.service.createIndex({ "header.height": 1 }, { unique: false });
   }
 
-  public async getAllBranches(req: any, res: any): Promise<any> {
+  public async getLastBlocksMainchain(req: any, res: any): Promise<any> {
     var branches : Branch[] =  await this.service.getAll();
 
     return res.status(200).send({
       success: 'true',
       message: 'get alls branchs',
       branches: branches,
+    });
+  }
+
+  public async getLastBlocksMainchain(req: any, res: any): Promise<any> {
+    const n: number = parseInt(req.params.x);
+    var coinbases: any[] = await this.service.getLastCoinbases(n);
+
+    return res.status(200).send({
+      success: 'true',
+      message: `get last ${coinbases.length}/${req.params.x} coinbases`,
+      coinbases: coinbases,
     });
   }
 

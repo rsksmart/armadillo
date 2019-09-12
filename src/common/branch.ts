@@ -6,7 +6,6 @@ export class Branch {
     public firstDetected: ForkDetectionData; //rsk item when fork started
     public lastDetectedHeight: number;
     private items: BranchItem[];
-    private isMainChain: boolean;
 
     constructor(branchItems: BranchItem | BranchItem[], isMainchain: boolean = false) {
         if (branchItems instanceof BranchItem) {
@@ -22,8 +21,6 @@ export class Branch {
                 throw "branchItems should have at least one item"
             }
         }
-
-        this.isMainChain = isMainchain;
     }
 
     static fromObject(branch: any): Branch {
