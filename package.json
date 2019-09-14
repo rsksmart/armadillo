@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node ./src/monitor-runner.ts",
     "start-api": "ts-node ./src/api-runner.ts",
     "start-monitor": "ts-node ./src/monitor-runner.ts",
     "lint": "tslint -t stylish -c tslint.json 'src/**/*.ts' & tslint -t stylish -c tslint.json 'test/**/*.ts'",

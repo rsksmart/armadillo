@@ -1,12 +1,12 @@
 import { RskBlock } from "../common/rsk-block";
 import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
-import { BranchService } from "./branch-service";
 import { Branch, BranchItem } from "../common/branch";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { RskApi } from "./rsk-api-service";
 import { getLogger, Logger } from "log4js";
 import { MainchainService } from "./mainchain-service";
+import { BranchService } from "./branch-service";
 
 export class ForkDetector {
 
@@ -49,9 +49,8 @@ export class ForkDetector {
             }
 
             let rskTag: ForkDetectionData = newBlock.rskTag;
+            
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
-
-
             if (blocks.length == 0) {
                 //What should we do here? 
                 //if blocks are empty, could means that there are not height at that BN.
@@ -65,13 +64,13 @@ export class ForkDetector {
             // let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
 
             if (!rskBLockThatMatch) {
-                this.logger.info('RSKTAG', newBlock.rskTag.toString(), ' found in block', newBlock.btcInfo.hash, 'not present in any RSK block at height', newBlock.rskTag.BN);
-                this.addOrCreateInTemporalLine(rskBLockThatMatch, newBlock.btcInfo);
+                this.logger.info('RSKTAG', newBlock.rskTag.toString(), 'found in block', newBlock.btcInfo.hash, 'not present in any RSK block at height', newBlock.rskTag.BN);
+                this.addOrCreateBranch(rskBLockThatMatch, newBlock.btcInfo);
             } else {
                 //reconstruimos la cadena
                 this.addInMainchain(newBlock, rskBLockThatMatch);
 
-                this.logger.info('RSKTAG', newBlock.rskTag.toString(), ' found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
+                this.logger.info('RSKTAG', newBlock.rskTag.toString(), 'found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
             }
         }
     }
@@ -83,49 +82,51 @@ export class ForkDetector {
         if (mainchain.length == 0) {
             // there is no mainnet yet, we create it now.
 
-            let newMainnet = new Branch(newItemInMainchain, true);
+            let newMainnet = new BranchItem(btcBlock.btcInfo, rskBlock);
 
-            this.branchService.saveNewBranch(newMainnet);
+            this.mainchainService.save([newMainnet]);
+
+            this.logger.info("Mainchain: Created the first item in mainchain");
 
             return;
         }
 
         // search last block in mainchain   
-        let prevBlockFind = mainchain[0];
-
-        let lastRskBNInMainnetbranch = prevBlockFind.rskInfo.forkDetectionData.BN;
+        let lastBLockInMainchain = mainchain[0].rskInfo;
+        let lastRskBNInMainchainbranch = lastBLockInMainchain.forkDetectionData.BN;
 
         //rebuilding the chain between last tag find up to the new tag, to have the complete mainchain
-        let rskHashToFind = newItemInMainchain.rskInfo.hash;
-
-        for (let i = lastRskBNInMainnetbranch + 1; i < newItemInMainchain.rskInfo.forkDetectionData.BN; i++) {
+        let rskHashToFind = lastBLockInMainchain.hash;
+        let itemsToSaveInMainchain: BranchItem[] = [];
+        for (let i = lastRskBNInMainchainbranch + 1; i < newItemInMainchain.rskInfo.forkDetectionData.BN; i++) {
             let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(i);
-
             var blockThatShouldBeInMainchain: RskBlock = this.getBlockThatMatch(blocks, rskHashToFind);
-
+            
             if (!blockThatShouldBeInMainchain) {
-                this.logger.fatal("Mainchain: building mainchain can not find a block in rsk at heigth", i, "with hash", rskHashToFind)
-                process.exit();
+                this.logger.fatal("Mainchain: building mainchain can not find a block in rsk at heigth:", i, "with hash:", rskHashToFind)
+                // process.exit();
+                
             }
 
             rskHashToFind = blockThatShouldBeInMainchain.hash;
-
-            this.mainchainService.saveMainchainItem(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), blockThatShouldBeInMainchain));
+            itemsToSaveInMainchain.push(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), blockThatShouldBeInMainchain));
+        }
+        const hashTopInMainchain = lastBLockInMainchain.hash;
+       
+        if (rskHashToFind != rskBlock.prevHash) {
+            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain with hash:", hashTopInMainchain, " should connect with prevHash:", rskHashToFind)
+            // process.exit(); // Should we finish the process ? 
+            return
         }
 
-        const hashTopInMainchain = prevBlockFind.rskInfo.prevHash;
-
-        if (hashTopInMainchain != rskBlock.hash) {
-            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain", hashTopInMainchain, "block should connect chain", rskHashToFind)
-            process.exit();
-        }
-
-        this.mainchainService.saveMainchainItem(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), rskBlock));
+        itemsToSaveInMainchain.push(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), rskBlock));
+        this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height) )
+        this.mainchainService.save(itemsToSaveInMainchain);
     }
 
-    private getBlockThatMatch(blocksAtHeghti: RskBlock[], rskHash: string): RskBlock {
-        for (let j = 0; j < blocksAtHeghti.length; j++) {
-            let rskBlock: RskBlock = blocksAtHeghti[j];
+    private getBlockThatMatch(blocks: RskBlock[], rskHash: string): RskBlock {
+        for (let j = 0; j < blocks.length; j++) {
+            let rskBlock: RskBlock = blocks[j];
             if (rskBlock.prevHash == rskHash) {
                 //here we also can check that cpv overlap no less than 6 bytes (IMPORTANT)
                 return rskBlock;
@@ -152,10 +153,6 @@ export class ForkDetector {
         return blocks.find(b => b.forkDetectionData.equals(rskTag));
     }
 
-    private rskTagIsInSomeBlock(blocks: RskBlock[], rskTag: ForkDetectionData): boolean {
-        return blocks.findIndex(b => b.forkDetectionData.equals(rskTag)) != -1;
-    }
-
     private getHeightforPossibleBranches(numberBlock: number): number {
         if (numberBlock > this.maxBlocksBackwardsToSearch) {
             return numberBlock - this.maxBlocksBackwardsToSearch;
@@ -164,8 +161,8 @@ export class ForkDetector {
         }
     }
 
-    private async getPossibleForks(blockNumber: number): Promise<Branch[]> {
-        //No necesitamos los branches si no los ultimos "nodos" que se agregaron
+    private async getPossibleForks(blockNumber: number): Promise<Branch[]>{
+        //No necesitamos los branches si no los ultimos "nodos" que se agregaron de cada branch
         let minimunHeightToSearch = this.getHeightforPossibleBranches(blockNumber);
 
         //connect to the database to get possible branches forks , 
@@ -187,8 +184,8 @@ export class ForkDetector {
         return branchesThatOverlap;
     }
 
-    private async addOrCreateInTemporalLine(rskBlock: RskBlock, btcInfo: BtcHeaderInfo) {
-        let branchToSave: Branch;
+    private async addOrCreateBranch(rskBlock: RskBlock, btcInfo: BtcHeaderInfo) {
+        let item: BranchItem = new BranchItem(btcInfo, rskBlock);
         const branches: Branch[] = await this.getBranchesThatOverlap(rskBlock.forkDetectionData);
 
         if (branches.length > 0) {
@@ -200,9 +197,7 @@ export class ForkDetector {
             this.branchService.addBranchItem(existingBranch.firstDetected.prefixHash, new BranchItem(btcInfo, rskBlock));
         } else {
             this.logger.info('Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcInfo.hash);
-
-            branchToSave = new Branch(new BranchItem(btcInfo, rskBlock));
-            this.branchService.saveNewBranch(branchToSave);
+            this.branchService.saveNewBranch(new Branch(item));
         }
     }
 }

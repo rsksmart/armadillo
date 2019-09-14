@@ -1,11 +1,10 @@
 import { MongoStore } from "../storage/mongo-store";
-import { Branch, BranchItem } from "../common/branch";
+import { BranchItem } from "../common/branch";
+import BaseService from "./base-service";
 
-export class MainchainService {
-    private store: MongoStore;
-
+export class MainchainService  extends BaseService {
     constructor(store: MongoStore) {
-        this.store = store;
+       super(store);
     }
 
     public connect(): Promise<void> {
@@ -17,10 +16,27 @@ export class MainchainService {
     }
 
     public getLastItems(numberOfItems): Promise<BranchItem[]> {
-        return this.store.getCollection().find().sort({ "rskInfo.height" : -1 }).limit(numberOfItems).toArray();
+        return this.store.getCollection().find().sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
     }
 
-    public saveMainchainItem(branch: BranchItem): void {
-       this.store.getCollection().insertOne(branch);
+    public async save(items: BranchItem[]): Promise<boolean> {
+        var response = true;
+
+        await this.store.getCollection().insertMany(items).catch(function(){
+            response = false;
+        });
+
+        return response;
+    }
+    
+    public async removeLastBlocks(n: number) : Promise<string[]> {
+        const removeIdsArray: any[] = await this.store.getCollection().find()
+        .limit(n)
+        .sort({ "rskInfo.height" : -1 })
+        .toArray().then(list => list.map(function (doc) { return doc._id; }));
+
+        await this.store.getCollection().deleteMany({ _id: { $in: removeIdsArray }})
+
+        return removeIdsArray;
     }
 }

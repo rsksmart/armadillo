@@ -1,7 +1,6 @@
 import { RskApiConfig } from "../config/rsk-api-config";
 import { RskBlock } from "../common/rsk-block";
 import Nod3 from 'nod3';
-import { ForkDetectionData } from "../common/fork-detection-data";
 
 export interface RskApi {
     getBlocksByNumber(height: number) : Promise<RskBlock[]>;
@@ -21,7 +20,7 @@ export class RskApiService implements RskApi {
         );
     }
 
-    async getBlocksByNumber(height: number): Promise<RskBlock[]> {
+    public async getBlocksByNumber(height: number): Promise<RskBlock[]> {
 
         var blocksInfo : any[] = await this.nod3.rsk.getBlocksByNumber(height);
         var blocks : RskBlock[] = [];

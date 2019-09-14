@@ -7,7 +7,7 @@ export class Branch {
     public lastDetectedHeight: number;
     private items: BranchItem[];
 
-    constructor(branchItems: BranchItem | BranchItem[], isMainchain: boolean = false) {
+    constructor(branchItems: BranchItem | BranchItem[]) {
         if (branchItems instanceof BranchItem) {
             this.items = [];
             this.firstDetected = branchItems.rskInfo.forkDetectionData;
@@ -28,7 +28,7 @@ export class Branch {
 
         branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
-        return new Branch(items, branch.isMainChain);
+        return new Branch(items);
     }
 
     public getTop(): BranchItem {

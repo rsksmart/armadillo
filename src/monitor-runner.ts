@@ -1,12 +1,12 @@
 import { MainConfig } from './config/main-config';
 import { MongoStore } from "./storage/mongo-store";
 import { getLogger } from 'log4js';
-import { BranchService } from './services/branch-service';
 import { MainchainService } from './services/mainchain-service';
 import { BtcWatcher } from './services/btc-watcher';
 import { RskApi, RskApiService } from './services/rsk-api-service';
 import { ForkDetector } from './services/fork-detector';
 import { HttpBtcApi } from './services/btc-api';
+import { BranchService } from './services/branch-service';
 
 class MonitorRunner {
     private DEFAULT_CONFIG_PATH = './config.json';
@@ -14,7 +14,7 @@ class MonitorRunner {
     private branchService: BranchService;
     private mainchainService: MainchainService;
     private btcWatcher: BtcWatcher;
-    private rskApiService: RskApi;
+    private rskApiService: RskApiService;
     private logger;
     private forkDetector: ForkDetector;
 
