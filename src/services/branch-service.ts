@@ -1,12 +1,12 @@
+
+
 import { MongoStore } from "../storage/mongo-store";
 import { Branch, BranchItem } from "../common/branch";
+import BaseService from "./base-service";
 
-export class BranchService {
-    
-    private store: MongoStore;
-
+export class BranchService extends BaseService {
     constructor(store: MongoStore) {
-        this.store = store;
+        super(store);
     }
 
     public connect(): Promise<void> {
@@ -18,13 +18,11 @@ export class BranchService {
     }
 
     public saveNewBranch(branch: Branch): void {
-       this.store.getCollection().insertOne(branch);
+        this.store.getCollection().insertOne(branch);
     }
 
     public async addBranchItem(prefixHash: string, branchItem: BranchItem): Promise<void> {
-        await this.store.getCollection().updateOne(
-            { 'firstDetected.prefixHash': prefixHash },
-            { $push: { 'items': branchItem} });
+        await this.store.getCollection().updateOne({ 'firstDetected.prefixHash': prefixHash }, { $push: { 'items': branchItem } });
     }
 
     public async getForksDetected(minimunHeightToSearch: number = 0): Promise<Branch[]> {
@@ -33,21 +31,18 @@ export class BranchService {
                 $gte: minimunHeightToSearch,
             }
         }).toArray();
-
         return branches.map(x => Branch.fromObject(x));
     }
 
     //FOR TESTING
-
     public async getAll(): Promise<Branch[]> {
         const branches: any[] = await this.store.getCollection().find().toArray();
         return branches.map(x => Branch.fromObject(x));
     }
-
+    
     public async removeAll(): Promise<void> {
-
-        return  this.store.getCollection().drop()
-        .catch(function() {
-        });
+        return this.store.getCollection().drop()
+            .catch(function () {
+            });
     }
 }

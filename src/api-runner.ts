@@ -7,9 +7,12 @@ import { MongoStore } from "./storage/mongo-store";
 const DEFAULT_CONFIG_PATH = './config.json';
 const mainConfig = MainConfig.getMainConfig(DEFAULT_CONFIG_PATH);
 const branches : MongoStore = new MongoStore(mainConfig.store.branches);
+const mainchain : MongoStore = new MongoStore(mainConfig.store.mainchain);
 
 branches.connect().then(function(){
-    starBtcApi();
+    mainchain.connect().then(function(){
+        starBtcApi();
+    });
 });
 
 function starBtcApi(){
@@ -20,7 +23,7 @@ function starBtcApi(){
     app.use(bodyParser.urlencoded({ extended: false }));
     //added a middleware 
     
-    const routers = routersConfig(branches, mainConfig.forkApi);
+    const routers = routersConfig(branches, mainchain, mainConfig.forkApi);
     app.use(routers);
     
     var apiServer = app.listen(mainConfig.forkApi.PORT, () => {

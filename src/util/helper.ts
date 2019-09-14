@@ -20,7 +20,6 @@ export const toHex = (val, inByte : number) => {
 
     if(hex.length < (inByte * 2)){
         var left = (inByte * 2) - hex.length;
-        console.log(left)
         for(var i = 0; i < left; i++){
             hex = '0' + hex;
         }
