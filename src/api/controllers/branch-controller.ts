@@ -10,16 +10,16 @@ export default class BranchController {
     // this.service.createIndex({ "header.height": 1 }, { unique: false });
   }
 
-  // public async getLastBlocksMainchain(req: any, res: any): Promise<any> {
-  //   const n: number = parseInt(req.params.n);
-  //   var coinbases: any[] = await this.service.getLastItems(n);
+  public async getForksDetected(req: any, res: any): Promise<any> {
+    const n: number = parseInt(req.params.n);
+    var forks: any[] = await this.service.getForksDetected(n);
 
-  //   return res.status(200).send({
-  //     success: 'true',
-  //     message: `get last ${coinbases.length}/${req.params.x} coinbases`,
-  //     coinbases: coinbases,
-  //   });
-  // }
+    return res.status(200).send({
+      success: 'true',
+      message: `get last forks detected in the last ${n} blocks`,
+      forks: forks,
+    });
+  }
 
   //It should return last branch detected
   // public async getLastBranche(req: any, res: any): Promise<any> {

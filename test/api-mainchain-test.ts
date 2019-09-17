@@ -8,6 +8,7 @@ import { MainchainService } from "../src/services/mainchain-service";
 import { RskBlock } from "../src/common/rsk-block";
 import { MainchainController } from "../src/api/controllers/mainchain-controller";
 import { BranchService } from "../src/services/branch-service";
+import { BranchItem } from "../src/common/branch";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
@@ -17,7 +18,6 @@ const RSKTAG = PREFIX + CPV + NU + BN;
 const btcInfo = new BtcHeaderInfo(0, "");
 const mainConfig = MainConfig.getMainConfig('./config.json');
 const mongoStore = new MongoStore(mainConfig.store.branches);
-const branchService = new BranchService(mongoStore);
 const mainchainService = new MainchainService(mongoStore);
 const mockRes = { "status": () => { return { "send": (y: any) => { return y } } } };
 
