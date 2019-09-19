@@ -109,7 +109,7 @@ export class ForkDetector {
             }
 
             rskHashToFind = blockThatShouldBeInMainchain.hash;
-            itemsToSaveInMainchain.push(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), blockThatShouldBeInMainchain));
+            itemsToSaveInMainchain.push(new BranchItem(new BtcHeaderInfo(null, null), blockThatShouldBeInMainchain));
         }
         const hashTopInMainchain = lastBLockInMainchain.hash;
        
@@ -119,7 +119,7 @@ export class ForkDetector {
             return
         }
 
-        itemsToSaveInMainchain.push(new BranchItem(BtcHeaderInfo.fromObject(btcBlock), rskBlock));
+        itemsToSaveInMainchain.push(new BranchItem(btcBlock.btcInfo, rskBlock));
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height) )
         this.mainchainService.save(itemsToSaveInMainchain);
     }
@@ -197,7 +197,7 @@ export class ForkDetector {
             this.branchService.addBranchItem(existingBranch.firstDetected.prefixHash, new BranchItem(btcInfo, rskBlock));
         } else {
             this.logger.info('Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcInfo.hash);
-            this.branchService.saveNewBranch(new Branch(item));
+            this.branchService.save(new Branch(item));
         }
     }
 }
