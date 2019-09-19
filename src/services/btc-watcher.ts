@@ -60,7 +60,7 @@ export class BtcWatcher extends EventEmitter {
     }
 
     private saveBest(block: BtcBlock) {
-        this.logger.info('New block:', block)
+        this.logger.info('New BTC block with hash:', block.btcInfo.hash, "and Height:", block.btcInfo.height)
 
         this.blocks.push(block);
 

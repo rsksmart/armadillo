@@ -10,7 +10,7 @@ export class BLockchainController {
     this.branchService = branchService;
   }
 
-  public async getLastBlocks(req: any, res: any): Promise<any> {
+  public async getLastBlochains(req: any, res: any): Promise<any> {
     let n: number = parseInt(req.params.n);
     var blockchains = { mainchain : [], forks: []};
 
@@ -19,7 +19,8 @@ export class BLockchainController {
     }
     
     blockchains.mainchain = await this.mainchainService.getLastItems(n);
-    blockchains.forks = await this.branchService.getForksDetected(n);
+
+    blockchains.forks = await this.branchService.getForksDetected(blockchains.mainchain.length -1);
 
     return res.status(200).send({
       success: 'true',

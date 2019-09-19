@@ -22,7 +22,7 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         router.get('/mainchain/getLastBlocks/:n', mainchainController.getLastBlocks.bind(mainchainController));
 
         //Blockchain routers
-        router.get('/blockchains/:n', blockchainsController.getLastBlocks.bind(blockchainsController));
+        router.get('/blockchains/:n', blockchainsController.getLastBlochains.bind(blockchainsController));
 
         return router;
 }
