@@ -15,14 +15,17 @@ export class MainchainService  extends BaseService {
         this.store.disconnect();
     }
 
-    public getLastItems(numberOfItems): Promise<BranchItem[]> {
-        return this.store.getCollection().find().sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
+    public async getLastItems(numberOfItems): Promise<BranchItem[]> {
+        
+        let ret = await this.store.getCollection().find().sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
+
+        return ret;
     }
 
     public async save(items: BranchItem[]): Promise<boolean> {
         var response = true;
 
-        await this.store.getCollection().insertMany(items).catch(function(){
+        await this.store.getCollection().insertMany(items).catch(function(ex){
             response = false;
         });
 
@@ -34,9 +37,13 @@ export class MainchainService  extends BaseService {
         .limit(n)
         .sort({ "rskInfo.height" : -1 })
         .toArray().then(list => list.map(function (doc) { return doc._id; }));
-
+    
         await this.store.getCollection().deleteMany({ _id: { $in: removeIdsArray }})
-
+       
         return removeIdsArray;
+    }
+
+    public async getAll() : Promise<BranchItem[]>{
+        return this.store.getCollection().find({}).toArray()
     }
 }

@@ -7,7 +7,6 @@ import { MongoStore } from "../../src/storage/mongo-store";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskBlock } from "../../src/common/rsk-block";
 import { MainchainController } from "../../src/api/controllers/mainchain-controller";
-import { BranchService } from "../../src/services/branch-service";
 import { BranchItem } from "../../src/common/branch";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
@@ -17,7 +16,7 @@ const BN = "000004c9"; // 1225
 const RSKTAG = PREFIX + CPV + NU + BN;
 const btcInfo = new BtcHeaderInfo(0, "");
 const mainConfig = MainConfig.getMainConfig('./config.json');
-const mongoStore = new MongoStore(mainConfig.store.branches);
+const mongoStore = new MongoStore(mainConfig.store.mainchain);
 const mainchainService = new MainchainService(mongoStore);
 const mockRes = { "status": () => { return { "send": (y: any) => { return y } } } };
 
@@ -28,7 +27,11 @@ describe("Mainchain api tests", () => {
     await mainchainService.removeLastBlocks(100);
   });
 
-  it("check save method", async () => {
+  after(async function () {
+    await mainchainService.disconnect();
+  });
+
+  it("check save method and getLastBlocks", async () => {
 
     let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", new ForkDetectionData(RSKTAG)));
 
@@ -40,11 +43,11 @@ describe("Mainchain api tests", () => {
 
     expect(data.blocks.length).to.equal(1);
 
-    let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(RSKTAG)));
-    let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(RSKTAG)));
-    let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", new ForkDetectionData(RSKTAG)));
-    let branchItem5 = new BranchItem(btcInfo, new RskBlock(5, "hash", "prevHash", new ForkDetectionData(RSKTAG)));
-
+    let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
+    let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
+    let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
+    let branchItem5 = new BranchItem(btcInfo, new RskBlock(5, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
+    
     let blocks = [branchItem2, branchItem5, branchItem3, branchItem4];
     await mainchainService.save(blocks);
     data = await mainchainController.getLastBlocks(param, mockRes);

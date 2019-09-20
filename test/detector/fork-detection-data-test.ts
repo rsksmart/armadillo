@@ -1,13 +1,13 @@
 import "mocha";
-import { BtcHeaderInfo } from "../src/common/btc-block";
-import { BtcWatcher } from "../src/services/btc-watcher";
-import { Branch, BranchItem } from "../src/common/branch";
+import { BtcHeaderInfo } from "../../src/common/btc-block";
+import { BtcWatcher } from "../../src/services/btc-watcher";
+import { Branch, BranchItem } from "../../src/common/branch";
 import { expect } from "chai";
-import { ForkDetector } from "../src/services/fork-detector";
-import { ForkDetectionData } from "../src/common/fork-detection-data";
+import { ForkDetector } from "../../src/services/fork-detector";
+import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { stubObject } from "ts-sinon";
 import sinon from "sinon";
-import { RskBlock } from "../src/common/rsk-block";
+import { RskBlock } from "../../src/common/rsk-block";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]

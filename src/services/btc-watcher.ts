@@ -1,4 +1,3 @@
-import { BtcApiConfig } from "../config/btc-api-config";
 import { BtcBlock } from "../common/btc-block";
 import { EventEmitter } from "events";
 import { BtcApi, PlainBtcBlock } from "./btc-api";

@@ -19,10 +19,14 @@ const branchService = new BranchService(mongoStore);
 const mockRes = { "status": () => { return { "send": (y: any) => { return y } } } };
 
 //Before you run this test you have to run a mongo instance
-describe.only("Branches api tests", () => {
+describe("Branches api tests", () => {
   beforeEach(async function () {
     await branchService.connect();
     await branchService.removeAll();
+  });
+
+  after(async function () {
+    await branchService.disconnect();
   });
 
   it("getForksDetected method", async () => {

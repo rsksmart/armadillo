@@ -3,6 +3,7 @@ import { BtcHeaderInfo } from "./btc-block";
 import { RskBlock } from "./rsk-block";
 
 export class Branch {
+   
     public firstDetected: ForkDetectionData; //rsk item when fork started
     public lastDetectedHeight: number;
     private items: BranchItem[];
@@ -29,6 +30,14 @@ export class Branch {
         branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
         return new Branch(items);
+    }
+
+    static fromObjectToListBranchItems(branche: any): BranchItem[] {
+        let items: BranchItem[] = [];
+        
+        branche.items.map(x => items.push(BranchItem.fromObject(x)));
+
+        return items;
     }
 
     public getTop(): BranchItem {
