@@ -32,5 +32,15 @@ export class MainchainController {
     });
   }
 
+  public async getAll(req: any, res: any): Promise<any> {
+    const n: number = parseInt(req.params.n);
 
+    var items = await this.service.getAll();
+    
+    return res.status(200).send({
+      success: 'true',
+      message: `get all`,
+      items: items
+    });
+  }
 }

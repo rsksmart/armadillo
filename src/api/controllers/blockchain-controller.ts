@@ -1,5 +1,6 @@
 import { MainchainService } from '../../services/mainchain-service';
 import { BranchService } from '../../services/branch-service';
+import { Branch, BranchItem } from '../../common/branch';
 
 export class BLockchainController {
   private mainchainService: MainchainService;
@@ -19,12 +20,22 @@ export class BLockchainController {
     }
     
     blockchains.mainchain = await this.mainchainService.getLastItems(n);
+    
+    if( blockchains.mainchain.length == 0){
+      return res.status(200).send({
+        success: 'true',
+        message: `Get mainchain and forks in the last ${n} blocks`,
+        blockchains: [],
+      }); 
+    }
 
-    blockchains.forks = await this.branchService.getForksDetected(blockchains.mainchain.length -1);
+    let forksBranches = await this.branchService.getForksDetected(blockchains.mainchain[0].rskInfo.height - (n - 1));
+
+    blockchains.forks = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
 
     return res.status(200).send({
       success: 'true',
-      message: `get mainchain and forks found in the last ${n} blocks`,
+      message: `Get mainchain and forks in the last ${n} blocks`,
       blockchains: blockchains,
     });
   }

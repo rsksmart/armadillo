@@ -38,9 +38,8 @@ export class BranchService extends BaseService {
                 $gte: heightToSearch,
             }
         }).toArray();
-
-        //For now we don't create an object to return it
-        // let toReturn = branches.map(x => Branch.fromObject(x));
+        
+        //TODO: add into toReturn object the new item which is going to be connected to mainchain
 
         return branches;
     }
@@ -56,9 +55,4 @@ export class BranchService extends BaseService {
             .catch(function () {
             });
     }
-
-    public async removeLastForks(arg0: number) {
-        throw new Error("Method not implemented.");
-      }
-      
 }
