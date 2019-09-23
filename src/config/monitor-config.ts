@@ -5,7 +5,7 @@ import { StoreConfig } from './store-config';
 import { BtcApiConfig } from './btc-api-config';
 import { ForkApiConfig } from './fork-api-config';
 
-export class MainConfig {
+export class MonitorConfig {
     public configPath: string;
     public readonly logger: LoggerConfig;
     public readonly rskApi: RskApiConfig;
@@ -13,18 +13,18 @@ export class MainConfig {
     public readonly store: StoreConfig;
     public readonly forkApi: ForkApiConfig;
 
-    public static getMainConfig(configPath: string): MainConfig {
+    public static getMainConfig(configPath: string): MonitorConfig {
 
-        var mainConfig = MainConfig.fromObject(JSON.parse(readFileSync(configPath).toString()));
+        var mainConfig = MonitorConfig.fromObject(JSON.parse(readFileSync(configPath).toString()));
 
         mainConfig.configPath = configPath;
 
         return mainConfig;
     }
 
-    public static fromObject(config: any): MainConfig {
-        return new MainConfig(
-            LoggerConfig.fromObject(config.logger),
+    public static fromObject(config: any): MonitorConfig {
+        return new MonitorConfig(
+            LoggerConfig.fromObject(config.logger.monitor),
             RskApiConfig.fromObject(config.rskApi),
             StoreConfig.fromObject(config.store),
             BtcApiConfig.fromObject(config.btcApi),

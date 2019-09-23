@@ -2,7 +2,7 @@
     "appenders": {
         "file": {
             "type": "file",
-            "filename": "output.log"
+            "filename": "output-monitor.log"
         },
         "console": {
             "type": "console"
