@@ -1,6 +1,11 @@
 {
     "logger": {
-        "configFile": "./log-config.json"
+        "monitor":{
+            "configFile": "./log-monitor-config.json"
+        },
+        "api":{
+            "configFile": "./log-api-config.json"
+        }
     },
     "rskApi": {
         "host": "localhost",

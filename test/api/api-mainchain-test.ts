@@ -2,12 +2,12 @@ import "mocha";
 import { BtcHeaderInfo } from "../../src/common/btc-block";
 import { expect } from "chai";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
-import { MainConfig } from "../../src/config/main-config";
 import { MongoStore } from "../../src/storage/mongo-store";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskBlock } from "../../src/common/rsk-block";
 import { MainchainController } from "../../src/api/controllers/mainchain-controller";
 import { BranchItem } from "../../src/common/branch";
+import { ApiConfig } from "../../src/config/api-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
@@ -15,7 +15,7 @@ const NU = "00"; // 0
 const BN = "000004c9"; // 1225
 const RSKTAG = PREFIX + CPV + NU + BN;
 const btcInfo = new BtcHeaderInfo(0, "");
-const mainConfig = MainConfig.getMainConfig('./config.json');
+const mainConfig = ApiConfig.getMainConfig('./config.json');
 const mongoStore = new MongoStore(mainConfig.store.mainchain);
 const mainchainService = new MainchainService(mongoStore);
 const mockRes = { "status": () => { return { "send": (y: any) => { return y } } } };
