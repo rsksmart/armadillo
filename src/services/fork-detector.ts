@@ -3,23 +3,23 @@ import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { Branch, BranchItem } from "../common/branch";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
-import { RskApi } from "./rsk-api-service";
 import { getLogger, Logger } from "log4js";
 import { MainchainService } from "./mainchain-service";
 import { BranchService } from "./branch-service";
+import { RskApiService } from "./rsk-api-service";
 
 export class ForkDetector {
 
     private logger: Logger;
     private branchService: BranchService;
-    private rskApiService: RskApi;
+    private rskApiService: RskApiService;
     private btcWatcher: BtcWatcher;
     private lastBlockChecked: BtcBlock;
     private maxBlocksBackwardsToSearch: number = 448;
     private minimunOverlapCPV: number = 3;
     private mainchainService: MainchainService;
 
-    constructor(branchService: BranchService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApi) {
+    constructor(branchService: BranchService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService) {
         this.branchService = branchService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
@@ -29,29 +29,42 @@ export class ForkDetector {
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
 
-    public async onNewBlock(newBlock: BtcBlock) {
-
-        if (this.lastBlockChecked && newBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height) {
-            //Nothing to do, already check previous BTC blocks
+    public async onNewBlock(newBtcBlock: BtcBlock) {
+        
+        if (this.lastBlockChecked && newBtcBlock.btcInfo.height <= this.lastBlockChecked.btcInfo.height) {
+            // Nothing to do, already check previous BTC blocks
             // Is sure that we have to check if is same height or may happened a reorg 
             // in btc that is pushing the same btc block height with different hash and we are missing the mainchain.
-            this.logger.warn("Some BTC block recieved hash:", newBlock.btcInfo.hash, "height:", newBlock.btcInfo.height);
+            
+            this.logger.warn("BTC API: Duplicate BTC block recieved, hash:", newBtcBlock.btcInfo.hash, "height:", newBtcBlock.btcInfo.height);
             return;
         }
 
-        if (!this.lastBlockChecked || this.lastBlockChecked.btcInfo.hash != newBlock.btcInfo.hash) {
+        if (!this.lastBlockChecked || this.lastBlockChecked.btcInfo.hash != newBtcBlock.btcInfo.hash) {
 
-            this.lastBlockChecked = newBlock;
+            this.lastBlockChecked = newBtcBlock;
 
-            if (newBlock.rskTag == null) {
-                this.logger.info('Skipping block', newBlock.btcInfo.hash, '. No RSKTAG present')
+            if (newBtcBlock.rskTag == null) {
+                this.logger.info('Skipping block', newBtcBlock.btcInfo.hash, '. No RSKTAG present')
                 return;
             }
 
-            let rskTag: ForkDetectionData = newBlock.rskTag;
-            
-            let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
-            if (blocks.length == 0) {
+            let rskTag: ForkDetectionData = newBtcBlock.rskTag;
+            let rskBestBlock: RskBlock = await this.rskApiService.getBestBlock();
+
+            if(rskTag.BN > rskBestBlock.height){
+                this.logger.warn("FORK: found a block in the future");
+                // var items = [];
+                // items.push(this.getMainchainConnection(rskBlock, rskBlocksSameHeight));
+                //TODO: Missing: connect the tip of the chain where fork have started
+                
+                this.addOrCreateBranch(new RskBlock(rskTag.BN, rskTag.prefixHash, "", rskTag), newBtcBlock, rskBestBlock);
+                return;
+            }
+
+            let rskBlocksSameHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
+
+            if (rskBlocksSameHeight.length == 0) {
                 //What should we do here? 
                 //if blocks are empty, could means that there are not height at that BN.
                 //maybe we have to check best block and compare the height to be sure if tag is well form
@@ -60,18 +73,17 @@ export class ForkDetector {
                 return;
             }
 
-            let rskBLockThatMatch: RskBlock = this.getBlockMatchWithRskTag(blocks, rskTag);
-            // let tagIsInblock: boolean = this.rskTagIsInSomeBlock(blocks, rskTag);
-
+            let rskBLockThatMatch: RskBlock = this.getBlockMatchWithRskTag(rskBlocksSameHeight, rskTag);
+            
             if (!rskBLockThatMatch) {
-                this.logger.info('RSKTAG', newBlock.rskTag.toString(), 'found in block', newBlock.btcInfo.hash, 'not present in any RSK block at height', newBlock.rskTag.BN);
-                this.addOrCreateBranch(rskBLockThatMatch, newBlock.btcInfo);
+                this.addOrCreateBranch(rskBLockThatMatch, newBtcBlock, rskBlocksSameHeight[0]);
             } else {
                 //reconstruimos la cadena
-                this.addInMainchain(newBlock, rskBLockThatMatch);
+                this.addInMainchain(newBtcBlock, rskBLockThatMatch);
 
-                this.logger.info('RSKTAG', newBlock.rskTag.toString(), 'found in block', newBlock.btcInfo.hash, 'found in RSK blocks at height', newBlock.rskTag.BN);
+                this.logger.info('RSKTAG', newBtcBlock.rskTag.toString(), 'found in block', newBtcBlock.btcInfo.hash, 'found in RSK blocks at height', newBtcBlock.rskTag.BN);
             }
+        
         }
     }
 
@@ -90,7 +102,6 @@ export class ForkDetector {
 
             return;
         }
-
         // search last block in mainchain   
         let lastBLockInMainchain = mainchain[0].rskInfo;
         let lastRskBNInMainchainbranch = lastBLockInMainchain.forkDetectionData.BN;
@@ -103,9 +114,8 @@ export class ForkDetector {
             var blockThatShouldBeInMainchain: RskBlock = this.getBlockThatMatch(blocks, rskHashToFind);
             
             if (!blockThatShouldBeInMainchain) {
-                this.logger.fatal("Mainchain: building mainchain can not find a block in rsk at heigth:", i, "with hash:", rskHashToFind)
+                this.logger.fatal("Mainchain: building mainchain can not find a block in rsk at height:", i, "with hash:", rskHashToFind)
                 // process.exit();
-                
             }
 
             rskHashToFind = blockThatShouldBeInMainchain.hash;
@@ -120,7 +130,7 @@ export class ForkDetector {
         }
 
         itemsToSaveInMainchain.push(new BranchItem(btcBlock.btcInfo, rskBlock));
-        this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height) )
+        this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height))
         this.mainchainService.save(itemsToSaveInMainchain);
     }
 
@@ -184,20 +194,30 @@ export class ForkDetector {
         return branchesThatOverlap;
     }
 
-    private async addOrCreateBranch(rskBlock: RskBlock, btcInfo: BtcHeaderInfo) {
-        let item: BranchItem = new BranchItem(btcInfo, rskBlock);
-        const branches: Branch[] = await this.getBranchesThatOverlap(rskBlock.forkDetectionData);
+    private async addOrCreateBranch(rskBlock: RskBlock, btcBlock: BtcBlock, rskBlocksSameHeight: RskBlock) {
 
+        if(!rskBlock){
+            rskBlock = new RskBlock(btcBlock.rskTag.BN, btcBlock.rskTag.prefixHash, "", btcBlock.rskTag);
+        }
+
+        let item: BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);
+        let branches: Branch[] = [];
+
+        branches = await this.getBranchesThatOverlap(rskBlock.forkDetectionData);
+       
         if (branches.length > 0) {
+            // For now, we get the first branch, there is a minimun change to get 2 items that match
             const existingBranch: Branch = branches[0];
 
-            this.logger.info('Adding RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcInfo.hash, 'to branch with start', existingBranch.firstDetected.toString());
-
-            // For now, we get the first branch, there is a minimun change to get 2 items that match
-            this.branchService.addBranchItem(existingBranch.firstDetected.prefixHash, new BranchItem(btcInfo, rskBlock));
+            this.logger.warn('FORK: Adding RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash, 'to branch with start', existingBranch.getFirstDetected().toString());
+            
+            this.branchService.addBranchItem(existingBranch.getFirstDetected().prefixHash, new BranchItem(btcBlock.btcInfo, rskBlock));
         } else {
-            this.logger.info('Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcInfo.hash);
-            this.branchService.save(new Branch(item));
+            let connectionWithMainchain = await this.rskApiService.getRskBlockAtCerteinHeight(rskBlock, rskBlocksSameHeight);
+            this.logger.warn('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
+            this.branchService.save(new Branch(new BranchItem(null,connectionWithMainchain), item));
         }
     }
+
+   
 }

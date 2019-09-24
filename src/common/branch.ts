@@ -4,11 +4,13 @@ import { RskBlock } from "./rsk-block";
 
 export class Branch {
    
-    public firstDetected: ForkDetectionData; //rsk item when fork started
-    public lastDetectedHeight: number;
+    private firstDetected: ForkDetectionData; //rsk item when fork started
+    private lastDetectedHeight: number;
     private items: BranchItem[];
+    private mainchainBlockForkCouldHaveStarted: BranchItem
 
-    constructor(branchItems: BranchItem | BranchItem[]) {
+    constructor(mainchainBlockForkCouldHaveStarted: BranchItem, branchItems: BranchItem | BranchItem[]) {
+        this.mainchainBlockForkCouldHaveStarted = mainchainBlockForkCouldHaveStarted;
         if (branchItems instanceof BranchItem) {
             this.items = [];
             this.firstDetected = branchItems.rskInfo.forkDetectionData;
@@ -27,9 +29,9 @@ export class Branch {
     static fromObject(branch: any): Branch {
         let items: BranchItem[] = [];
 
-        branch.items.map(x => items.push(BranchItem.fromObject(x)));
+        branch.items.map(x => items.splice(1).push(BranchItem.fromObject(x)));
 
-        return new Branch(items);
+        return new Branch(branch.items[0], items);
     }
 
     static fromObjectToListBranchItems(branche: any): BranchItem[] {
@@ -46,7 +48,6 @@ export class Branch {
 
     public pushTop(branch: BranchItem) {
         this.lastDetectedHeight = branch.rskInfo.forkDetectionData.BN;
-
         this.items.push(branch);
     }
 
@@ -58,12 +59,25 @@ export class Branch {
         return this.items[this.items.length - 1];
     }
 
-    public getItems(): BranchItem[] {
+    public getForkItems(): BranchItem[] {
         return this.items;
+    }
+
+    //This getter return all the forks items + mainchain connection block
+    public getCompleteBranch(): BranchItem[] {
+        return [this.mainchainBlockForkCouldHaveStarted].concat(this.items);
     }
 
     public lengh(): number {
         return this.items.length;
+    }
+
+    public getFirstDetected(){
+        return this.firstDetected;
+    }
+
+    public getLastDetectedHeight(){
+        return this.lastDetectedHeight;
     }
 }
 
