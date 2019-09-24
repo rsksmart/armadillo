@@ -41,30 +41,27 @@ export class ForkDetectionData {
         return this.getNumberOfOverlapInCPV(cpvToCheck) >= countCPVtoMatch;
     }
 
-    public toString() : string {
+    public toString(): string {
         return '0x' + this.prefixHash + this.CPV + toHex(this.NU, 1) + toHex(this.BN, 4);
     }
 
-    public equals(other: ForkDetectionData) : boolean {
+    public equals(other: ForkDetectionData): boolean {
         return this.prefixHash === other.prefixHash &&
             this.CPV === other.CPV &&
             this.NU === other.NU &&
             this.BN === other.BN;
     }
 
-    private getNumberOfOverlapInCPV(cpvToCheck: string): number {
+    public getNumberOfOverlapInCPV(cpvToCheck: string): number {
+        const CPVLENGTH = 7;
         let cpvSplit = this.hexToBytes(this.CPV);
         let cpvToCheckSplit = this.hexToBytes(cpvToCheck);
-        var numberOfMatch = 0;
-
-        for (var i = 0; i < cpvSplit.length && numberOfMatch == 0; i++) {
+        for (var i = 0; i < cpvSplit.length; i++) {
             for (var j = 0; j < cpvToCheckSplit.length; j++) {
                 if (cpvSplit[i] == cpvToCheckSplit[j]) {
-                    if (cpvSplit.slice(i).toString() == cpvToCheckSplit.slice(j, cpvToCheckSplit.length - i).toString()) {
-                        return cpvSplit.slice(i).length;
+                    if (cpvSplit.slice(i, CPVLENGTH - j).toString() == cpvToCheckSplit.slice(j, CPVLENGTH - i).toString()) {
+                        return cpvSplit.slice(i, CPVLENGTH - j).length;
                     };
-                } else {
-                    break;
                 }
             }
         }

@@ -12,6 +12,7 @@ import { RskApiService } from "../../src/services/rsk-api-service";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
 import { MongoStore } from "../../src/storage/mongo-store";
+import { BranchService } from "../../src/services/branch-service";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
@@ -45,6 +46,8 @@ describe('Building mainchain when a new btc block arrives', () => {
   it("getBlocksByNumber", async () => {
    
     var getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber').returns([]);
+   
+    sinon.stub(rskService, <any>'getBestBlock').returns(btcBlock);
     
     await forkDetector.onNewBlock(btcBlock);
 
@@ -56,6 +59,7 @@ describe('Building mainchain when a new btc block arrives', () => {
    
     sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock]);
     sinon.stub(mainchainService, <any>'getLastItems').returns([]);
+    sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock);
     var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
     await forkDetector.onNewBlock(btcBlock);
     
@@ -70,6 +74,7 @@ describe('Building mainchain when a new btc block arrives', () => {
     let mainchainItemsBranch: BranchItem[] = [new BranchItem(btcBlock.btcInfo, rskBlock1)];
     sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock2]);
     sinon.stub(mainchainService, <any>'getLastItems').returns(mainchainItemsBranch);
+    sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock1);
     var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
 
     await forkDetector.onNewBlock(btcBlock);
@@ -83,6 +88,7 @@ describe('Building mainchain when a new btc block arrives', () => {
 
     sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock2]);
     sinon.stub(mainchainService, <any>'getLastItems').returns([new BranchItem(new BtcHeaderInfo(1, "hash"), rskBlock1)]);
+    sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock1);
     var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
 
     await forkDetector.onNewBlock(btcBlock);
@@ -105,9 +111,12 @@ describe('Building mainchain when a new btc block arrives', () => {
     getBlocksByNumber.withArgs(3).returns([rskBlock3]);
 
     sinon.stub(mainchainService, <any>'getLastItems').returns([new BranchItem(new BtcHeaderInfo(1, "hash"), rskBlock1)]);
+
     var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(() => {
       expect(saveMainchain.called).to.be.true;
     });
+
+    sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock4);
 
     await forkDetector.onNewBlock(btcBlock);
   });
