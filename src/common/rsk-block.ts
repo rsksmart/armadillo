@@ -14,6 +14,6 @@ export class RskBlock {
     }
 
     public static fromObject(block: any): RskBlock {
-        return new RskBlock(block.height, block.hash, block.parentHash, new ForkDetectionData(block.hashForMergedMining));
+        return new RskBlock(block.number, block.hash, block.parentHash, new ForkDetectionData(block.hashForMergedMining));
     }
 }
