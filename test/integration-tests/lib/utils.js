@@ -34,8 +34,8 @@ async function MockBtcApiChangeRoute(route) {
 async function getMainchainBlocks(number) {
     let response = await fetch(ArmadilloApiURL + "mainchain/getLastBlocks/" + number);
     let result = await response.json();
-    console.log(`+++++ GET AS MANY AS + ${number} BLOCKS ++++++`);
-    console.log(result.blocks);
+    // console.log(`+++++ GET AS MANY AS + ${number} BLOCKS ++++++`);
+    // console.log(JSON.stringify(result.blocks,null,2);
     return result;
 }
 async function getNextBlockInMockBTCApi() {
