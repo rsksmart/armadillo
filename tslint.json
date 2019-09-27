@@ -9,7 +9,7 @@
         "completed-docs": false,
         "no-require-imports": false,
         "ordered-imports": [
-            true,
+            false,
             {
                 "import-sources-order": "any",
                 "named-imports-order": "case-insensitive"
@@ -23,7 +23,7 @@
         "no-redundant-jsdoc": false,
         "prefer-type-cast": false,
         "no-suspicious-comment": false,
-        "no-unused-variable": false,
+        "no-unused-variable": true,
         "typedef": [
             true,
             "parameter",

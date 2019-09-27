@@ -64,13 +64,10 @@ describe('Forks branch tests', () => {
 
     const branchItemWhichForkNetwork = new BranchItem(btcBlock.btcInfo, new RskBlock(btcBlock.rskTag.BN, btcBlock.rskTag.prefixHash, "", btcBlock.rskTag));
     const branchExpected = new Branch(blockInMainchain, branchItemWhichForkNetwork);
-    let save = sinon.stub(branchService, <any>'save').callsFake(function(branchToSave){
+    sinon.stub(branchService, <any>'save').callsFake(function(branchToSave){
       expect(branchToSave).to.deep.equal(branchExpected);
-      // expect(save.called).to.be.true;
     });
 
     await forkDetector.onNewBlock(btcBlock);
-
-    console.log(save)
   });
 })
