@@ -1,16 +1,15 @@
-import http from 'http';
+import http from "http";
 
 export async function get(url: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-        http.get(url, (res) => {
-            res.setEncoding('utf8');
-
-            let body = ''
-            res.on('data', (chunk) => {
+    return new Promise((resolve: any, reject: any) => {
+        http.get(url, (res: any) => {
+            res.setEncoding("utf8");
+            let body = "";
+            res.on("data", (chunk: any) => {
               body += chunk;
             });
 
-            res.on('end', () => {
+            res.on("end", () => {
                 try {
                     const result = JSON.parse(body);
                     resolve(result);
@@ -19,5 +18,5 @@ export async function get(url: string): Promise<any> {
                 }
             });
         });
-    })
+    });
 }

@@ -1,10 +1,10 @@
 import express from "express";
-import * as bodyParser from 'body-parser';
-import  { routersConfig} from './api/routes';
+import * as bodyParser from "body-parser";
+import  { routersConfig} from "./api/routes";
 import { MongoStore } from "./storage/mongo-store";
 import { ApiConfig } from "./config/api-config";
 
-const DEFAULT_CONFIG_PATH = './config.json';
+const DEFAULT_CONFIG_PATH = "./config.json";
 const apiConfig = ApiConfig.getMainConfig(DEFAULT_CONFIG_PATH);
 const branches : MongoStore = new MongoStore(apiConfig.store.branches);
 const mainchain : MongoStore = new MongoStore(apiConfig.store.mainchain);
