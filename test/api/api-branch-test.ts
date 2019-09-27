@@ -35,8 +35,8 @@ describe("Branches api tests", () => {
     let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
     let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
     let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
-    let branch1 = new Branch(branchItem1, [branchItem1,branchItem2]);
-    let branch2 = new Branch(branchItem1, [branchItem3,branchItem4]);
+    let branch1 = new Branch(branchItem1.rskInfo, [branchItem1,branchItem2]);
+    let branch2 = new Branch(branchItem1.rskInfo, [branchItem3,branchItem4]);
     
     await branchService.save(branch1);
     await branchService.save(branch2);

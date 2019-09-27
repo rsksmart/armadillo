@@ -46,7 +46,7 @@ describe("Blockchain api tests", () => {
     let branchItem6 = new BranchItem(btcInfo, new RskBlock(6, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
     let branchItem7 = new BranchItem(btcInfo, new RskBlock(7, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
 
-    let branch = new Branch(branchItem1, [branchItem3,branchItem4,branchItem5]);
+    let branch = new Branch(branchItem1.rskInfo, [branchItem3,branchItem4,branchItem5]);
     await branchService.save(branch);
 
     let mainchainList = [branchItem7,branchItem6,branchItem5,branchItem4,branchItem3,branchItem2,branchItem1]

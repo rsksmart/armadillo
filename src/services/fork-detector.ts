@@ -215,9 +215,7 @@ export class ForkDetector {
         } else {
             let connectionWithMainchain = await this.rskApiService.getRskBlockAtCerteinHeight(rskBlock, rskBlocksSameHeight);
             this.logger.warn('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
-            this.branchService.save(new Branch(new BranchItem(null,connectionWithMainchain), item));
+            this.branchService.save(new Branch(connectionWithMainchain, item));
         }
     }
-
-   
 }
