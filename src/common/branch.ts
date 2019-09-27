@@ -7,9 +7,9 @@ export class Branch {
     private firstDetected: ForkDetectionData; //rsk item when fork started
     private lastDetectedHeight: number;
     private items: BranchItem[];
-    private mainchainBlockForkCouldHaveStarted: BranchItem
+    private mainchainBlockForkCouldHaveStarted: RskBlock
 
-    constructor(mainchainBlockForkCouldHaveStarted: BranchItem, branchItems: BranchItem | BranchItem[]) {
+    constructor(mainchainBlockForkCouldHaveStarted: RskBlock, branchItems: BranchItem | BranchItem[]) {
         this.mainchainBlockForkCouldHaveStarted = mainchainBlockForkCouldHaveStarted;
         if (branchItems instanceof BranchItem) {
             this.items = [];
@@ -65,7 +65,7 @@ export class Branch {
 
     //This getter return all the forks items + mainchain connection block
     public getCompleteBranch(): BranchItem[] {
-        return [this.mainchainBlockForkCouldHaveStarted].concat(this.items);
+        return [new BranchItem(null, this.mainchainBlockForkCouldHaveStarted)].concat(this.items);
     }
 
     public lengh(): number {
