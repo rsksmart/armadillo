@@ -8,7 +8,15 @@ export default abstract class BaseService {
     constructor(store: MongoStore) {
         this.store = store;
     }
-    
+
+    public connect(): Promise<void> {
+        return this.store.connect();
+    }
+
+    public disconnect() {
+        this.store.disconnect();
+    }
+
     protected find(filters?: any): Cursor {
         return this.store.getCollection().find(filters || {}).project({ _id: 0 });
     } 

@@ -1,7 +1,6 @@
 import { MongoStore } from "../storage/mongo-store";
 import { BranchItem } from "../common/branch";
 import BaseService from "./base-service";
-import { RskBlock } from "../common/rsk-block";
 
 export class MainchainService  extends BaseService {
 
