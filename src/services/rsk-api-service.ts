@@ -1,6 +1,7 @@
 import { RskApiConfig } from "../config/rsk-api-config";
 import { RskBlock } from "../common/rsk-block";
 import Nod3 from 'nod3';
+import { ForkDetectionData } from "../common/fork-detection-data";
 
 export class RskApiService {
     private config: RskApiConfig;
@@ -22,7 +23,7 @@ export class RskApiService {
 
         for (const blockInfo of blocksInfo) {
             var block = await this.nod3.eth.getBlock(blockInfo.hash);
-            blocks.push(RskBlock.fromObject(block));
+            blocks.push(new RskBlock(block.number, block.hash, block.parentHash, new ForkDetectionData(block.hashForMergedMining)));
         }
 
         return blocks;
@@ -31,7 +32,7 @@ export class RskApiService {
     public async getBestBlock(): Promise<RskBlock> {
         let number = await this.nod3.eth.blockNumber();
         let block = await this.nod3.eth.getBlock(number);
-        return RskBlock.fromObject(block);
+        return new RskBlock(block.number, block.hash, block.parentHash, new ForkDetectionData(block.hashForMergedMining));
     }
 
     public async getBestBlockHeight(): Promise<number> {

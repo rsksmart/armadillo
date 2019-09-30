@@ -91,6 +91,6 @@ export class BranchItem {
     }
 
     static fromObject(branchItem: any): BranchItem {
-        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), RskBlock.fromObject(branchItem.rskInfo));
+        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), branchItem.rskInfo);
     }
 }
