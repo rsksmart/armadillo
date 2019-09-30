@@ -1,16 +1,17 @@
 const expect = require('chai').expect;
 const utils = require('./lib/utils');
-const db = utils.ArmadilloDB;
-const mainchain = utils.ArmadilloMainchain
+const mongo_utils = require('./lib/mongo-utils');
+const db = mongo_utils.ArmadilloDB;
+const mainchain = mongo_utils.ArmadilloMainchain
 const heightOfNoRskTags = 951;
 const heightOfConsecutiveRskTags = 954;
 const heightOfDistancedRskTags = 956;
-const apiPoolingTime = 500 + 100;
+const apiPoolingTime = 5000 + 100;
 
 describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it.skip("should not generate any mainchain if BTC doesn't present RSK tags", async () => {
         await utils.MockBtcApiChangeRoute("raw");
-        await utils.setHightInMockBTCApi(heightOfNoRskTags);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         await utils.DeleteCollection(db, mainchain);
         // TODO: Review if armadillo monitor has to be restarted
         //Validate no response in monitor for mainchain
@@ -22,33 +23,54 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         let mainchainResponse = await utils.getMainchainBlocks(20);
         let blocks = mainchainResponse.blocks;
         //Reset to original height
-        await utils.setHightInMockBTCApi(heightOfNoRskTags);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.empty;
     }).timeout(12000);
-    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags", async () => {
+    it.only("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags", async () => {
         let step = 1;
         await utils.MockBtcApiChangeRoute("raw");
-        await utils.setHightInMockBTCApi(heightOfConsecutiveRskTags);
-        await utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteCollection(db, mainchain);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
+        await utils.getNextBlockInMockBTCApi();
+        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
+        await utils.getNextBlockInMockBTCApi();
+        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
+        await utils.getNextBlockInMockBTCApi();
+
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi();
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
+        //Wait until the monitor can read the new block and process of getting 
+        //the mainchain is completed (pooling every 5s)
         await utils.sleep(apiPoolingTime);
-        let mainchainResponse = await utils.getMainchainBlocks(30);
+        let mainchainResponse = await utils.getMainchainBlocks(1000);
         let blocks = mainchainResponse.blocks;
         //Reset to original height
-        await utils.setHightInMockBTCApi(heightOfNoRskTags);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.not.empty;
+        // utils.validateRskBlockNodeVsArmadilloMonitor(blocks[0]);
         expect(blocks.length).to.be.equal(21);
+        for (let block in blocks) {
+            rskBlockHeightsWithBtcBlock = [
+                450,
+                470,
+                490,
+                570,
+                650,
+                730
+            ]
+            utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+            utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block],rskBlockHeightsWithBtcBlock);
+        }
         //Missing blocks validations: Blocks with BTC info that has correct information in the right heights, 
         //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)
-    }).timeout(20000);
+    }).timeout(200000);
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK", async () => {
         let step = 1;
         await utils.MockBtcApiChangeRoute("raw");
-        await utils.setHightInMockBTCApi(heightOfConsecutiveRskTags);
-        await utils.DeleteCollection(db, mainchain);
+        await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
+        await mongo_utils.DeleteCollection(db, mainchain);
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi();
@@ -60,19 +82,31 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         let mainchainResponse = await utils.getMainchainBlocks(100);
         let blocks = mainchainResponse.blocks;
         //Reset to original height
-        await utils.setHightInMockBTCApi(heightOfNoRskTags);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(41);
         //Missing blocks validations: Blocks with BTC info that has correct information in the right heights, 
         //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)
-        
+        for (let block in blocks) {
+            rskBlockHeightsWithBtcBlock = [
+                450,
+                470,
+                490,
+                570,
+                650,
+                730
+            ]
+            utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+            utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block],rskBlockHeightsWithBtcBlock);
+        }
+
     }).timeout(30000);
     it("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags", async () => {
         let step = 1;
         await utils.MockBtcApiChangeRoute("raw");
-        await utils.setHightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
+        await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
         console.log("P5,H956");
-        await utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteCollection(db, mainchain);
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi();//P6,H957
@@ -93,13 +127,24 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.sleep(apiPoolingTime);
         let mainchainResponse = await utils.getMainchainBlocks(100);
         let blocks = mainchainResponse.blocks;
+        //Reset to original height
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(81);
-        //Reset to original height
-        await utils.setHightInMockBTCApi(heightOfNoRskTags);
+        for (let block in blocks) {
+            rskBlockHeightsWithBtcBlock = [
+                450,
+                470,
+                490,
+                570,
+                650,
+                730
+            ]
+            utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+            utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block],rskBlockHeightsWithBtcBlock);
+        }
         //Missing blocks validations: Blocks with BTC info that has correct information in the right heights, 
-        //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)
-        
+        //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)    
     }).timeout(60000);
 });
 
