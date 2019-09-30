@@ -57,7 +57,7 @@ describe("Overlap CPV", () => {
     btcStub = stubObject<BtcWatcher>(BtcWatcher.prototype);
     rskApiConfig = stubObject<RskApiConfig>(RskApiConfig.prototype);
     rskService = new RskApiService(rskApiConfig);
-    forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService);
+    forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService, null);
  });
 
   it("cpv match with differents lengh", () => {

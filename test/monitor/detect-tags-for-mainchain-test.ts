@@ -12,7 +12,7 @@ import { RskApiService } from "../../src/services/rsk-api-service";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
 import { MongoStore } from "../../src/storage/mongo-store";
-import { BranchService } from "../../src/services/branch-service";
+import { BtcService } from "../../src/services/btc-service";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
@@ -22,11 +22,14 @@ const RSKTAG = PREFIX + CPV + NU + BN;
 const forkData = new ForkDetectionData(RSKTAG);
 const btcBlock = new BtcBlock(2, "btcHash", "btcPrevHash", RSKTAG)
 let btcStub;
-let rskApiConfig;
-let mongoStore;
-let mainchainService;
-let rskService;
-let forkDetector;
+let rskApiConfig: RskApiConfig;
+let mongoStore: MongoStore;
+let btcStore: MongoStore;
+let mainchainService: MainchainService;
+let rskService: RskApiService;
+let forkDetector: ForkDetector;
+let btcService: BtcService;
+let btcBlockPrev = new BtcBlock(1, "btcHash", "btcPrevHash", "")
 
 describe('Building mainchain when a new btc block arrives', () => {
 
@@ -40,7 +43,14 @@ describe('Building mainchain when a new btc block arrives', () => {
      mongoStore = stubObject<MongoStore>(MongoStore.prototype);
      mainchainService = new MainchainService(mongoStore);
      rskService = new RskApiService(rskApiConfig);
-     forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService);
+     btcStore = stubObject<MongoStore>(MongoStore.prototype);
+     btcService = new BtcService(btcStore);
+     forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService, btcService);
+
+     var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
+     getLastBlockDetected.returns(btcBlockPrev);
+ 
+     sinon.stub(btcService, <any>'saveBlockDetected').callsFake(function(){});
   });
 
   it("getBlocksByNumber", async () => {

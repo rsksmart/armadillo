@@ -21,7 +21,8 @@
         "databaseName": "armadillo",
         "collections": {
             "branches": "branches",
-            "mainchain": "mainchain"
+            "mainchain": "mainchain",
+            "btc": "btc"
         }
        
     },
