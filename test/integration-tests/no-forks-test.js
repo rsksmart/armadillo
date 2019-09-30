@@ -37,8 +37,6 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.getNextBlockInMockBTCApi();
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi();
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
         
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
@@ -46,16 +44,16 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         //Wait until the monitor can read the new block and process of getting 
         //the mainchain is completed (pooling every 5s)
         await utils.sleep(apiPoolingTime);
-        let mainchainResponse = await utils.getMainchainBlocks(30);
+        let mainchainResponse = await utils.getMainchainBlocks(1000);
         let blocks = mainchainResponse.blocks;
         //Reset to original height
         await utils.setHightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.not.empty;
-        utils.validateRskBlockNodeVsArmadilloMonitor(blocks[0]);
+        // utils.validateRskBlockNodeVsArmadilloMonitor(blocks[0]);
         expect(blocks.length).to.be.equal(21);
-        // for (let block in blocks){
-        //     utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
-        // }
+        for (let block in blocks){
+            utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+        }
         //Missing blocks validations: Blocks with BTC info that has correct information in the right heights, 
         //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)
     }).timeout(200000);
