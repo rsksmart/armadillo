@@ -28,7 +28,13 @@ async function getNextBlockInMockBTCApi() {
     return result;
 }
 
-async function setHightInMockBTCApi(_height) {
+async function getBlockByHashInMockBTCApi(_hash) {
+    let response = await fetch(BtcApiURL + "block/getCoinbase/" + _hash);
+    let result = await response.json();
+    return result;
+}
+
+async function setHeightInMockBTCApi(_height) {
     let url = `${BtcApiURL}height/${_height}`;
     console.log(url);
     await fetch(url);
@@ -298,6 +304,24 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock) {
     expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
 }
 
+async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap) {
+    let shouldHaveBtcInfo = btcRskMap.includes(armadilloBlock.rskInfo.height);
+    
+    if (!shouldHaveBtcInfo) {
+        expect(armadilloBlock.btcInfo.height).to.be.null;
+        expect(armadilloBlock.btcInfo.hash).to.be.null;
+    }
+    else {
+        expect(armadilloBlock.btcInfo.height).not.to.be.null;
+        expect(armadilloBlock.btcInfo.hash).not.to.be.null;
+        let btcBlockInfo = await getBlockByHashInMockBTCApi(armadilloBlock.btcInfo.hash);
+        let btcHash = btcBlockInfo.coinbase.transactionBlockInfo.hash;
+        let btcHeight = btcBlockInfo.coinbase.transactionBlockInfo.height;
+        expect(armadilloBlock.btcInfo.height).to.be.equal(btcHeight);
+        expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
+    }
+}
+
 module.exports = {
     rskdPromiseRequest,
     config,
@@ -309,6 +333,9 @@ module.exports = {
     MockBtcApiChangeRoute,
     getMainchainBlocks,
     getNextBlockInMockBTCApi,
-    setHightInMockBTCApi,
-    validateRskBlockNodeVsArmadilloMonitor
+    setHeightInMockBTCApi,
+    validateRskBlockNodeVsArmadilloMonitor,
+    validateBtcBlockNodeVsArmadilloMonitor,
+    getBlockByHashInMockBTCApi
+
 }
