@@ -283,19 +283,18 @@ function getRskBlockByNumber(blockNumber, context) {
 }
 
 async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock) {
-    let height = "0x" +armadilloBlock.rskInfo.height.toString(16);
-    console.log(height +" ---- " + armadilloBlock.rskInfo.hash);
-    let rskBlock = JSON.parse(await getRskBlockByNumber( height,context));
+    let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
+    let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
+    let mergeMiningHash = rskBlock.result.hashForMergedMining;
     expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
     expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
-    let prefixHashFromRskBlock = rskBlock.result.hashForMergedMining.substring(2,22);
+    let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
     expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
-    let CPVFromRskBlock = rskBlock.result.hashForMergedMining.substring(22,36);
+    let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
     expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
-    let nbrUnclesFromRskBlock = rsk.result.hashForMergedMining.substring(36,38);
+    let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
     expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
-    let heightFromHashForMergeMiningRskBlock = parseInt("0x"+rsk.result.hashForMergedMining.substring(38));
-    console.log(heightFromHashForMergeMiningRskBlock);
+    let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
     expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
 }
 
