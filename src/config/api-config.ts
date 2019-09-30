@@ -1,8 +1,6 @@
 import { LoggerConfig } from './logger-config';
-import { RskApiConfig } from './rsk-api-config';
 import { readFileSync } from 'fs';
 import { StoreConfig } from './store-config';
-import { BtcApiConfig } from './btc-api-config';
 import { ForkApiConfig } from './fork-api-config';
 
 export class ApiConfig {
