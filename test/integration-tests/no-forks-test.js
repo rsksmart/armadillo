@@ -88,7 +88,16 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         //Missing blocks validations: Blocks with BTC info that has correct information in the right heights, 
         //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)
         for (let block in blocks) {
+            rskBlockHeightsWithBtcBlock = [
+                450,
+                470,
+                490,
+                570,
+                650,
+                730
+            ]
             utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+            utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block],rskBlockHeightsWithBtcBlock);
         }
 
     }).timeout(30000);
@@ -123,7 +132,16 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(81);
         for (let block in blocks) {
+            rskBlockHeightsWithBtcBlock = [
+                450,
+                470,
+                490,
+                570,
+                650,
+                730
+            ]
             utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+            utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block],rskBlockHeightsWithBtcBlock);
         }
         //Missing blocks validations: Blocks with BTC info that has correct information in the right heights, 
         //blocks in the middle of RSK doesn't have BTC info whatsoever (null values)    
