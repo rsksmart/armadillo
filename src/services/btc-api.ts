@@ -1,10 +1,6 @@
 import { BtcApiConfig } from '../config/btc-api-config';
 import { get } from '../util/http';
 
-export interface BtcApi {
-    getBestBlock() : Promise<PlainBtcBlock>;
-}
-
 export interface PlainBtcHeader {
     height: number;
     hash: string;
@@ -16,7 +12,7 @@ export interface PlainBtcBlock {
     rskTag: string;
 }
 
-export class HttpBtcApi implements BtcApi {
+export class HttpBtcApi {
     private config: BtcApiConfig;
 
     constructor(btcApiConfig: BtcApiConfig) {

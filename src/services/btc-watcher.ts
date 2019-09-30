@@ -1,6 +1,6 @@
 import { BtcBlock } from "../common/btc-block";
 import { EventEmitter } from "events";
-import { BtcApi, PlainBtcBlock } from "./btc-api";
+import { PlainBtcBlock, HttpBtcApi } from "./btc-api";
 import { Logger, getLogger } from "log4js";
 
 export enum BTCEvents {
@@ -17,10 +17,10 @@ export class BtcWatcher extends EventEmitter {
 
     private logger: Logger;
     private blocks: BtcBlock[]; // TODO: move this to a blockchain abstraction
-    private btcApi: BtcApi;
+    private btcApi: HttpBtcApi;
     private running: boolean;
 
-    constructor(btcApi: BtcApi) {
+    constructor(btcApi: HttpBtcApi) {
         super();
 
         this.blocks = []
