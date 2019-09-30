@@ -10,14 +10,6 @@ export class BranchService extends BaseService {
         super(store);
     }
 
-    public connect(): Promise<void> {
-        return this.store.connect();
-    }
-
-    public disconnect() {
-        this.store.disconnect();
-    }
-
     public async save(branch: Branch): Promise<void> {
         await this.store.getCollection().insertOne(branch);
     }
