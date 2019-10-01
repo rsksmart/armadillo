@@ -2,17 +2,19 @@ const expect = require('chai').expect;
 const utils = require('./lib/utils');
 const mongo_utils = require('./lib/mongo-utils');
 const db = mongo_utils.ArmadilloDB;
-const mainchain = mongo_utils.ArmadilloMainchain
+const mainchain = mongo_utils.ArmadilloMainchain;
+const stateTracker = mongo_utils.ArmadilloStateTracker;
 const heightOfNoRskTags = 951;
 const heightOfConsecutiveRskTags = 954;
 const heightOfDistancedRskTags = 956;
 const apiPoolingTime = 5000 + 100;
 
 describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
-    it.skip("should not generate any mainchain if BTC doesn't present RSK tags", async () => {
+    it("should not generate any mainchain if BTC doesn't present RSK tags", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        await utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteCollection(db, stateTracker);
         // TODO: Review if armadillo monitor has to be restarted
         //Validate no response in monitor for mainchain
         //Wait until the monitor can read the new block (pooling every 5s)
@@ -20,23 +22,24 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.getNextBlockInMockBTCApi();
         //Wait until the monitor can read the new block (pooling every 5s)
         await utils.sleep(apiPoolingTime);
-        let mainchainResponse = await utils.getMainchainBlocks(20);
+        let mainchainResponse = await utils.getMainchainBlocks(1000);
         let blocks = mainchainResponse.blocks;
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.empty;
     }).timeout(12000);
-    it.only("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags", async () => {
+    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags", async () => {
         let step = 1;
         await utils.MockBtcApiChangeRoute("raw");
+        await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteCollection(db, mainchain);
-        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
+        await mongo_utils.DeleteCollection(db, stateTracker);
+        // await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
+        // await utils.getNextBlockInMockBTCApi();
+        // await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
+        // await utils.getNextBlockInMockBTCApi();
+        // await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
+        // await utils.getNextBlockInMockBTCApi();
 
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
@@ -71,6 +74,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteCollection(db, stateTracker);
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi();
@@ -107,6 +111,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
         console.log("P5,H956");
         await mongo_utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteCollection(db, stateTracker);
         // TODO: Review if armadillo monitor has to be restarted
         await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi();//P6,H957

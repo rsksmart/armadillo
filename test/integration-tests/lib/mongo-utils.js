@@ -2,6 +2,7 @@ let MongoClient = require('mongodb').MongoClient;
 const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
+const ArmadilloStateTracker = "btc";
 
 let DeleteCollection = async (_db, _collection) => {
     MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }, async function (err, db) {
@@ -38,5 +39,6 @@ module.exports = {
     DeleteCollection,
     ArmadilloDB,
     ArmadilloMainchain,
+    ArmadilloStateTracker,
     findBlocks
 }
