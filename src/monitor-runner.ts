@@ -47,7 +47,9 @@ class MonitorRunner {
         
         this.branchService.connect().then(function () {
             that.mainchainService.connect().then(function () {
-                that.forkDetector.start();
+                that.btcService.connect().then(function () {
+                    that.forkDetector.start();
+                });
             });
         });
     }
