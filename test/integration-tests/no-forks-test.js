@@ -26,7 +26,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.empty;
     }).timeout(12000);
-    it.only("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags", async () => {
+    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags", async () => {
         let step = 1;
         await utils.MockBtcApiChangeRoute("raw");
         await mongo_utils.DeleteCollection(db, mainchain);

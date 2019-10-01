@@ -11,15 +11,17 @@ export class Branch {
 
     constructor(mainchainBlockForkCouldHaveStarted: RskBlock, branchItems: BranchItem | BranchItem[]) {
         this.mainchainBlockForkCouldHaveStarted = mainchainBlockForkCouldHaveStarted;
+        
         if (branchItems instanceof BranchItem) {
             this.items = [];
             this.firstDetected = branchItems.rskInfo.forkDetectionData;
-            this.pushTop(branchItems);
+            this.addNewForkItem(branchItems);
         } else {
             if (branchItems.length > 0) {
-                this.items = branchItems;
-                this.firstDetected = branchItems[0].rskInfo.forkDetectionData;
-                this.lastDetectedHeight = branchItems[branchItems.length - 1].rskInfo.forkDetectionData.BN;
+                let branches = branchItems.sort((x,y) => x.rskInfo.height > y.rskInfo.height ? 0 : 1);
+                this.items = branches;
+                this.firstDetected = branches[branches.length -1].rskInfo.forkDetectionData;
+                this.lastDetectedHeight = branchItems[0].rskInfo.forkDetectionData.BN;
             } else {
                 throw "branchItems should have at least one item"
             }
@@ -39,24 +41,12 @@ export class Branch {
         
         branche.items.map(x => items.push(BranchItem.fromObject(x)));
 
-        return items;
+        return items.concat(branche.mainchainBlockForkCouldHaveStarted);
     }
 
-    public getTop(): BranchItem {
-        return this.items[this.items.length - 1];
-    }
-
-    public pushTop(branch: BranchItem) {
+    public addNewForkItem(branch: BranchItem) {
         this.lastDetectedHeight = branch.rskInfo.forkDetectionData.BN;
-        this.items.push(branch);
-    }
-
-    public getStart(): BranchItem {
-        return this.items[0];
-    }
-
-    public getLast(): BranchItem {
-        return this.items[this.items.length - 1];
+        this.items.unshift(branch);
     }
 
     public getForkItems(): BranchItem[] {
@@ -65,15 +55,19 @@ export class Branch {
 
     //This getter return all the forks items + mainchain connection block
     public getCompleteBranch(): BranchItem[] {
-        return [new BranchItem(null, this.mainchainBlockForkCouldHaveStarted)].concat(this.items);
+        return this.items.concat(new BranchItem(null, this.mainchainBlockForkCouldHaveStarted));
     }
 
-    public lengh(): number {
+    public forkLenght(): number {
         return this.items.length;
     }
 
     public getFirstDetected(){
-        return this.firstDetected;
+        return this.items[this.items.length -1];
+    }
+
+    public getLastDetected(): BranchItem {
+        return this.items[0];
     }
 
     public getLastDetectedHeight(){
