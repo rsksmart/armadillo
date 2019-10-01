@@ -11,7 +11,7 @@ const mongoBtcService = new MongoStore(mainConfig.store.btc);
 const btcService = new BtcService(mongoBtcService);
 
 //Before you run this test you have to run a mongo instance
-describe.only("Btc service tests", () => {
+describe("Btc service tests", () => {
   beforeEach(async function () {
     await btcService.connect();
     await btcService.removeAll(); 

@@ -125,10 +125,10 @@ describe("Overlap CPV", () => {
 
     //Validations
     expect(posibleBranches.length).to.equal(1);
-    expect(posibleBranches[0].getStart().rskInfo.forkDetectionData).to.equal(forkData);
-    expect(posibleBranches[0].getStart().btcInfo).to.equal(btcInfo);
-    expect(posibleBranches[0].getLast().btcInfo).to.equal(btcInfo);
-    expect(posibleBranches[0].getLast().btcInfo).to.equal(btcInfo);
+    expect(posibleBranches[0].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getFirstDetected().btcInfo).to.equal(btcInfo);
+    expect(posibleBranches[0].getLastDetected().btcInfo).to.equal(btcInfo);
+    expect(posibleBranches[0].getLastDetected().btcInfo).to.equal(btcInfo);
   });
 
   it("getBranchesThatOverlap return 2 elements", async () => {
@@ -144,10 +144,10 @@ describe("Overlap CPV", () => {
     sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns(list);
     let posibleBranches: Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
     expect(posibleBranches.length).to.equal(2);
-    expect(posibleBranches[0].getStart().rskInfo.forkDetectionData).to.equal(forkData);
-    expect(posibleBranches[0].getLast().rskInfo.forkDetectionData).to.equal(forkData);
-    expect(posibleBranches[1].getStart().rskInfo.forkDetectionData).to.equal(forkData1);
-    expect(posibleBranches[1].getLast().rskInfo.forkDetectionData).to.equal(forkData1);
+    expect(posibleBranches[0].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getLastDetected().rskInfo.forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[1].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData1);
+    expect(posibleBranches[1].getLastDetected().rskInfo.forkDetectionData).to.equal(forkData1);
   });
 });
 
