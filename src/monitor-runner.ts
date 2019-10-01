@@ -38,6 +38,9 @@ class MonitorRunner {
         this.logger.info("Stopping monitor");
 
         this.forkDetector.stop();
+        this.branchService.disconnect();
+        this.mainchainService.disconnect();
+        this.btcService.disconnect();
     }
 
     public async start() : Promise<void> {

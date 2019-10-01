@@ -132,6 +132,34 @@ export class ForkDetector {
         this.mainchainService.save(itemsToSaveInMainchain);
     }
 
+    public stop() {
+        this.logger.info('Stopping fork detector')
+        this.btcWatcher.stop();
+    }
+
+    public start() {
+        this.logger.info('Starting fork detector');
+        this.btcWatcher.start();
+    }
+
+    public getBlockMatchWithRskTag(blocks: RskBlock[], rskTag: ForkDetectionData): RskBlock {
+        return blocks.find(b => b.forkDetectionData.equals(rskTag));
+    }
+
+    public async getBranchesThatOverlap(rskTag: ForkDetectionData): Promise<Branch[]> {
+        let branchesThatOverlap: Branch[] = []
+        // Hay que renombrar mejor
+        let lastTopsDetected: Branch[] = await this.getPossibleForks(rskTag.BN);
+
+        for (const branch of lastTopsDetected) {
+            if (branch.getLastDetected().rskInfo.forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
+                branchesThatOverlap.push(branch);
+            }
+        }
+
+        return branchesThatOverlap;
+    }
+
     private getBlockThatMatch(blocks: RskBlock[], rskHash: string): RskBlock {
         for (let j = 0; j < blocks.length; j++) {
             let rskBlock: RskBlock = blocks[j];
@@ -142,23 +170,6 @@ export class ForkDetector {
         }
 
         return null;
-    }
-
-    public stop() {
-        this.logger.info('Stopping fork detector')
-
-        this.btcWatcher.stop();
-        this.branchService.disconnect();
-    }
-
-    public start() {
-        this.logger.info('Starting fork detector');
-
-        this.btcWatcher.start();
-    }
-
-    public getBlockMatchWithRskTag(blocks: RskBlock[], rskTag: ForkDetectionData): RskBlock {
-        return blocks.find(b => b.forkDetectionData.equals(rskTag));
     }
 
     private getHeightforPossibleBranches(numberBlock: number): number {
@@ -178,20 +189,6 @@ export class ForkDetector {
         return this.branchService.getForksDetected(minimunHeightToSearch);
     }
 
-    public async getBranchesThatOverlap(rskTag: ForkDetectionData): Promise<Branch[]> {
-        let branchesThatOverlap: Branch[] = []
-        // Hay que renombrar mejor
-        let lastTopsDetected: Branch[] = await this.getPossibleForks(rskTag.BN);
-
-        for (const branch of lastTopsDetected) {
-            if (branch.getLast().rskInfo.forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
-                branchesThatOverlap.push(branch);
-            }
-        }
-
-        return branchesThatOverlap;
-    }
-
     private async addOrCreateBranch(rskBlock: RskBlock, btcBlock: BtcBlock, rskBlocksSameHeight: RskBlock) {
 
         if (!rskBlock) {
@@ -209,7 +206,7 @@ export class ForkDetector {
 
             this.logger.warn('FORK: Adding RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash, 'to branch with start', existingBranch.getFirstDetected().toString());
 
-            this.branchService.addBranchItem(existingBranch.getFirstDetected().prefixHash, new BranchItem(btcBlock.btcInfo, rskBlock));
+            this.branchService.addBranchItem(existingBranch.getFirstDetected().rskInfo.forkDetectionData.prefixHash, new BranchItem(btcBlock.btcInfo, rskBlock));
         } else {
             let connectionWithMainchain = await this.rskApiService.getRskBlockAtCerteinHeight(rskBlock, rskBlocksSameHeight);
             this.logger.warn('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
