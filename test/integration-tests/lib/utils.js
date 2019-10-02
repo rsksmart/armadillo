@@ -4,6 +4,7 @@ const Curl = require('node-libcurl').Curl;
 const randomHex = require('randomhex');
 const expect = require('chai').expect;
 const btclib = require('bitcoinjs-lib');
+const mongo_utils = require ('./mongo-utils');
 const CURL_DEFAULT_HTTP_VERSION = "1.1";
 const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
@@ -36,7 +37,6 @@ async function getBlockByHashInMockBTCApi(_hash) {
 
 async function setHeightInMockBTCApi(_height) {
     let url = `${BtcApiURL}height/${_height}`;
-    console.log(url);
     await fetch(url);
 }
 
@@ -306,7 +306,39 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock) {
 
 async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap) {
     let shouldHaveBtcInfo = btcRskMap.includes(armadilloBlock.rskInfo.height);
-    
+
+    if (!shouldHaveBtcInfo) {
+        expect(armadilloBlock.btcInfo.height).to.be.null;
+        expect(armadilloBlock.btcInfo.hash).to.be.null;
+    }
+    else {
+        expect(armadilloBlock.btcInfo.height).not.to.be.null;
+        expect(armadilloBlock.btcInfo.hash).not.to.be.null;
+        let btcBlockInfo = await getBlockByHashInMockBTCApi(armadilloBlock.btcInfo.hash);
+        let btcHash = btcBlockInfo.coinbase.transactionBlockInfo.hash;
+        let btcHeight = btcBlockInfo.coinbase.transactionBlockInfo.height;
+        expect(armadilloBlock.btcInfo.height).to.be.equal(btcHeight);
+        expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
+    }
+}
+async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
+    let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
+    let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
+    let mergeMiningHash = rskBlock.result.hashForMergedMining;
+    expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
+    expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
+    let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
+    expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
+    let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
+    expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
+    let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
+    expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
+    let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
+    expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
+}
+async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap) {
+    let shouldHaveBtcInfo = btcRskMap.includes(armadilloBlock.rskInfo.height);
+
     if (!shouldHaveBtcInfo) {
         expect(armadilloBlock.btcInfo.height).to.be.null;
         expect(armadilloBlock.btcInfo.hash).to.be.null;
@@ -336,6 +368,8 @@ module.exports = {
     setHeightInMockBTCApi,
     validateRskBlockNodeVsArmadilloMonitor,
     validateBtcBlockNodeVsArmadilloMonitor,
+    validateRskBlockNodeVsArmadilloMonitorMongoDB,
+    validateBtcBlockNodeVsArmadilloMonitorMongoDB,
     getBlockByHashInMockBTCApi
 
 }
