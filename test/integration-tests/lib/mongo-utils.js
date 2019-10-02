@@ -44,10 +44,32 @@ let findBlocks = async (_db, _collection) => {
     }
 }
 
+let insertDocuments = async (_db, _collection, _jsonData) => {
+    try {
+        let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+        var dbo = await db.db(_db);
+        let result = [];
+        //Delete the collection:
+        try {
+            await dbo.collection(_collection).insertMany(_jsonData);
+        }
+        catch (e) {
+            console.error(e.message)
+        }
+        finally {
+            await db.close();
+        }
+        return result;
+    } catch (err) {
+        throw err;
+    }
+}
+
 module.exports = {
     DeleteCollection,
     ArmadilloDB,
     ArmadilloMainchain,
     ArmadilloStateTracker,
-    findBlocks
+    findBlocks,
+    insertDocuments
 }
