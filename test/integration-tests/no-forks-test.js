@@ -95,6 +95,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     }).timeout(2 * 2 * apiPoolingTime);
     it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation", async () => {
         await mongo_utils.DeleteCollection(db, mainchain);
+        await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive2RskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);
         expect(insertDataJSON).to.be.an('array').that.is.not.empty;
@@ -156,6 +157,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     }).timeout(3 * 2 * apiPoolingTime);
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
         await mongo_utils.DeleteCollection(db, mainchain);
+        await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive3RskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);  
         expect(insertDataJSON).to.be.an('array').that.is.not.empty;
@@ -228,6 +230,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     }).timeout(5 * 2 * apiPoolingTime);
     it("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation", async () => {
         await mongo_utils.DeleteCollection(db, mainchain);
+        await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + jump3BtcBlocksToRskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);
         expect(insertDataJSON).to.be.an('array').that.is.not.empty;
@@ -242,6 +245,3 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         expect(blocks).to.be.eql(mongoBlocks.reverse());
     });
 });
-
-
-
