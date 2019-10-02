@@ -8,7 +8,7 @@ const stateTracker = mongo_utils.ArmadilloStateTracker;
 const heightOfNoRskTags = 951;
 const heightOfConsecutiveRskTags = 954;
 const heightOfDistancedRskTags = 956;
-const apiPoolingTime = 500;
+const apiPoolingTime = 5000;
 const loadingTime = 500;
 const rskBlockHeightsWithBtcBlock = [450, 470, 490, 570, 650, 730]
 const dataInputPath = "test/integration-tests/data/";
@@ -93,7 +93,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(2 * 2 * apiPoolingTime);
-    it.only("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation", async () => {
+    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation", async () => {
         await mongo_utils.DeleteCollection(db, mainchain);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive2RskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);
@@ -154,7 +154,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(3 * 2 * apiPoolingTime);
-    it.only("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
+    it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
         await mongo_utils.DeleteCollection(db, mainchain);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive3RskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);  
@@ -226,7 +226,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(5 * 2 * apiPoolingTime);
-    it.only("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation", async () => {
+    it("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation", async () => {
         await mongo_utils.DeleteCollection(db, mainchain);
         const insertDataText = fs.readFileSync(dataInputPath + jump3BtcBlocksToRskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);
