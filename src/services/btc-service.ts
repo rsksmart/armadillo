@@ -11,7 +11,7 @@ export class BtcService extends BaseService {
         return this.store.getCollection().findOne({});
     }
 
-    public async saveBlockDetected(btc: any) : Promise<void> {
+    public async save(btc: any) : Promise<void> {
         //remove last block;
         await this.store.getCollection().drop().catch(function(){});
         await this.store.getCollection().insertOne(btc);

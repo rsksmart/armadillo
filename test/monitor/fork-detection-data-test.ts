@@ -30,7 +30,7 @@ afterEach(function () {
   sinon.restore();
 });
 
-describe("For detection tag", () => {
+describe("Fork detection tag Tests", () => {
   it("well form with 0x", () => {
     const data: ForkDetectionData = new ForkDetectionData(RSKTAG_0X);
 
@@ -151,7 +151,7 @@ describe("Overlap CPV", () => {
   });
 });
 
-describe('equals', () => {
+describe('detection data equals', () => {
   it('returns true for the same instance', () => {
     const data: ForkDetectionData = new ForkDetectionData('8b3440daf197e8928c0953e0d7dd87129436269acd0ac8e711d44200000001c3');
 

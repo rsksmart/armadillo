@@ -1,6 +1,6 @@
 
 import "mocha";
-import { BtcHeaderInfo, BtcBlock } from "../../src/common/btc-block";
+import { BtcBlock } from "../../src/common/btc-block";
 import { expect } from "chai";
 import { MongoStore } from "../../src/storage/mongo-store";
 import { ApiConfig } from "../../src/config/api-config";
@@ -26,10 +26,10 @@ describe("Btc service tests", () => {
     let btcBlock = new BtcBlock(100, "btcHash", "btcPrevHash", "")
     let btcBlockNext = new BtcBlock(101, "btcHash", "btcPrevHash", "")
    
-    await btcService.saveBlockDetected(btcBlock);
+    await btcService.save(btcBlock);
     var block = await btcService.getLastBlockDetected();
     expect(block).to.deep.equal(btcBlock);
-    await btcService.saveBlockDetected(btcBlockNext);
+    await btcService.save(btcBlockNext);
     block = await btcService.getLastBlockDetected();
     expect(block).to.deep.equal(btcBlockNext);
   });
@@ -41,13 +41,13 @@ describe("Btc service tests", () => {
     let btcBlock4 = new BtcBlock(4, "btcHash", "btcPrevHash", "")
     let btcBlock5 = new BtcBlock(5, "btcHash", "btcPrevHash", "")
    
-    await btcService.saveBlockDetected(btcBlock1);
-    await btcService.saveBlockDetected(btcBlock2);
-    await btcService.saveBlockDetected(btcBlock3);
-    await btcService.saveBlockDetected(btcBlock4);
-    await btcService.saveBlockDetected(btcBlock4);
-    await btcService.saveBlockDetected(btcBlock5);
-    await btcService.saveBlockDetected(btcBlock5);
+    await btcService.save(btcBlock1);
+    await btcService.save(btcBlock2);
+    await btcService.save(btcBlock3);
+    await btcService.save(btcBlock4);
+    await btcService.save(btcBlock4);
+    await btcService.save(btcBlock5);
+    await btcService.save(btcBlock5);
     var block = await btcService.getLastBlockDetected();
 
     expect(block).to.deep.equal(btcBlock5);

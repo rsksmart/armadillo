@@ -36,7 +36,7 @@ describe("Blockchain api tests", () => {
     await branchService.disconnect();
   });
 
-  it("Get getLastBlochains method", async () => {
+  it("getLastBlochains method", async () => {
 
     let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
     let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));

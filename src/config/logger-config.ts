@@ -12,9 +12,6 @@ export class LoggerConfig {
 
         configure(configFile);
         
-        var logger = getLogger("main.ts");
-        logger.level = 'all';
-
-        this.log = logger;
+        this.log = getLogger("main.ts");
     }
 }
