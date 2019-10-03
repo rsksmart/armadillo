@@ -2,41 +2,74 @@ let MongoClient = require('mongodb').MongoClient;
 const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
+const ArmadilloStateTracker = "btc";
 
 let DeleteCollection = async (_db, _collection) => {
     MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }, async function (err, db) {
-        console.log("Deleting " + _collection + " from " + _db);
         if (err) throw err;
         var dbo = await db.db(_db);
-        //Delete the collection:
-        dbo.collection(_collection).drop(function (err, delOK) {
-            if (err) { console.log("Collection didn't existed"); }
-            if (delOK) { console.log("Collection deleted"); }
-            db.close();
-        });
-    });
-}
-
-let findBlocks = async (_db, _collection, _rskHeight) => {
-    MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }, async function (err, db) {
-        // console.log("Deleting " + _collection + " from " + _db);
-        if (err) throw err;
-        var dbo = await db.db(_db);
-
         //Delete the collection:
         try {
-            let result = await dbo.collection(_collection).find({"rskInfo.height": _rskHeight});
-            console.log(result);
+            await dbo.collection(_collection).drop();
         }
-        catch(e){
-            console.error(e.message)
+        catch (e) { }
+        finally {
+            await db.close();
         }
     });
+
+}
+
+let findBlocks = async (_db, _collection) => {
+    try {
+        let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+        var dbo = await db.db(_db);
+        let result = [];
+        //Delete the collection:
+        try {
+            result = await dbo
+                .collection(_collection)
+                .find({})
+                .toArray();
+        }
+        catch (e) {
+            console.error(e.message)
+        }
+        finally {
+            await db.close();
+        }
+        return result;
+    } catch (err) {
+        throw err;
+    }
+}
+
+let insertDocuments = async (_db, _collection, _jsonData) => {
+    try {
+        let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+        var dbo = await db.db(_db);
+        let result = [];
+        //Delete the collection:
+        try {
+            await dbo.collection(_collection).insertMany(_jsonData);
+        }
+        catch (e) {
+            console.error(e.message)
+        }
+        finally {
+            await db.close();
+        }
+        return result;
+    } catch (err) {
+        throw err;
+    }
 }
 
 module.exports = {
     DeleteCollection,
     ArmadilloDB,
     ArmadilloMainchain,
-    findBlocks
+    ArmadilloStateTracker,
+    findBlocks,
+    insertDocuments
 }
