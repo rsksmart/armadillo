@@ -31,7 +31,8 @@ let forkDetector: ForkDetector;
 let btcService: BtcService;
 let btcBlockPrev = new BtcBlock(1, "btcHash", "btcPrevHash", "")
 
-describe('Building mainchain when a new btc block arrives', () => {
+//Building mainchain when a new btc block arrives
+describe('Mainchain test', () => {
 
   afterEach(function () {
     sinon.restore();
@@ -50,10 +51,10 @@ describe('Building mainchain when a new btc block arrives', () => {
      var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
      getLastBlockDetected.returns(btcBlockPrev);
  
-     sinon.stub(btcService, <any>'saveBlockDetected').callsFake(function(){});
+     sinon.stub(btcService, <any>'save').callsFake(function(){});
   });
 
-  it("getBlocksByNumber", async () => {
+  it("getBlocksByNumber method", async () => {
    
     var getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber').returns([]);
    

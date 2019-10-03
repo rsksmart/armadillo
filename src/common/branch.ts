@@ -62,7 +62,7 @@ export class Branch {
         return this.items.length;
     }
 
-    public getFirstDetected(){
+    public getFirstDetected(): BranchItem{
         return this.items[this.items.length -1];
     }
 
