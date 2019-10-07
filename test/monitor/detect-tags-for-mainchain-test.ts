@@ -20,7 +20,7 @@ const NU = "00"; // 0
 const BN = "00000001"; // 1
 const RSKTAG = PREFIX + CPV + NU + BN;
 const forkData = new ForkDetectionData(RSKTAG);
-const btcBlock = new BtcBlock(2, "btcHash", "btcPrevHash", RSKTAG)
+const btcBlock = new BtcBlock(2, "btcHash", RSKTAG)
 let btcStub;
 let rskApiConfig: RskApiConfig;
 let mongoStore: MongoStore;
@@ -29,7 +29,7 @@ let mainchainService: MainchainService;
 let rskService: RskApiService;
 let forkDetector: ForkDetector;
 let btcService: BtcService;
-let btcBlockPrev = new BtcBlock(1, "btcHash", "btcPrevHash", "")
+let btcBlockPrev = new BtcBlock(1, "btcHash", "")
 
 //Building mainchain when a new btc block arrives
 describe('Mainchain test', () => {
@@ -46,7 +46,7 @@ describe('Mainchain test', () => {
      rskService = new RskApiService(rskApiConfig);
      btcStore = stubObject<MongoStore>(MongoStore.prototype);
      btcService = new BtcService(btcStore);
-     forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService, btcService);
+     forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService);
 
      var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
      getLastBlockDetected.returns(btcBlockPrev);
@@ -114,7 +114,7 @@ describe('Mainchain test', () => {
     const rskBlock2 = new RskBlock(2, "hash2", "hash1", forkData);
     const rskBlock3 = new RskBlock(3, "hash3", "hash2", forkData);
     const rskBlock4 = new RskBlock(4, "hash4", "hash3", forkData1);
-    let btcBlock = new BtcBlock(2, "btcHash", "btcPrevHash", rskTag)
+    let btcBlock = new BtcBlock(2, "btcHash", rskTag)
 
     var getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
     getBlocksByNumber.withArgs(4).returns([rskBlock4]);

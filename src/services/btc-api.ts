@@ -1,5 +1,7 @@
 import { BtcApiConfig } from '../config/btc-api-config';
 import { get } from '../util/http';
+import { BtcBlock } from '../common/btc-block';
+import { ForkDetectionData } from '../common/fork-detection-data';
 
 export interface PlainBtcHeader {
     height: number;
@@ -19,22 +21,20 @@ export class HttpBtcApi {
         this.config = btcApiConfig;
     }
 
-    public async getBestBlock(): Promise<PlainBtcBlock> {
+    public async getBestBlock(): Promise<BtcBlock> {
         const bestHeader: PlainBtcHeader = await this.getBestBlockHeader();
         const coinbase: any = await this.getCoinbase(bestHeader.hash);
-
         const rskTag = this.extractTagFromCoinbase(coinbase);
 
-        const block: PlainBtcBlock = {
-            header: {
-                height: bestHeader.height,
-                hash: bestHeader.hash,
-                previousHash: bestHeader.previousHash
-            },
-            rskTag: rskTag
-        }
+        return new BtcBlock(bestHeader.height, bestHeader.hash, rskTag);
+    }
 
-        return block;
+    public async getBlock(n: number): Promise<BtcBlock> {
+        const blockAtHeightN: PlainBtcHeader = await this.getBlockHeader(n);
+        const coinbase: any = await this.getCoinbase(blockAtHeightN.hash);
+        const rskTag = this.extractTagFromCoinbase(coinbase);
+
+        return new BtcBlock(blockAtHeightN.height, blockAtHeightN.hash, rskTag);
     }
 
     private baseUrl() : string {
@@ -43,6 +43,12 @@ export class HttpBtcApi {
 
     private async getBestBlockHeader() : Promise<PlainBtcHeader> {
         const response: any = await get(this.baseUrl() + '/block/getBestBlock');
+
+        return response.block.header;
+    }
+
+    private async getBlockHeader(n: number) : Promise<PlainBtcHeader> {
+        const response: any = await get(this.baseUrl() + '/block/getBlock/' + n);
 
         return response.block.header;
     }
