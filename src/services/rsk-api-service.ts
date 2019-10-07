@@ -40,7 +40,8 @@ export class RskApiService {
     }
 
     public async getBlock(height: number): Promise<RskBlock> {
-        return await this.nod3.eth.getBlock(height);
+        let block = await this.nod3.eth.getBlock(height);
+        return new RskBlock(block.number, block.hash, block.parentHash, new ForkDetectionData(block.hashForMergedMining));
     }
 
     //This method returns the nearest block in rsk blockchain where we thought the fork could have started
