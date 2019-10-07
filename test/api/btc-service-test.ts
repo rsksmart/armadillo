@@ -9,6 +9,11 @@ import { BtcService } from "../../src/services/btc-service";
 const mainConfig = ApiConfig.getMainConfig('./config.json');
 const mongoBtcService = new MongoStore(mainConfig.store.btc);
 const btcService = new BtcService(mongoBtcService);
+const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
+const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
+const NU = "00"; // 0
+const BN = "000004c9"; // 1225
+const RSKTAG = PREFIX + CPV + NU + BN;
 
 //Before you run this test you have to run a mongo instance
 describe("Btc service tests", () => {
@@ -23,8 +28,8 @@ describe("Btc service tests", () => {
   });
 
   it("getLastBlockDetected method, return 1 element but save 2 times", async () => {
-    let btcBlock = new BtcBlock(100, "btcHash", "btcPrevHash", "")
-    let btcBlockNext = new BtcBlock(101, "btcHash", "btcPrevHash", "")
+    let btcBlock = new BtcBlock(100, "btcHash", RSKTAG)
+    let btcBlockNext = new BtcBlock(101, "btcHash", RSKTAG)
    
     await btcService.save(btcBlock);
     var block = await btcService.getLastBlockDetected();
@@ -35,11 +40,11 @@ describe("Btc service tests", () => {
   });
 
   it("save multiple times, and then get last item saved", async () => {
-    let btcBlock1 = new BtcBlock(1, "btcHash", "btcPrevHash", "")
-    let btcBlock2 = new BtcBlock(2, "btcHash", "btcPrevHash", "")
-    let btcBlock3 = new BtcBlock(3, "btcHash", "btcPrevHash", "")
-    let btcBlock4 = new BtcBlock(4, "btcHash", "btcPrevHash", "")
-    let btcBlock5 = new BtcBlock(5, "btcHash", "btcPrevHash", "")
+    let btcBlock1 = new BtcBlock(1, "btcHash", RSKTAG);
+    let btcBlock2 = new BtcBlock(2, "btcHash", RSKTAG);
+    let btcBlock3 = new BtcBlock(3, "btcHash", RSKTAG);
+    let btcBlock4 = new BtcBlock(4, "btcHash", "");
+    let btcBlock5 = new BtcBlock(5, "btcHash", "");
    
     await btcService.save(btcBlock1);
     await btcService.save(btcBlock2);
