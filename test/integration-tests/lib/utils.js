@@ -4,28 +4,36 @@ const Curl = require('node-libcurl').Curl;
 const randomHex = require('randomhex');
 const expect = require('chai').expect;
 const btclib = require('bitcoinjs-lib');
-const mongo_utils = require ('./mongo-utils');
 const CURL_DEFAULT_HTTP_VERSION = "1.1";
 const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
 
 async function MockBtcApiChangeRoute(route) {
     let response = await fetch(`${BtcApiURL}route/${route}`);
-    // console.log(`+++++ CHANGE ROOT TO + ${route} ++++++`);
-    // console.log(JSON.stringify(response,null,2));
     return response;
 }
+
 async function getMainchainBlocks(number) {
     let response = await fetch(ArmadilloApiURL + "mainchain/getLastBlocks/" + number);
     let result = await response.json();
-    // console.log(`+++++ GET AS MANY AS + ${number} BLOCKS ++++++`);
-    // console.log(JSON.stringify(result.blocks, null, 2));
     return result;
 }
-async function getNextBlockInMockBTCApi() {
+
+async function getBlockchains(number) {
+    let response = await fetch(ArmadilloApiURL + "blockchains/" + number);
+    let result = await response.json();
+    return result;
+}
+
+async function getForksFromHeight(number) {
+    let response = await fetch(ArmadilloApiURL + "forks/getForksFromHeight/" + number);
+    let result = await response.json();
+    return result;
+}
+
+async function getNextBlockInMockBTCApi(_waitTime) {
+    if (_waitTime) { await sleep(_waitTime); }
     let result = await fetch(BtcApiURL + "nextBlock");
-    // console.log("+++++ Next block in Mock BTC API");
-    // console.log(result);
     return result;
 }
 
@@ -53,8 +61,7 @@ const config = {
         "user": "admin",
         "pass": "admin"
     }
-};
-
+}
 const host = config.rskd.url + ":" + config.rskd.rpcport;
 const context = {
     headers: [
@@ -63,7 +70,7 @@ const context = {
         "Accept: */*"
     ],
     httpversion: "1.1"
-};
+}
 
 function sleep(millis) {
     return new Promise(resolve => setTimeout(resolve, millis));
@@ -86,7 +93,6 @@ var addLeadingZeros = (totalLength, s) => {
 async function promiseRequest(options, body) {
     return new Promise((resolve, reject) => {
         const curl = new Curl();
-
         curl.setOpt(Curl.option.URL, options.host);
         curl.setOpt(Curl.option.PORT, options.port);
         curl.setOpt(Curl.option.POST, 1);
@@ -104,7 +110,6 @@ async function promiseRequest(options, body) {
             curl.close();
             reject(e);
         });
-
         curl.perform();
     });
 }
@@ -116,12 +121,10 @@ function rskdPromiseRequest(method, params, poolContext) {
         params: params || [],
         id: 1
     }
-
     const postBody = JSON.stringify(body);
 
     const headers = poolContext.headers.slice(0); // copy array
     headers.push("Content-Length: " + postBody.length);
-
     const options = {
         host: config.rskd.url,
         port: config.rskd.rpcport,
@@ -130,9 +133,9 @@ function rskdPromiseRequest(method, params, poolContext) {
         headers: headers,
         httpversion: curlHttpVersions[poolContext.httpversion]
     };
-
     return promiseRequest(options, postBody);
 }
+
 function bitcoindPromiseRequest(method, params, poolContext) {
     const body = {
         jsonrpc: "2.0",
@@ -140,12 +143,9 @@ function bitcoindPromiseRequest(method, params, poolContext) {
         params: params || [],
         id: 1
     }
-
     const postBody = JSON.stringify(body);
-
     const headers = poolContext.headers.slice(0); // copy array
     headers.push("Content-Length: " + postBody.length);
-
     const options = {
         host: config.bitcoind.url,
         port: config.bitcoind.rpcport,
@@ -154,19 +154,16 @@ function bitcoindPromiseRequest(method, params, poolContext) {
         headers: headers,
         httpversion: curlHttpVersions[poolContext.httpversion]
     };
-
     return promiseRequest(options, postBody);
 }
 
 function buildBlock(vtxs, gbt) {
     let block = new btclib.Block();
-
     block.prevHash = Buffer.from(gbt.previousblockhash, 'hex');
     block.merkleRoot = Buffer.from(btclib.Block.calculateMerkleRoot(vtxs), 'hex');
     block.timestamp = Buffer.from(randomHex(4).substr(2, 10), 'hex');
     block.bits = 0x1749500d; // hardcoded, no special meaning since we don't test against the bitcoin network
     block.transactions = vtxs;
-
     return block;
 }
 
@@ -185,14 +182,12 @@ function buildTransactions(gbt, rskwork) {
 
 function mineValidBlock(gbt, rskwork) {
     let block, vtxs;
-    const target = Buffer.from(rskwork.target.substr(2), 'hex')
-
+    const target = Buffer.from(rskwork.target.substr(2), 'hex');
     do {
         vtxs = buildTransactions(gbt, rskwork);
         block = buildBlock(vtxs, gbt, rskwork);
         blockHash = block.getHash().reverse();
     } while (blockHash.compare(target) > 0)
-
     return block;
 }
 
@@ -203,9 +198,7 @@ async function getBlockTemplate() {
         params: [],
         id: 1
     }
-
     const postBody = JSON.stringify(body);
-
     const options = {
         host: config.bitcoind.url,
         port: config.bitcoind.rpcport,
@@ -248,6 +241,7 @@ async function buildAndMergeMineBlock(poolContext, expectNewWork = false) {
     const block = mineValidBlock(gbt, rskwork);
     return block;
 }
+
 function validateMergeMinedBlockResponse(response) {
     expect(response).to.have.property('id');
     expect(response).to.have.property('result');
@@ -255,6 +249,7 @@ function validateMergeMinedBlockResponse(response) {
     expect(response.result).to.have.property('blockHash');
     expect(response.result).to.have.property('blockIncludedHeight');
 }
+
 async function mineBlockResponse(poolContext) {
     const method = "submitBitcoinBlock";
     const block = await buildAndMergeMineBlock(poolContext);
@@ -321,6 +316,7 @@ async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap)
         expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
     }
 }
+
 async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
     let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
     let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
@@ -336,6 +332,7 @@ async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
     let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
     expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
 }
+
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap) {
     let shouldHaveBtcInfo = btcRskMap.includes(armadilloBlock.rskInfo.height);
 
@@ -370,6 +367,8 @@ module.exports = {
     validateBtcBlockNodeVsArmadilloMonitor,
     validateRskBlockNodeVsArmadilloMonitorMongoDB,
     validateBtcBlockNodeVsArmadilloMonitorMongoDB,
-    getBlockByHashInMockBTCApi
-
+    getBlockByHashInMockBTCApi,
+    getForksFromHeight
+,
+    getBlockchains
 }
