@@ -1,6 +1,6 @@
 import { BtcBlock } from "../common/btc-block";
 import { EventEmitter } from "events";
-import { PlainBtcBlock, HttpBtcApi } from "./btc-api";
+import { HttpBtcApi } from "./btc-api";
 import { Logger, getLogger } from "log4js";
 import { BtcService } from "./btc-service";
 
@@ -42,13 +42,15 @@ export class BtcWatcher extends EventEmitter {
             let bestBtcBlock: BtcBlock = await this.btcApi.getBestBlock();
             if(!this.lastBLockDetected){
                 this.logger.warn('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
-                await this.searchBlockAtHeightN(bestBtcBlock.btcInfo.height);
+                await this.saveBlockAtHeight(bestBtcBlock);
+                return;
             }
             
             if(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
                 while(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
                     let blockMissing = this.lastBLockDetected.btcInfo.height + 1;
-                    await this.searchBlockAtHeightN(blockMissing);
+                    let blockAtHeightN : BtcBlock = await this.btcApi.getBlock(blockMissing);
+                    await this.saveBlockAtHeight(blockAtHeightN);
                     await sleep(200);
                 }
             }
@@ -57,10 +59,9 @@ export class BtcWatcher extends EventEmitter {
         }
     }
 
-    private async searchBlockAtHeightN(blockMissing: number) {
-        let blockAtHeightN : BtcBlock = await this.btcApi.getBlock(blockMissing);
-        await this.saveBlock(blockAtHeightN);
-        this.lastBLockDetected = blockAtHeightN;
+    private async saveBlockAtHeight(block: BtcBlock) {
+        await this.saveBlock(block);
+        this.lastBLockDetected = block;
     }
 
     public async stop() : Promise<void> {
@@ -69,11 +70,8 @@ export class BtcWatcher extends EventEmitter {
     }
 
     private async saveBlock(block: BtcBlock) {
-
         this.logger.info("New BTC block with hash:", block.btcInfo.hash, "and height:", block.btcInfo.height)
-
         await this.btcService.save(block);
-
         this.emit(BTCEvents.NEW_BLOCK, block);
     }
 }
