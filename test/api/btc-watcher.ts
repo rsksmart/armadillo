@@ -19,8 +19,6 @@ const config = stubObject<BtcApiConfig>(BtcApiConfig.prototype);
 const btcApi = new HttpBtcApi(config)
 const btcWatcher = new BtcWatcher(btcApi, btcService);
 
-
-//Before you run this test you have to run a mongo instance
 describe.only("Btc watcher tests, synchronization with BTC, ", () => {
   beforeEach(async function () {
     btcWatcher.stop();

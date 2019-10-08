@@ -8,8 +8,8 @@ const stateTracker = mongo_utils.ArmadilloStateTracker;
 const heightOfNoRskTags = 951;
 const heightOfConsecutiveRskTags = 954;
 const heightOfDistancedRskTags = 956;
-const apiPoolingTime = 5000;
-const loadingTime = 500;
+const apiPoolingTime = 500;
+const loadingTime = 700;
 const rskBlockHeightsWithBtcBlock = [450, 470, 490, 570, 650, 730]
 const dataInputPath = "test/integration-tests/data/";
 const consecutive2RskBlocks = "testInput_consecutive2RSKtags.json";
@@ -27,7 +27,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.sleep(apiPoolingTime);
         await utils.getNextBlockInMockBTCApi();
         //Wait until the monitor can read the new block (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
         const blocks = mainchainResponse.blocks;
         //Reset to original height
@@ -41,10 +41,9 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await mongo_utils.DeleteCollection(db, stateTracker);
         //Validate no response in monitor for mainchain
         //Wait until the monitor can read the new block (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();
+        await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mongoBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -56,11 +55,10 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await mongo_utils.DeleteCollection(db, mainchain);
         await mongo_utils.DeleteCollection(db, stateTracker);
         // TODO: Review if armadillo monitor has to be restarted
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
+        await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting 
         //the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
         const blocks = mainchainResponse.blocks;
         //Reset to original height
@@ -72,17 +70,18 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(2 * 2 * apiPoolingTime);
-    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation", async () => {
+    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation", async () => {  
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteCollection(db, mainchain);
         await mongo_utils.DeleteCollection(db, stateTracker);
-        // TODO: Review if armadillo monitor has to be restarted
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
+        const blocksToAdvance = 1;
+        for (let i = 0; i < blocksToAdvance; i++) {
+            await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+        }
         //Wait until the monitor can read the new block and process of getting 
         //the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mongoBlocks = await mongo_utils.findBlocks(db, mainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -100,9 +99,9 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const insertDataJSON = JSON.parse(insertDataText);
         expect(insertDataJSON).to.be.an('array').that.is.not.empty;
         await mongo_utils.insertDocuments(db, mainchain, insertDataJSON);
-        const mongoBlocks = await mongo_utils.findBlocks(db,mainchain);
+        const mongoBlocks = await mongo_utils.findBlocks(db, mainchain);
         expect(mongoBlocks).to.be.an('array').that.is.not.empty;
-        expect(mongoBlocks.length).to.be.equal(21);  
+        expect(mongoBlocks.length).to.be.equal(21);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
         const blocks = mainchainResponse.blocks;
         expect(blocks).to.be.an('array').that.is.not.empty;
@@ -114,13 +113,12 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteCollection(db, mainchain);
         await mongo_utils.DeleteCollection(db, stateTracker);
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
+        const blocksToAdvance = 2; 
+        for (let i = 0; i < blocksToAdvance; i++) {
+            await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+        }
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(100);
         const blocks = mainchainResponse.blocks;
         //Reset to original height
@@ -138,13 +136,12 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteCollection(db, mainchain);
         await mongo_utils.DeleteCollection(db, stateTracker);
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();
+        const blocksToAdvance = 2; 
+        for (let i = 0; i < blocksToAdvance; i++) {
+            await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+        }
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mongoBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -159,12 +156,12 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await mongo_utils.DeleteCollection(db, mainchain);
         await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive3RskBlocks);
-        const insertDataJSON = JSON.parse(insertDataText);  
+        const insertDataJSON = JSON.parse(insertDataText);
         expect(insertDataJSON).to.be.an('array').that.is.not.empty;
         await mongo_utils.insertDocuments(db, mainchain, insertDataJSON);
-        const mongoBlocks = await mongo_utils.findBlocks(db,mainchain);
+        const mongoBlocks = await mongo_utils.findBlocks(db, mainchain);
         expect(mongoBlocks).to.be.an('array').that.is.not.empty;
-        expect(mongoBlocks.length).to.be.equal(41);       
+        expect(mongoBlocks.length).to.be.equal(41);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
         const blocks = mainchainResponse.blocks;
         expect(blocks).to.be.an('array').that.is.not.empty;
@@ -176,19 +173,12 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
         await mongo_utils.DeleteCollection(db, mainchain);
         await mongo_utils.DeleteCollection(db, stateTracker);
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();//P6,H957
+        const blocksToAdvance = 4; 
+        for (let i = 0; i < blocksToAdvance; i++) {
+            await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+        }
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();//P7,H958
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();//P8,H959
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();//P9,H960
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(100);
         const blocks = mainchainResponse.blocks;
         //Reset to original height
@@ -205,19 +195,11 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
         await mongo_utils.DeleteCollection(db, mainchain);
         await mongo_utils.DeleteCollection(db, stateTracker);
-        await utils.sleep(apiPoolingTime);//Wait until the monitor can read the new block (pooling every 5s)
-        await utils.getNextBlockInMockBTCApi();//P6,H957
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();//P7,H958
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();//P8,H959
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime);
-        await utils.getNextBlockInMockBTCApi();//P9,H960
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime+loadingTime);
+        const blocksToAdvance = 4; 
+        for (let i = 0; i < blocksToAdvance; i++) {
+            await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+        }
+        await utils.sleep(apiPoolingTime + loadingTime);
         const mongoBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -235,9 +217,9 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const insertDataJSON = JSON.parse(insertDataText);
         expect(insertDataJSON).to.be.an('array').that.is.not.empty;
         await mongo_utils.insertDocuments(db, mainchain, insertDataJSON);
-        const mongoBlocks = await mongo_utils.findBlocks(db,mainchain);
+        const mongoBlocks = await mongo_utils.findBlocks(db, mainchain);
         expect(mongoBlocks).to.be.an('array').that.is.not.empty;
-        expect(mongoBlocks.length).to.be.equal(81);       
+        expect(mongoBlocks.length).to.be.equal(81);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
         const blocks = mainchainResponse.blocks;
         expect(blocks).to.be.an('array').that.is.not.empty;
