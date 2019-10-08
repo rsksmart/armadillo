@@ -3,6 +3,7 @@ const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
 const ArmadilloStateTracker = "btc";
+const ArmadilloForks = "branches";
 
 let DeleteCollection = async (_db, _collection) => {
     MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }, async function (err, db) {
@@ -17,7 +18,6 @@ let DeleteCollection = async (_db, _collection) => {
             await db.close();
         }
     });
-
 }
 
 let findBlocks = async (_db, _collection) => {
@@ -71,5 +71,6 @@ module.exports = {
     ArmadilloMainchain,
     ArmadilloStateTracker,
     findBlocks,
-    insertDocuments
+    insertDocuments,
+    ArmadilloForks
 }
