@@ -1,7 +1,7 @@
 
 export const checkTag = (value: string) => {
     value = String(value).toLowerCase();
-   
+
     if (/^(0x)[0-9a-f]{64}$/.test(value)) {
         return value;
     }
@@ -9,21 +9,25 @@ export const checkTag = (value: string) => {
     if (/^[0-9a-f]{64}$/.test(value)) {
         return "0x" + value;
     }
-  
+
     return null;
 };
 
-export const toHex = (val, inByte : number) => {
+export const toHex = (val, inByte: number) => {
     let hex = val.toString('16');
     if (hex.length % 2 == 1)
         hex = '0' + hex;
 
-    if(hex.length < (inByte * 2)){
+    if (hex.length < (inByte * 2)) {
         var left = (inByte * 2) - hex.length;
-        for(var i = 0; i < left; i++){
+        for (var i = 0; i < left; i++) {
             hex = '0' + hex;
         }
     }
 
     return hex;
+}
+
+export const sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
