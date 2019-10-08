@@ -2,6 +2,7 @@ import { BtcBlock } from "../common/btc-block";
 import { EventEmitter } from "events";
 import { PlainBtcBlock, HttpBtcApi } from "./btc-api";
 import { Logger, getLogger } from "log4js";
+import { BtcService } from "./btc-service";
 
 export enum BTCEvents {
     NEW_BLOCK = 'newBlock'
@@ -16,17 +17,19 @@ async function sleep(ms) : Promise<void> {
 export class BtcWatcher extends EventEmitter {
 
     private logger: Logger;
-    private blocks: BtcBlock[]; // TODO: move this to a blockchain abstraction
     private btcApi: HttpBtcApi;
     private running: boolean;
-
-    constructor(btcApi: HttpBtcApi) {
+    private btcService: BtcService;
+    private lastBLockDetected: BtcBlock;
+    
+    constructor(btcApi: HttpBtcApi, btcService: BtcService) {
         super();
 
-        this.blocks = []
         this.btcApi = btcApi;
         this.logger = getLogger('btc-watcher');
         this.running = false;
+        this.btcService = btcService;
+        this.lastBLockDetected;
     }
 
     public async start() : Promise<void> {
@@ -35,22 +38,29 @@ export class BtcWatcher extends EventEmitter {
         this.running = true;
 
         while (this.running) {
-            const plainBlock: PlainBtcBlock = await this.btcApi.getBestBlock();
-            const lastBlock: BtcBlock = this.getLastBlock();
-
-            if (!lastBlock || lastBlock.btcInfo.hash == plainBlock.header.previousHash) {
-                const newBlock: BtcBlock = new BtcBlock(plainBlock.header.height,
-                                                        plainBlock.header.hash,
-                                                        plainBlock.header.previousHash,
-                                                        plainBlock.rskTag)
-
-                this.saveBest(newBlock);
-            } else {
-                // TODO: handle reorg
+            this.lastBLockDetected = await this.btcService.getLastBlockDetected();
+            let bestBtcBlock: BtcBlock = await this.btcApi.getBestBlock();
+            if(!this.lastBLockDetected){
+                this.logger.warn('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
+                await this.searchBlockAtHeightN(bestBtcBlock.btcInfo.height);
+            }
+            
+            if(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
+                while(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
+                    let blockMissing = this.lastBLockDetected.btcInfo.height + 1;
+                    await this.searchBlockAtHeightN(blockMissing);
+                    await sleep(200);
+                }
             }
 
             await sleep(5000);
         }
+    }
+
+    private async searchBlockAtHeightN(blockMissing: number) {
+        let blockAtHeightN : BtcBlock = await this.btcApi.getBlock(blockMissing);
+        await this.saveBlock(blockAtHeightN);
+        this.lastBLockDetected = blockAtHeightN;
     }
 
     public async stop() : Promise<void> {
@@ -58,19 +68,12 @@ export class BtcWatcher extends EventEmitter {
         this.running = false;
     }
 
-    private saveBest(block: BtcBlock) {
-        this.logger.info('New BTC block with hash:', block.btcInfo.hash, "and Height:", block.btcInfo.height)
+    private async saveBlock(block: BtcBlock) {
 
-        this.blocks.push(block);
+        this.logger.info("New BTC block with hash:", block.btcInfo.hash, "and height:", block.btcInfo.height)
+
+        await this.btcService.save(block);
 
         this.emit(BTCEvents.NEW_BLOCK, block);
-    }
-
-    private getLastBlock() : BtcBlock {
-        if (this.blocks.length === 0) {
-            return null;
-        }
-
-        return this.blocks[this.blocks.length - 1]
     }
 }

@@ -10,9 +10,9 @@ import { BranchItem } from "../../src/common/branch";
 import { ApiConfig } from "../../src/config/api-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
-const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
-const NU = "00"; // 0
-const BN = "000004c9"; // 1225
+const CPV = "d89d8bf4d2e434"; 
+const NU = "00";
+const BN = "000004c9"; 
 const RSKTAG = PREFIX + CPV + NU + BN;
 const btcInfo = new BtcHeaderInfo(0, "");
 const mainConfig = ApiConfig.getMainConfig('./config.json');
