@@ -8,7 +8,7 @@ import { RskBlock } from "../../src/common/rsk-block";
 import { BranchService } from "../../src/services/branch-service";
 import { BranchItem, Branch } from "../../src/common/branch";
 import { MainchainService } from "../../src/services/mainchain-service";
-import { BLockchainController } from "../../src/api/controllers/blockchain-controller";
+import { BlockchainController } from "../../src/api/controllers/blockchain-controller";
 import { ApiConfig } from "../../src/config/api-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
@@ -52,10 +52,10 @@ describe("Blockchain api tests", () => {
     let mainchainList = [branchItem7,branchItem6,branchItem5,branchItem4,branchItem3,branchItem2,branchItem1]
     await mainchainService.save(mainchainList);
 
-    let blockchainController = new BLockchainController(mainchainService, branchService);
+    let blockchainController = new BlockchainController(mainchainService, branchService);
     let param = { "params": { "n": 10 }};
     
-    let data = await blockchainController.getLastBlochains(param, mockRes);
+    let data = await blockchainController.getLastBlockchains(param, mockRes);
     expect(mainchainList).to.deep.equal(data.blockchains.mainchain);
     expect(data.blockchains.forks[0]).to.deep.equal(Branch.fromObjectToListBranchItems(branch));
   });
