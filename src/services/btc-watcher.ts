@@ -38,12 +38,13 @@ export class BtcWatcher extends EventEmitter {
         this.running = true;
 
         while (this.running) {
+            
             this.lastBLockDetected = await this.btcService.getLastBlockDetected();
             let bestBtcBlock: BtcBlock = await this.btcApi.getBestBlock();
+
             if(!this.lastBLockDetected){
                 this.logger.warn('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
                 await this.saveBlockAtHeight(bestBtcBlock);
-                return;
             }
             
             if(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
@@ -54,7 +55,6 @@ export class BtcWatcher extends EventEmitter {
                     await sleep(200);
                 }
             }
-
             await sleep(5000);
         }
     }
