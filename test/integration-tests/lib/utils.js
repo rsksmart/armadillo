@@ -267,7 +267,6 @@ async function mineBlockResponse(poolContext) {
 
 async function getLastRSKHeight(context) {
     let response = JSON.parse(await rskdPromiseRequest("eth_blockNumber", [], context));
-    console.log("aaa>> " + response.result)
     return parseInt(response.result);
 }
 
