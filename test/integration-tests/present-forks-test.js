@@ -102,7 +102,7 @@ describe("RSK no match at same height with matching CPV", () => {
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
         //Lacks blocks validation
     });
-    it.only("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
+    it("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
         + "\n\twith no matching RSK tag, end to end", async () => {
             await utils.MockBtcApiChangeRoute("raw");
             await utils.setHeightInMockBTCApi(HMatchRSKWithFollowingNoMatch);
