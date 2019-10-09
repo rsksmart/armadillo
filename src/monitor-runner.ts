@@ -36,7 +36,6 @@ class MonitorRunner {
 
     public async stop() : Promise<void> {
         this.logger.info("Stopping monitor");
-
         this.forkDetector.stop();
         this.branchService.disconnect();
         this.mainchainService.disconnect();
@@ -45,16 +44,10 @@ class MonitorRunner {
 
     public async start() : Promise<void> {
         this.logger.info("Starting monitor");
-
-        let that = this;
-        
-        this.branchService.connect().then(function () {
-            that.mainchainService.connect().then(function () {
-                that.btcService.connect().then(function () {
-                    that.forkDetector.start();
-                });
-            });
-        });
+        await this.branchService.connect();
+        await this.mainchainService.connect();
+        await this.btcService.connect();
+        await this.forkDetector.start();
     }
 }
 
