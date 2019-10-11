@@ -20,6 +20,24 @@ let DeleteCollection = async (_db, _collection) => {
     });
 }
 
+let DeleteDB = async (_db) => {
+    MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }, async function (err, db) {
+        if (err) throw err;
+        var dbo = await db.db(_db);
+        //Delete the DBO:
+        try {
+            await dbo.dropDatabase();
+            // console.log("db dropped correctly");
+        }
+        catch (e) { 
+            console.error("Problem dropping DB"); 
+        }
+        finally {
+            await db.close();
+        }
+    });
+}
+
 let findBlocks = async (_db, _collection) => {
     try {
         let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -67,6 +85,7 @@ let insertDocuments = async (_db, _collection, _jsonData) => {
 
 module.exports = {
     DeleteCollection,
+    DeleteDB,
     ArmadilloDB,
     ArmadilloMainchain,
     ArmadilloStateTracker,
