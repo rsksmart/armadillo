@@ -19,7 +19,7 @@ const config = stubObject<BtcApiConfig>(BtcApiConfig.prototype);
 const btcApi = new HttpBtcApi(config)
 const btcWatcher = new BtcWatcher(btcApi, btcService);
 
-describe.only("Btc watcher tests, synchronization with BTC, ", () => {
+describe("Btc watcher tests, synchronization with BTC, ", () => {
   beforeEach(async function () {
     btcWatcher.stop();
   });
