@@ -26,7 +26,7 @@ async function getBlockchains(number) {
 }
 
 async function getForksFromHeight(number) {
-    let response = await fetch(ArmadilloApiURL + "forks/getForksFromHeight/" + number);
+    let response = await fetch(ArmadilloApiURL + "forks/getLastForks/" + number);
     let result = await response.json();
     return result;
 }
