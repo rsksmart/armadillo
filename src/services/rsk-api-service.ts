@@ -45,7 +45,7 @@ export class RskApiService {
     }
 
     //This method returns the nearest block in rsk blockchain where we thought the fork could have started
-    public async getRskBlockAtCerteinHeight(forkBlock: RskBlock, rskBlockAtSameOrPrevHeight: RskBlock): Promise<RskBlock> {
+    public async getRskBlockAtCertainHeight(forkBlock: RskBlock, rskBlockAtSameOrPrevHeight: RskBlock): Promise<RskBlock> {
         let bytesOverlaps = forkBlock.forkDetectionData.getNumberOfOverlapInCPV(rskBlockAtSameOrPrevHeight.forkDetectionData.CPV);
         if (bytesOverlaps == 0) {
             return await this.getBlock(1);
