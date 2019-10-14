@@ -354,15 +354,15 @@ async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btc
 async function getBlockchainsAfterMovingXBlocks(
     btcApiRoute, initialHeight, blocksToMove, 
     amountOfBlockchains, apiPoolingTime, loadingTime) {
-    await utils.MockBtcApiChangeRoute(btcApiRoute);
-    await utils.setHeightInMockBTCApi(initialHeight);
-    await mongo_utils.DeleteDB(db);
-    await utils.sleep(apiPoolingTime + loadingTime);
+    await MockBtcApiChangeRoute(btcApiRoute);
+    await setHeightInMockBTCApi(initialHeight);
+    await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+    await sleep(apiPoolingTime + loadingTime);
     const blocksToAdvance = blocksToMove;
     for (let i = 0; i < blocksToAdvance; i++) {
-        await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+        await getNextBlockInMockBTCApi(apiPoolingTime);
     }
-    return blockchainsResponse = await utils.getBlockchains(amountOfBlockchains);
+    return blockchainsResponse = await getBlockchains(amountOfBlockchains);
 }
 
 module.exports = {
