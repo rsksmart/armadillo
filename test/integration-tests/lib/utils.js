@@ -7,6 +7,7 @@ const btclib = require('bitcoinjs-lib');
 const CURL_DEFAULT_HTTP_VERSION = "1.1";
 const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
+const mongo_utils = require("./mongo-utils");
 
 async function MockBtcApiChangeRoute(route) {
     let response = await fetch(`${BtcApiURL}route/${route}`);
@@ -350,6 +351,20 @@ async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btc
     }
 }
 
+async function getBlockchainsAfterMovingXBlocks(
+    btcApiRoute, initialHeight, blocksToMove, 
+    amountOfBlockchains, apiPoolingTime, loadingTime) {
+    await utils.MockBtcApiChangeRoute(btcApiRoute);
+    await utils.setHeightInMockBTCApi(initialHeight);
+    await mongo_utils.DeleteDB(db);
+    await utils.sleep(apiPoolingTime + loadingTime);
+    const blocksToAdvance = blocksToMove;
+    for (let i = 0; i < blocksToAdvance; i++) {
+        await utils.getNextBlockInMockBTCApi(apiPoolingTime);
+    }
+    return blockchainsResponse = await utils.getBlockchains(amountOfBlockchains);
+}
+
 module.exports = {
     rskdPromiseRequest,
     config,
@@ -367,7 +382,7 @@ module.exports = {
     validateRskBlockNodeVsArmadilloMonitorMongoDB,
     validateBtcBlockNodeVsArmadilloMonitorMongoDB,
     getBlockByHashInMockBTCApi,
-    getForksFromHeight
-,
-    getBlockchains
+    getForksFromHeight,
+    getBlockchains,
+    getBlockchainsAfterMovingXBlocks
 }
