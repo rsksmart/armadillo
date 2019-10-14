@@ -26,13 +26,11 @@ describe.only("RSK no match at same height with matching CPV", () => {
         const lastForksResponse = await utils.getForksFromHeight(0);
         expect(lastForksResponse.forks).to.be.an('array').that.is.empty;
     }).timeout(1 * 2 * apiPoolingTime + 2000);;
-    it("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
-        await utils.MockBtcApiChangeRoute(btcApiRoute);
-        await utils.setHeightInMockBTCApi(HConsecutiveNoMatchRskTags);
-        await mongo_utils.DeleteDB(db);
-        await utils.sleep(apiPoolingTime + loadingTime);
-        const blockchainsResponse = await utils.getBlockchains(100);
+    it.only("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, HConsecutiveNoMatchRskTags, 0, 100, apiPoolingTime, loadingTime);
         const lastForksResponse = await utils.getForksFromHeight(0);
+        console.log(blockchainsResponse);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
@@ -62,7 +60,6 @@ describe.only("RSK no match at same height with matching CPV", () => {
     it("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HConsecutiveNoMatchRskTags, 2, 1000, apiPoolingTime, loadingTime);
-        const blockchainsResponse = await utils.getBlockchains(1000);
         console.log(blockchainsResponse);
         expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
         const lastForksResponse = await utils.getForksFromHeight(0);
@@ -500,16 +497,8 @@ describe("RSK no match at same height with no match CPV", () => {
     });
     describe("No matching RSK tags no match CPV among each other", () => {
         it.skip("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
-            await utils.MockBtcApiChangeRoute(btcApiRoute);
-            await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-            await mongo_utils.DeleteCollection(db, mainchain);
-            await mongo_utils.DeleteCollection(db, stateTracker);
-            await utils.sleep(apiPoolingTime + loadingTime);
-            const blocksToAdvance = 0//TODO: TBD;
-            for (let i = 0; i < blocksToAdvance; i++) {
-                await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-            }
-            const blockchainsResponse = await utils.getBlockchains(1000);
+            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
             console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
@@ -518,16 +507,8 @@ describe("RSK no match at same height with no match CPV", () => {
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
-            await utils.MockBtcApiChangeRoute(btcApiRoute);
-            await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-            await mongo_utils.DeleteCollection(db, mainchain);
-            await mongo_utils.DeleteCollection(db, stateTracker);
-            await utils.sleep(apiPoolingTime + loadingTime);
-            const blocksToAdvance = 0//TODO: TBD;
-            for (let i = 0; i < blocksToAdvance; i++) {
-                await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-            }
-            const blockchainsResponse = await utils.getBlockchains(1000);
+            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
             console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
@@ -536,16 +517,8 @@ describe("RSK no match at same height with no match CPV", () => {
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
-            await utils.MockBtcApiChangeRoute(btcApiRoute);
-            await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-            await mongo_utils.DeleteCollection(db, mainchain);
-            await mongo_utils.DeleteCollection(db, stateTracker);
-            await utils.sleep(apiPoolingTime + loadingTime);
-            const blocksToAdvance = 0//TODO: TBD;
-            for (let i = 0; i < blocksToAdvance; i++) {
-                await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-            }
-            const blockchainsResponse = await utils.getBlockchains(1000);
+            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
             console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
@@ -554,16 +527,8 @@ describe("RSK no match at same height with no match CPV", () => {
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
-            await utils.MockBtcApiChangeRoute(btcApiRoute);
-            await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-            await mongo_utils.DeleteCollection(db, mainchain);
-            await mongo_utils.DeleteCollection(db, stateTracker);
-            await utils.sleep(apiPoolingTime + loadingTime);
-            const blocksToAdvance = 0//TODO: TBD;
-            for (let i = 0; i < blocksToAdvance; i++) {
-                await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-            }
-            const blockchainsResponse = await utils.getBlockchains(1000);
+            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
             console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
@@ -572,16 +537,8 @@ describe("RSK no match at same height with no match CPV", () => {
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
-            await utils.MockBtcApiChangeRoute(btcApiRoute);
-            await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-            await mongo_utils.DeleteCollection(db, mainchain);
-            await mongo_utils.DeleteCollection(db, stateTracker);
-            await utils.sleep(apiPoolingTime + loadingTime);
-            const blocksToAdvance = 0//TODO: TBD;
-            for (let i = 0; i < blocksToAdvance; i++) {
-                await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-            }
-            const blockchainsResponse = await utils.getBlockchains(1000);
+            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
             console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
@@ -591,16 +548,8 @@ describe("RSK no match at same height with no match CPV", () => {
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
-                await utils.MockBtcApiChangeRoute(btcApiRoute);
-                await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-                await mongo_utils.DeleteCollection(db, mainchain);
-                await mongo_utils.DeleteCollection(db, stateTracker);
-                await utils.sleep(apiPoolingTime + loadingTime);
-                const blocksToAdvance = 0//TODO: TBD;
-                for (let i = 0; i < blocksToAdvance; i++) {
-                    await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-                }
-                const blockchainsResponse = await utils.getBlockchains(1000);
+                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                    btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
                 console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
@@ -610,16 +559,8 @@ describe("RSK no match at same height with no match CPV", () => {
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with matching RSK tag, following non consecutive BTC "
             + "\n\tblock with no matching RSK tag, end to end", async () => {
-                await utils.MockBtcApiChangeRoute(btcApiRoute);
-                await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-                await mongo_utils.DeleteCollection(db, mainchain);
-                await mongo_utils.DeleteCollection(db, stateTracker);
-                await utils.sleep(apiPoolingTime + loadingTime);
-                const blocksToAdvance = 0//TODO: TBD;
-                for (let i = 0; i < blocksToAdvance; i++) {
-                    await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-                }
-                const blockchainsResponse = await utils.getBlockchains(1000);
+                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                    btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
                 console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
@@ -629,16 +570,8 @@ describe("RSK no match at same height with no match CPV", () => {
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
-                await utils.MockBtcApiChangeRoute(btcApiRoute);
-                await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-                await mongo_utils.DeleteCollection(db, mainchain);
-                await mongo_utils.DeleteCollection(db, stateTracker);
-                await utils.sleep(apiPoolingTime + loadingTime);
-                const blocksToAdvance = 0//TODO: TBD;
-                for (let i = 0; i < blocksToAdvance; i++) {
-                    await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-                }
-                const blockchainsResponse = await utils.getBlockchains(1000);
+                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                    btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
                 console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
@@ -648,16 +581,8 @@ describe("RSK no match at same height with no match CPV", () => {
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC "
             + "\n\tblock with no matching RSK tag, end to end", async () => {
-                await utils.MockBtcApiChangeRoute(btcApiRoute);
-                await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-                await mongo_utils.DeleteCollection(db, mainchain);
-                await mongo_utils.DeleteCollection(db, stateTracker);
-                await utils.sleep(apiPoolingTime + loadingTime);
-                const blocksToAdvance = 0//TODO: TBD;
-                for (let i = 0; i < blocksToAdvance; i++) {
-                    await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-                }
-                const blockchainsResponse = await utils.getBlockchains(1000);
+                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                    btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
                 console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
@@ -667,16 +592,8 @@ describe("RSK no match at same height with no match CPV", () => {
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block "
             + "\n\twith matching RSK tag, end to end", async () => {
-                await utils.MockBtcApiChangeRoute(btcApiRoute);
-                await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-                await mongo_utils.DeleteCollection(db, mainchain);
-                await mongo_utils.DeleteCollection(db, stateTracker);
-                await utils.sleep(apiPoolingTime + loadingTime);
-                const blocksToAdvance = 0//TODO: TBD;
-                for (let i = 0; i < blocksToAdvance; i++) {
-                    await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-                }
-                const blockchainsResponse = await utils.getBlockchains(1000);
+                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                    btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
                 console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
@@ -686,16 +603,8 @@ describe("RSK no match at same height with no match CPV", () => {
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with no matching RSK tag, following non consecutive BTC "
             + "\n\tblock with matching RSK tag, end to end", async () => {
-                await utils.MockBtcApiChangeRoute(btcApiRoute);
-                await utils.setHeightInMockBTCApi(/** TODO: Create DataSet*/);
-                await mongo_utils.DeleteCollection(db, mainchain);
-                await mongo_utils.DeleteCollection(db, stateTracker);
-                await utils.sleep(apiPoolingTime + loadingTime);
-                const blocksToAdvance = 0//TODO: TBD;
-                for (let i = 0; i < blocksToAdvance; i++) {
-                    await utils.getNextBlockInMockBTCApi(apiPoolingTime);
-                }
-                const blockchainsResponse = await utils.getBlockchains(1000);
+                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+                    btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
                 console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
