@@ -9,7 +9,7 @@ const firstBtcBlock = 951;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveRskTags = firstBtcBlock + 3;
 const heightOfDistancedRskTags = firstBtcBlock + 5;
-const apiPoolingTime = 5000;
+const apiPoolingTime = 600;
 const loadingTime = 700;
 const rskBlockHeightsWithBtcBlock = [450, 470, 490, 570, 650, 730]
 const dataInputPath = "test/integration-tests/data/";
@@ -21,8 +21,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
+
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
         //Validate no response in monitor for mainchain
         //Wait until the monitor can read the new block (pooling every 5s)
         await utils.sleep(apiPoolingTime);
@@ -38,8 +38,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should not generate any mainchain if BTC doesn't present RSK tags, mongo input validation", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
         //Validate no response in monitor for mainchain
         //Wait until the monitor can read the new block (pooling every 5s)
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
@@ -53,9 +52,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
-        // TODO: Review if armadillo monitor has to be restarted
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting 
         //the mainchain is completed (pooling every 5s)
@@ -71,11 +68,10 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(2 * 2 * apiPoolingTime);
-    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation", async () => {  
+    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
         const blocksToAdvance = 1;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
@@ -112,9 +108,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
-        const blocksToAdvance = 2; 
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        const blocksToAdvance = 2;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         }
@@ -135,9 +130,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo input validation", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
-        const blocksToAdvance = 2; 
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        const blocksToAdvance = 2;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         }
@@ -172,9 +166,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
-        const blocksToAdvance = 4; 
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        const blocksToAdvance = 4;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         }
@@ -194,9 +187,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo input validation", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
-        await mongo_utils.DeleteCollection(db, mainchain);
-        await mongo_utils.DeleteCollection(db, stateTracker);
-        const blocksToAdvance = 4; 
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        const blocksToAdvance = 4;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         }
