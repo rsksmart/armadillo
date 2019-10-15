@@ -1,17 +1,11 @@
 import { BtcApiConfig } from '../config/btc-api-config';
 import { get } from '../util/http';
 import { BtcBlock } from '../common/btc-block';
-import { ForkDetectionData } from '../common/fork-detection-data';
 
-export interface PlainBtcHeader {
+interface PlainBtcHeader {
     height: number;
     hash: string;
     previousHash: string;
-}
-
-export interface PlainBtcBlock {
-    header: PlainBtcHeader;
-    rskTag: string;
 }
 
 export class HttpBtcApi {

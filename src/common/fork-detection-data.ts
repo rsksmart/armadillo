@@ -7,9 +7,8 @@ export class ForkDetectionData {
     public BN: number;
 
     constructor(forkDetectionData: string | any) {
-        // TODO: throw error if length is not 32 bytes
         if (typeof forkDetectionData != "string") {
-            //is an object
+            //Is an object
             this.prefixHash = forkDetectionData.prefixHash;
             this.CPV = forkDetectionData.CPV;
             this.NU = forkDetectionData.NU;
@@ -18,14 +17,17 @@ export class ForkDetectionData {
         }
 
         let tag = checkTag(forkDetectionData);
+
         if (tag != null) {
             tag = tag.substring(2);
+            this.prefixHash = tag.substring(0, 40);
+            this.CPV = tag.substring(40, 54);
+            this.NU = parseInt(tag.substring(54, 56), 16);
+            this.BN = parseInt(tag.substring(56, 64), 16);
+        } else {
+            // TODO: throw error if length is not 32 bytes
+            return null;
         }
-
-        this.prefixHash = tag.substring(0, 40);
-        this.CPV = tag.substring(40, 54);
-        this.NU = parseInt(tag.substring(54, 56), 16);
-        this.BN = parseInt(tag.substring(56, 64), 16);
     }
 
     private hexToBytes(hex) {

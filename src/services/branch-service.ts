@@ -1,5 +1,3 @@
-
-
 import { MongoStore } from "../storage/mongo-store";
 import { Branch, BranchItem } from "../common/branch";
 import BaseService from "./base-service";
@@ -19,12 +17,6 @@ export class BranchService extends BaseService {
     }
 
     public async getForksDetected(heightToSearch: number = 0): Promise<Branch[]> {
-
-        // let maxBranchFound : any = await this.store.getCollection().find().sort({"lastDetectedHeight":-1}).limit(1);
-        
-        // if(!maxBranchFound || maxBranchFound.length == 0){
-        //     return [];
-        // }
         let branches: any[] = await this.store.getCollection().find({
             "lastDetectedHeight": {
                 $gte: heightToSearch,
