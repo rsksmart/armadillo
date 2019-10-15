@@ -59,4 +59,14 @@ describe("Blockchain api tests", () => {
     expect(mainchainList).to.deep.equal(data.blockchains.mainchain);
     expect(data.blockchains.forks[0]).to.deep.equal(Branch.fromObjectToListBranchItems(branch));
   });
+
+  it("getLastBlochains method, max to search 5000", async () => {
+
+    let blockchainController = new BlockchainController(mainchainService, branchService);
+    
+    let param = { "params": { "n": 6000 }};
+
+    let data = await blockchainController.getLastBlockchains(param, mockRes);
+    expect("Get mainchain and forks in the last 5000 blocks").to.deep.equal(data.message);
+  });
 });
