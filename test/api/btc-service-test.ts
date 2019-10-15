@@ -19,7 +19,7 @@ const RSKTAG = PREFIX + CPV + NU + BN;
 describe("Btc service tests", () => {
   beforeEach(async function () {
     await btcService.connect();
-    await btcService.removeAll(); 
+    await btcService.removeAll();
   });
 
   it("getLastBlockDetected method, there is nothing in database", async () => {
@@ -30,7 +30,7 @@ describe("Btc service tests", () => {
   it("getLastBlockDetected method, return 1 element but save 2 times", async () => {
     let btcBlock = new BtcBlock(100, "btcHash", RSKTAG)
     let btcBlockNext = new BtcBlock(101, "btcHash", RSKTAG)
-   
+
     await btcService.save(btcBlock);
     var block = await btcService.getLastBlockDetected();
     expect(block).to.deep.equal(btcBlock);
@@ -45,7 +45,7 @@ describe("Btc service tests", () => {
     let btcBlock3 = new BtcBlock(3, "btcHash", RSKTAG);
     let btcBlock4 = new BtcBlock(4, "btcHash", "");
     let btcBlock5 = new BtcBlock(5, "btcHash", "");
-   
+
     await btcService.save(btcBlock1);
     await btcService.save(btcBlock2);
     await btcService.save(btcBlock3);
