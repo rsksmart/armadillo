@@ -26,11 +26,10 @@ describe.only("RSK no match at same height with matching CPV", () => {
         const lastForksResponse = await utils.getForksFromHeight(0);
         expect(lastForksResponse.forks).to.be.an('array').that.is.empty;
     }).timeout(1 * 2 * apiPoolingTime + 2000);;
-    it.only("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
+    it("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HConsecutiveNoMatchRskTags, 0, 100, apiPoolingTime, loadingTime);
         const lastForksResponse = await utils.getForksFromHeight(0);
-        console.log(blockchainsResponse);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
@@ -39,40 +38,38 @@ describe.only("RSK no match at same height with matching CPV", () => {
     it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HConsecutiveNoMatchRskTags, 1, 1000, apiPoolingTime, loadingTime);
-        console.log(blockchainsResponse);
         const lastForksResponse = await utils.getForksFromHeight(0);
-        console.log(lastForksResponse.forks);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
+        expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
+        expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
         //Lacks blocks validation
     }).timeout(2 * 2 * apiPoolingTime + 2000);
     it("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HNonConsecutiveNoMatchRskTags, 3, 1000, apiPoolingTime, loadingTime);
-        console.log(blockchainsResponse);
-        expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
+        expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
+        expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
         const lastForksResponse = await utils.getForksFromHeight(0);
-        console.log(lastForksResponse.forks);
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
         //Lacks blocks validation
     }).timeout(4 * 2 * apiPoolingTime + 2000);
     it("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HConsecutiveNoMatchRskTags, 2, 1000, apiPoolingTime, loadingTime);
-        console.log(blockchainsResponse);
-        expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
+
+        expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
+        expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
         const lastForksResponse = await utils.getForksFromHeight(0);
-        console.log(lastForksResponse.forks);
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
         //Lacks blocks validation
     }).timeout(3 * 2 * apiPoolingTime + 2000);
     it("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HNonConsecutiveNoMatchRskTags, 6, 1000, apiPoolingTime, loadingTime);
-        expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
+        expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
+        expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
         const lastForksResponse = await utils.getForksFromHeight(0);
-        console.log(lastForksResponse.forks);
         expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
         //Lacks blocks validation
     }).timeout(7 * 2 * apiPoolingTime + 2000);
@@ -80,10 +77,8 @@ describe.only("RSK no match at same height with matching CPV", () => {
         + "\n\twith no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HMatchRSKWithFollowingNoMatch, 1, 1000, apiPoolingTime, loadingTime);
-            // console.log(JSON.stringify(blockchainsResponse.blockchains.forks));
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
-            // console.log(lastForksResponse.forks);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(2 * 2 * apiPoolingTime + 2000);
@@ -91,10 +86,8 @@ describe.only("RSK no match at same height with matching CPV", () => {
         + "\n\tblock with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HMatchRSKWithNoFollowingNoMatch, 2, 1000, apiPoolingTime, loadingTime);
-            // console.log(JSON.stringify(blockchainsResponse.blockchains.forks));
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
-            // console.log(lastForksResponse.forks);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(3 * 2 * apiPoolingTime + 2000);
@@ -102,10 +95,8 @@ describe.only("RSK no match at same height with matching CPV", () => {
         + "\n\twith no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HMatchRSKWithFollowingNoMatch, 2, 2000, apiPoolingTime, loadingTime);
-            // console.log(JSON.stringify(blockchainsResponse.blockchains.forks));
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
-            // console.log(lastForksResponse.forks);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(3 * 2 * apiPoolingTime + 2000);
@@ -114,10 +105,8 @@ describe.only("RSK no match at same height with matching CPV", () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HMatchRSKWithNoFollowingNoMatch, 5, 2000, apiPoolingTime, loadingTime);
 
-            // console.log(JSON.stringify(blockchainsResponse.blockchains.forks));
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
-            // console.log(lastForksResponse.forks);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(5 * 2 * apiPoolingTime + 2000);
@@ -125,10 +114,8 @@ describe.only("RSK no match at same height with matching CPV", () => {
         + "\n\twith matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HNoMatchRSKWithFollowingMatch, 1, 2000, apiPoolingTime, loadingTime);
-            // console.log(JSON.stringify(blockchainsResponse.blockchains.forks));
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
-            // console.log(lastForksResponse.forks);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(2 * 2 * apiPoolingTime + 2000);
@@ -136,10 +123,8 @@ describe.only("RSK no match at same height with matching CPV", () => {
         + "\n\tblock with matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HNoMatchRSKWithNonConsecutiveFollowingMatch, 3, 2000, apiPoolingTime, loadingTime);
-            // console.log(JSON.stringify(blockchainsResponse.blockchains.forks));
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
-            // console.log(lastForksResponse.forks);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(2 * 2 * apiPoolingTime + 2000);
@@ -150,9 +135,7 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
         it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD, 1, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
@@ -161,30 +144,24 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
         it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -192,10 +169,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -203,10 +178,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -214,10 +187,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -225,10 +196,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -236,10 +205,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -247,10 +214,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\tblock with matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -259,50 +224,40 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
         it.skip("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -310,10 +265,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\tno matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -321,10 +274,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -332,10 +283,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -343,10 +292,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -354,10 +301,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -365,10 +310,8 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -381,50 +324,40 @@ describe("RSK no match at same height with no match CPV", () => {
         it.skip("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -432,10 +365,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -443,10 +374,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -454,10 +383,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -465,10 +392,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -476,10 +401,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -487,10 +410,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\tblock with matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -499,50 +420,40 @@ describe("RSK no match at same height with no match CPV", () => {
         it.skip("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            console.log(blockchainsResponse);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
-            console.log(lastForksResponse.forks);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
             //Lacks blocks validation
         }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -550,10 +461,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -561,10 +470,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -572,10 +479,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -583,10 +488,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -594,10 +497,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
@@ -605,10 +506,8 @@ describe("RSK no match at same height with no match CPV", () => {
             + "\n\tblock with matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                     btcApiRoute, /** TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                console.log(blockchainsResponse);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
-                console.log(lastForksResponse.forks);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
                 //Lacks blocks validation
             }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
