@@ -4,7 +4,7 @@ const Curl = require('node-libcurl').Curl;
 const randomHex = require('randomhex');
 const expect = require('chai').expect;
 const btclib = require('bitcoinjs-lib');
-const CURL_DEFAULT_HTTP_VERSION = "1.1";
+const CURL_DEFAULT_HTTP_VERSION = "	1.1";
 const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
 const mongo_utils = require("./mongo-utils");
@@ -70,7 +70,7 @@ const context = {
         `Host: ${host}`,
         "Accept: */*"
     ],
-    httpversion: "1.1"
+    httpversion: "	1.1"
 }
 
 function sleep(millis) {
@@ -78,8 +78,8 @@ function sleep(millis) {
 }
 
 const curlHttpVersions = {
-    "1.0": Curl.http.VERSION_1_0,
-    "1.1": Curl.http.VERSION_1_1,
+    "	1.0": Curl.http.VERSION_1_0,
+    "	1.1": Curl.http.VERSION_1_1,
     "NONE": Curl.http.VERSION_NONE
 }
 
@@ -352,8 +352,9 @@ async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btc
 }
 
 async function getBlockchainsAfterMovingXBlocks(
-    btcApiRoute, initialHeight, blocksToMove, 
+    btcApiRoute, initialHeight, blocksToMove,
     amountOfBlockchains, apiPoolingTime, loadingTime) {
+    let c = 1;
     await MockBtcApiChangeRoute(btcApiRoute);
     await setHeightInMockBTCApi(initialHeight);
     await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -363,6 +364,7 @@ async function getBlockchainsAfterMovingXBlocks(
         await getNextBlockInMockBTCApi(apiPoolingTime);
     }
     return blockchainsResponse = await getBlockchains(amountOfBlockchains);
+
 }
 
 module.exports = {
