@@ -14,10 +14,10 @@ const HMatchRSKWithFollowingNoMatch = firstBtcBlock + 29;
 const HMatchRSKWithNoFollowingNoMatch = firstBtcBlock + 32;
 const HNoMatchRSKWithFollowingMatch = firstBtcBlock + 31;
 const HNoMatchRSKWithNonConsecutiveFollowingMatch = firstBtcBlock + 31;
-const apiPoolingTime = 5000;
+const apiPoolingTime = 500;
 const loadingTime = 700;
 const btcApiRoute = "raw";
-describe.only("RSK no match at same height with matching CPV", () => {
+describe("RSK no match at same height with matching CPV", () => {
     it("should not create branch for BTC block matching RSK tag, end to end, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, heightOfConsecutiveRskTags, 0, 1000, apiPoolingTime, loadingTime);
@@ -76,7 +76,7 @@ describe.only("RSK no match at same height with matching CPV", () => {
     it("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
         + "\n\twith no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, HMatchRSKWithFollowingNoMatch, 1, 1000, apiPoolingTime, loadingTime);
+                btcApiRoute, HMatchRSKWithFollowingNoMatch, 1, 1000, apiPoolingTime, loadingTime );
             expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.not.empty;
             const forksResponse = await utils.getForksFromHeight(0);
             expect(forksResponse.forks).to.be.an('array').that.is.not.empty;
