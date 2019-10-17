@@ -5,6 +5,7 @@ const db = mongo_utils.ArmadilloDB;
 const mainchain = mongo_utils.ArmadilloMainchain;
 const stateTracker = mongo_utils.ArmadilloStateTracker;
 const forks = mongo_utils.ArmadilloForks;
+const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const firstBtcBlock = 951;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveRskTags = firstBtcBlock + 3;
@@ -31,8 +32,10 @@ describe("RSK no match at same height with matching CPV", () => {
             btcApiRoute, HConsecutiveNoMatchRskTags, 0, 100, apiPoolingTime, loadingTime);
         const lastForksResponse = await utils.getForksFromHeight(0);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
-        expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
+        //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
+        // expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
+        // expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
         //Lacks blocks validation
     }).timeout(1 * 2 * apiPoolingTime + 2000);
     it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
