@@ -273,9 +273,7 @@ async function getLastRSKHeight(context) {
 
 async function setRskTagInBtcMockData(btcBlocksJSON, btcBlockNumber, rskHeight, context) {
     const rskResponse = JSON.parse(await rskdPromiseRequest("eth_getBlockByNumber", ["0x" + rskHeight.toString(16), true], context));
-    // console.log("HEIGHT: " + "0x" + rskHeight.toString(16) + " RESPONSE: " + JSON.stringify(rskResponse,null,2));
     const rskTag = rskResponse.result.hashForMergedMining;
-    // console.log(`----${btcBlockNumber}----${btcBlocksJSON.raw.length}----`+JSON.stringify(btcBlocksJSON.raw[btcBlockNumber]));
     btcBlocksJSON.raw[btcBlockNumber].coinbase.transaction.outputs[0].rskTag = rskTag;
     return btcBlocksJSON;
 }
@@ -363,6 +361,7 @@ async function getBlockchainsAfterMovingXBlocks(
     for (let i = 0; i < blocksToAdvance; i++) {
         await getNextBlockInMockBTCApi(apiPoolingTime);
     }
+    await sleep(loadingTime);
     return blockchainsResponse = await getBlockchains(amountOfBlockchains);
 
 }

@@ -13,9 +13,7 @@ export class BtcBlock {
         throw new Error("RSK tag bad form comming from btc at height: " + _height + " with hash: " + _hash)
     }
 
-    if (_rskTag && checkTag(_rskTag)){
-        this.rskTag = new ForkDetectionData(_rskTag);
-    }
+    this.rskTag = new ForkDetectionData(_rskTag);
   }
 }
 
