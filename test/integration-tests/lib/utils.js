@@ -61,25 +61,25 @@ const mapRskNoMatchMatchCPV = {
 };
 
 const mapRskNoMatchNoMatchCPV2B = {
-    "65":4723,
-    "66":4733,
-    "73":5102,
-    "75":5108
+    "65": 4723,
+    "66": 4733,
+    "73": 5102,
+    "75": 5108
 };
 
 const mapRskNoMatchNoMatchCPV7B = {
-    "79":5731,
-    "80":5734,
-    "86":6754,
-    "90":6774
+    "79": 5731,
+    "80": 5734,
+    "86": 6754,
+    "90": 6774
 };
 
 function rskBlockHeightsWithBtcBlock() {
     return {
-        mapRskMatch,
-        mapRskNoMatchMatchCPV,
-        mapRskNoMatchNoMatchCPV2B,
-        mapRskNoMatchNoMatchCPV7B
+        ...mapRskMatch,
+        ...mapRskNoMatchMatchCPV,
+        ...mapRskNoMatchNoMatchCPV2B,
+        ...mapRskNoMatchNoMatchCPV7B
     }
 }
 
@@ -361,11 +361,14 @@ function getRskBlockByNumber(blockNumber, context) {
     return rskdPromiseRequest("eth_getBlockByNumber", [blockNumber, true], context);
 }
 
-async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainBlock) {
-    if (mainchainBlock === undefined || mainchainBlock) {
+async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainInFork, inForkedBlock) {
+    // console.log(`inForkedBlock:${inForkedBlock} - mainchainInFork:${mainchainInFork}`)
+    if (!inForkedBlock && (mainchainInFork === undefined || mainchainInFork)) {
+        // console.log(armadilloBlock);
         let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
         let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
         let mergeMiningHash = rskBlock.result.hashForMergedMining;
+        // console.log(mergeMiningHash);
         expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
         expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
         let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
@@ -377,6 +380,7 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainB
         let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
         expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
     } else {
+        // console.log(armadilloBlock);
         expect(armadilloBlock.rskInfo.hash).to.be.equal("");
         expect(armadilloBlock.rskInfo.prevHash).to.be.equal("");
         expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.not.null.and.not.to.equal("");
@@ -386,20 +390,27 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainB
     }
 }
 
-async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap) {
-    let shouldHaveBtcInfo = btcRskMap.includes(armadilloBlock.rskInfo.height);
-    if (!shouldHaveBtcInfo) {
-        expect(armadilloBlock.btcInfo.height).to.be.null;
-        expect(armadilloBlock.btcInfo.hash).to.be.null;
-    }
-    else {
-        expect(armadilloBlock.btcInfo.height).not.to.be.null;
-        expect(armadilloBlock.btcInfo.hash).not.to.be.null;
-        let btcBlockInfo = await getBlockByHashInMockBTCApi(armadilloBlock.btcInfo.hash);
-        let btcHash = btcBlockInfo.coinbase.transactionBlockInfo.hash;
-        let btcHeight = btcBlockInfo.coinbase.transactionBlockInfo.height;
-        expect(armadilloBlock.btcInfo.height).to.be.equal(btcHeight);
-        expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
+async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap, mainchainInFork) {
+    if (!mainchainInFork) {
+        // console.log(Object.values(btcRskMap));
+        // console.log(armadilloBlock);
+        let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
+        // console.log("mainchainInFork: " + mainchainInFork);
+        // console.log("--- block: " + JSON.stringify(armadilloBlock, null, 2));
+        if (!shouldHaveBtcInfo) {
+            expect(armadilloBlock.btcInfo.height).to.be.null;
+            expect(armadilloBlock.btcInfo.hash).to.be.null;
+        }
+        else {
+            expect(armadilloBlock.btcInfo.height).not.to.be.null;
+            expect(armadilloBlock.btcInfo.hash).not.to.be.null;
+            let btcBlockInfo = await getBlockByHashInMockBTCApi(armadilloBlock.btcInfo.hash);
+            let btcHash = btcBlockInfo.coinbase.transactionBlockInfo.hash;
+            let btcHeight = btcBlockInfo.coinbase.transactionBlockInfo.height;
+            expect(armadilloBlock.btcInfo.height).to.be.equal(btcHeight);
+            expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
+
+        }
     }
 }
 
@@ -417,23 +428,26 @@ async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
     expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
     let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
     expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
+
 }
 
-async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap) {
-    let shouldHaveBtcInfo = btcRskMap.includes(armadilloBlock.rskInfo.height);
+async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
+    if (!mainchainInFork) {
+        let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
 
-    if (!shouldHaveBtcInfo) {
-        expect(armadilloBlock.btcInfo.height).to.be.null;
-        expect(armadilloBlock.btcInfo.hash).to.be.null;
-    }
-    else {
-        expect(armadilloBlock.btcInfo.height).not.to.be.null;
-        expect(armadilloBlock.btcInfo.hash).not.to.be.null;
-        let btcBlockInfo = await getBlockByHashInMockBTCApi(armadilloBlock.btcInfo.hash);
-        let btcHash = btcBlockInfo.coinbase.transactionBlockInfo.hash;
-        let btcHeight = btcBlockInfo.coinbase.transactionBlockInfo.height;
-        expect(armadilloBlock.btcInfo.height).to.be.equal(btcHeight);
-        expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
+        if (!shouldHaveBtcInfo) {
+            expect(armadilloBlock.btcInfo.height).to.be.null;
+            expect(armadilloBlock.btcInfo.hash).to.be.null;
+        }
+        else {
+            expect(armadilloBlock.btcInfo.height).not.to.be.null;
+            expect(armadilloBlock.btcInfo.hash).not.to.be.null;
+            let btcBlockInfo = await getBlockByHashInMockBTCApi(armadilloBlock.btcInfo.hash);
+            let btcHash = btcBlockInfo.coinbase.transactionBlockInfo.hash;
+            let btcHeight = btcBlockInfo.coinbase.transactionBlockInfo.height;
+            expect(armadilloBlock.btcInfo.height).to.be.equal(btcHeight);
+            expect(armadilloBlock.btcInfo.hash).to.be.equal(btcHash);
+        }
     }
 }
 
@@ -461,20 +475,45 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, numb
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
     expect(lastForks).to.be.an('array').that.is.not.empty;
     expect(lastForks.length).to.be.equal(numberOfForksExpected);
+    // console.log("++++++++++++++++++++++++++++++++++++++++++++++++");
+    // console.log();
+    // console.log(blockchainForks);
+    // console.log("lastForks ");
+    // console.log(lastForks);
+    // console.log();
+    // console.log("++++++++++++++++++++++++++++++++++++++++++++++++");
     for (forkPos in blockchainForks) {
         const fork = blockchainForks[forkPos];
+        // console.log(fork);
         for (pos in fork) {
-            let mainchainBlock = forkPos > (fork.length - expectedMainchainBlocks);
-            validateBtcBlockNodeVsArmadilloMonitor(fork[pos], rskTagsMap);
-            validateRskBlockNodeVsArmadilloMonitor(fork[pos], mainchainBlock);
+            // console.log("1.  fork[pos]: " + pos);
+            // console.log(fork[pos]);
+            fork[pos].src = "blockchains";
+            fork[pos].pos = pos;
+            let mainchainInFork = (pos >= (fork.length - expectedMainchainBlocks));
+            // console.log(`blockchains --- length:${fork.length} - #mainchainBlocks:${expectedMainchainBlocks} < pos:${pos} ===> MainchainInFork?${mainchainInFork}`);
+            await validateBtcBlockNodeVsArmadilloMonitor(fork[pos], rskTagsMap, mainchainInFork);
+            await validateRskBlockNodeVsArmadilloMonitor(fork[pos], mainchainInFork, !mainchainInFork);
         }
     }
+    // console.log("LAST FORKS");
+    // console.log(lastForks);
     for (forkPos in lastForks) {
-        const fork = lastForks[forkPos];
-        for (pos in fork) {
-            let mainchainBlock = forkPos > (fork.length - expectedMainchainBlocks);
-            validateBtcBlockNodeVsArmadilloMonitor(fork[pos], rskTagsMap);
-            validateRskBlockNodeVsArmadilloMonitor(fork[pos], mainchainBlock);
+        let forkItems = lastForks[forkPos].items;
+        forkItems.push({ btcInfo: null, rskInfo: lastForks[forkPos].mainchainBlockForkCouldHaveStarted });
+        // console.log("LAST FORKS FORK ITEMS ======================================================");
+        // console.log(forkItems);
+        // console.log("LAST FORKS FORK ITEMS ++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        for (pos in forkItems) {
+            forkItems[pos].src = "lastForks";
+            forkItems[pos].pos = pos;
+            // console.log("2. fork[pos]: " + pos);
+            // console.log("fork - pos - --- --")
+            // console.log(forkItems[pos]);
+            let mainchainInFork = (pos >= (forkItems.length - expectedMainchainBlocks));
+            // console.log(`lastForks --- length:${forkItems.length} - #mainchainBlocks:${expectedMainchainBlocks} < pos:${pos} ===> MainchainInFork?${mainchainInFork}`);
+            await validateBtcBlockNodeVsArmadilloMonitor(forkItems[pos], rskTagsMap, mainchainInFork);
+            await validateRskBlockNodeVsArmadilloMonitor(forkItems[pos], mainchainInFork, !mainchainInFork);
         }
     }
 }
