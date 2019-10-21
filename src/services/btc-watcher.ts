@@ -55,7 +55,7 @@ export class BtcWatcher extends EventEmitter {
                     await sleep(200);
                 }
             }
-            await sleep(5000);
+            await sleep(300);
         }
     }
 

@@ -40,8 +40,12 @@ export class Branch {
         let items: BranchItem[] = [];
         
         branche.items.map(x => items.push(BranchItem.fromObject(x)));
-
-        return items.concat(branche.mainchainBlockForkCouldHaveStarted);
+        let mainchainBlockForkCouldHaveStarted = {
+            btcInfo: null,
+            rskInfo: branche.mainchainBlockForkCouldHaveStarted
+        }
+        return items.concat(mainchainBlockForkCouldHaveStarted);
+        // return items.concat(branche.mainchainBlockForkCouldHaveStarted);
     }
 
     public addNewForkItem(branch: BranchItem) {
