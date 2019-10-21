@@ -20,7 +20,7 @@ const btcApi = new HttpBtcApi(config)
 const btcWatcher = new BtcWatcher(btcApi, btcService);
 
 describe("Btc watcher tests, synchronization with BTC, ", () => {
-  beforeEach(async function () {
+  afterEach(async function () {
     btcWatcher.stop();
   });
 
@@ -41,7 +41,6 @@ describe("Btc watcher tests, synchronization with BTC, ", () => {
 
     //Validation
     expect(save.called);
-    
   });
 
   it("Last block was detected is behind 2 blocks", async () => {
@@ -55,7 +54,6 @@ describe("Btc watcher tests, synchronization with BTC, ", () => {
     var getBestBlock = sinon.stub(btcApi, <any>'getBlock');
     getBestBlock.withArgs(2).returns(bestBlock2)
     getBestBlock.withArgs(3).returns(bestBlock3);
-
     var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
     getLastBlockDetected.returns(btcBlockSaved);
     let save = sinon.stub(btcService, <any>'save')

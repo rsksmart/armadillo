@@ -5,7 +5,7 @@ import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { MongoStore } from "../../src/storage/mongo-store";
 import { RskBlock } from "../../src/common/rsk-block";
 import { BranchService } from "../../src/services/branch-service";
-import { BranchItem, Branch } from "../../src/common/branch";
+import { BranchItem, Branch, RangeForkInMainchain } from "../../src/common/branch";
 import BranchController from "../../src/api/controllers/branch-controller";
 import { ApiConfig } from "../../src/config/api-config";
 
@@ -35,8 +35,10 @@ describe("Branche api tests", () => {
     let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
     let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
     let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
-    let branch1 = new Branch(branchItem1.rskInfo, [branchItem1,branchItem2]);
-    let branch2 = new Branch(branchItem1.rskInfo, [branchItem3,branchItem4]);
+    
+    let rangeForkInMainchain = new RangeForkInMainchain(branchItem1.rskInfo, branchItem1.rskInfo);
+    let branch1 = new Branch(rangeForkInMainchain, [branchItem1,branchItem2]);
+    let branch2 = new Branch(rangeForkInMainchain, [branchItem3,branchItem4]);
     
     await branchService.save(branch1);
     await branchService.save(branch2);
