@@ -1,17 +1,14 @@
 
 export class RskApiConfig {
-    public readonly host: string;
-    public readonly port: number;
+    public readonly completeUrl: string;
 
     public static fromObject(config: any): RskApiConfig {
         return new RskApiConfig(
-            config.host,
-            config.port,
+            config.completeUrl
         );
     }
 
-    constructor(host: string, port: number) {
-        this.host = host;
-        this.port = port;
+    constructor(completeUrl: string) {
+        this.completeUrl = completeUrl;
     }
 }

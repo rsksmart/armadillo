@@ -17,7 +17,7 @@ const HNoMatchRSKWithNonConsecutiveFollowingMatch = firstBtcBlock + 31;
 const apiPoolingTime = 5000;
 const loadingTime = 700;
 const btcApiRoute = "raw";
-describe.only("RSK no match at same height with matching CPV", () => {
+describe("RSK no match at same height with matching CPV", () => {
     it("should not create branch for BTC block matching RSK tag, end to end, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, heightOfConsecutiveRskTags, 0, 1000, apiPoolingTime, loadingTime);

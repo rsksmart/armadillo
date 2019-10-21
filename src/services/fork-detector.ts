@@ -1,7 +1,7 @@
 import { RskBlock } from "../common/rsk-block";
 import { BtcBlock, BtcHeaderInfo } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
-import { Branch, BranchItem } from "../common/branch";
+import { Branch, BranchItem, RangeForkInMainchain as RangeForkInMainchain } from "../common/branch";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { getLogger, Logger } from "log4js";
 import { MainchainService } from "./mainchain-service";
@@ -14,11 +14,9 @@ export class ForkDetector {
     private branchService: BranchService;
     private rskApiService: RskApiService;
     private btcWatcher: BtcWatcher;
-    private lastBlockChecked: BtcBlock;
     private maxBlocksBackwardsToSearch: number = 448;
     private minimunOverlapCPV: number = 3;
     private mainchainService: MainchainService;
-
 
     constructor(branchService: BranchService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService) {
         this.branchService = branchService;
@@ -31,6 +29,7 @@ export class ForkDetector {
     }
 
     public async onNewBlock(newBtcBlock: BtcBlock) {
+         
         if (newBtcBlock.rskTag == null) {
             this.logger.info('Skipping block', newBtcBlock.btcInfo.hash, '. No RSKTAG present');
             //TODO: Do we need to have some alarm if we don't find some blocks in the last X BTC blocks ?
@@ -46,8 +45,9 @@ export class ForkDetector {
             this.addOrCreateBranch(null, newBtcBlock, rskBestBlock);
             return;
         }
-
+        
         let rskBlocksSameHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
+        
         if (rskBlocksSameHeight.length == 0) {
             this.logger.fatal("RSKd: The service is not working as expected, blocks at height", rskTag.BN, 'with tag in BTC', rskTag.toString(), "are not in the rskd");
             //TODO: I'm not sure if we, have to forget this BTC block besides triggering an alarm. 
@@ -178,7 +178,7 @@ export class ForkDetector {
         }
 
         //Possible mainchain block from where it started to fork
-        let item = new BranchItem(btcBlock.btcInfo, rskBlock);
+        let item : BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);
         itemsBranch = [item];
 
         if (btcBlock.rskTag.BN > rskBlocksSameHeight.height) {
@@ -203,9 +203,10 @@ export class ForkDetector {
 
             this.branchService.addBranchItem(existingBranch.getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
         } else {
-            let connectionWithMainchain = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
+            let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
+           
             this.logger.warn('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
-            this.branchService.save(new Branch(connectionWithMainchain, itemsBranch));
+            this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, itemsBranch));
         }
     }
 }
