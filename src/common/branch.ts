@@ -10,6 +10,10 @@ export class RangeForkInMainchain {
         this.startBlock = _startBlock;
         this.endBlock = _endBlock;
     }
+
+    static fromObject(rangeForkInMainchain: any): RangeForkInMainchain {
+        return new RangeForkInMainchain(rangeForkInMainchain.startBlock, rangeForkInMainchain.endBlock);
+    }
 }
 
 export class Branch {
@@ -41,17 +45,17 @@ export class Branch {
     static fromObject(branch: any): Branch {
         let items: BranchItem[] = [];
 
-        branch.items.map(x => items.splice(1).push(BranchItem.fromObject(x)));
+        branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
-        return new Branch(branch.items[0], items);
+        return new Branch(RangeForkInMainchain.fromObject(branch.mainchainRangeForkCouldHaveStarted), items);
     }
 
-    static fromObjectToListBranchItems(branche: any): BranchItem[] {
+    static fromObjectToListBranchItems(branch: any): BranchItem[] {
         let items: BranchItem[] = [];
         
-        branche.items.map(x => items.push(BranchItem.fromObject(x)));
+        branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
-        return items.concat(branche.mainchainBlockForkCouldHaveStarted);
+        return items.concat(branch.mainchainBlockForkCouldHaveStarted);
     }
 
     public addNewForkItem(branch: BranchItem) {
@@ -63,11 +67,11 @@ export class Branch {
         return this.items;
     }
 
-    //This getter return all the forks items + mainchain connection block
+    //This getter return all the forks items + mainchain range
     public getCompleteBranch(): BranchItem[] {
         var completeBranch : BranchItem[];
         completeBranch = this.items.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.endBlock));
-        completeBranch.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.endBlock));
+        completeBranch.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.startBlock));
         return completeBranch;
     }
 
