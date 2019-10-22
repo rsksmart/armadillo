@@ -467,7 +467,7 @@ async function getBlockchainsAfterMovingXBlocks(
     return blockchainsResponse = await getBlockchains(amountOfBlockchains);
 }
 
-async function validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks) {
+async function validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
     expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
     const blockchainForks = blockchainsResponse.blockchains.forks;
     const lastForks = lastForksResponse.forks;
@@ -475,43 +475,28 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, numb
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
     expect(lastForks).to.be.an('array').that.is.not.empty;
     expect(lastForks.length).to.be.equal(numberOfForksExpected);
-    // console.log("++++++++++++++++++++++++++++++++++++++++++++++++");
-    // console.log();
-    // console.log(blockchainForks);
-    // console.log("lastForks ");
-    // console.log(lastForks);
-    // console.log();
-    // console.log("++++++++++++++++++++++++++++++++++++++++++++++++");
+    if (lengthOfForks === undefined || blockchainForks.length !== lengthOfForks.length) {
+        console.log ("=============== MISSING length of forks!!! ===============");
+    }
     for (forkPos in blockchainForks) {
         const fork = blockchainForks[forkPos];
-        // console.log(fork);
+        expect(fork.length).to.be.equal(lengthOfForks[forkPos]+2);
         for (pos in fork) {
-            // console.log("1.  fork[pos]: " + pos);
-            // console.log(fork[pos]);
             fork[pos].src = "blockchains";
             fork[pos].pos = pos;
             let mainchainInFork = (pos >= (fork.length - expectedMainchainBlocks));
-            // console.log(`blockchains --- length:${fork.length} - #mainchainBlocks:${expectedMainchainBlocks} < pos:${pos} ===> MainchainInFork?${mainchainInFork}`);
             await validateBtcBlockNodeVsArmadilloMonitor(fork[pos], rskTagsMap, mainchainInFork);
             await validateRskBlockNodeVsArmadilloMonitor(fork[pos], mainchainInFork, !mainchainInFork);
         }
     }
-    // console.log("LAST FORKS");
-    // console.log(lastForks);
     for (forkPos in lastForks) {
         let forkItems = lastForks[forkPos].items;
+        expect(forkItems.length).to.be.equal(lengthOfForks[forkPos]);
         forkItems.push({ btcInfo: null, rskInfo: lastForks[forkPos].mainchainBlockForkCouldHaveStarted });
-        // console.log("LAST FORKS FORK ITEMS ======================================================");
-        // console.log(forkItems);
-        // console.log("LAST FORKS FORK ITEMS ++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         for (pos in forkItems) {
             forkItems[pos].src = "lastForks";
             forkItems[pos].pos = pos;
-            // console.log("2. fork[pos]: " + pos);
-            // console.log("fork - pos - --- --")
-            // console.log(forkItems[pos]);
             let mainchainInFork = (pos >= (forkItems.length - expectedMainchainBlocks));
-            // console.log(`lastForks --- length:${forkItems.length} - #mainchainBlocks:${expectedMainchainBlocks} < pos:${pos} ===> MainchainInFork?${mainchainInFork}`);
             await validateBtcBlockNodeVsArmadilloMonitor(forkItems[pos], rskTagsMap, mainchainInFork);
             await validateRskBlockNodeVsArmadilloMonitor(forkItems[pos], mainchainInFork, !mainchainInFork);
         }
