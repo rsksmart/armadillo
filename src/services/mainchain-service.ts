@@ -10,10 +10,8 @@ export class MainchainService  extends BaseService {
     }
 
     public async getLastItems(numberOfItems): Promise<BranchItem[]> {
-        
-        let ret = await this.store.getCollection().find().sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
-
-        return ret;
+        let robjectsToReturn : any[] = await this.store.getCollection().find().sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
+        return robjectsToReturn.map(x => BranchItem.fromObject(x));
     }
 
     public async save(items: BranchItem[]): Promise<boolean> {
@@ -38,6 +36,8 @@ export class MainchainService  extends BaseService {
     }
 
     public async getAll() : Promise<BranchItem[]>{
-        return this.store.getCollection().find({}).toArray()
+        let items : any[] = await this.store.getCollection().find({}).toArray();
+
+        return items.map(x => BranchItem.fromObject(x));
     }
 }
