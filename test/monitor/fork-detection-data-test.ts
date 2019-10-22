@@ -1,7 +1,7 @@
 import "mocha";
 import { BtcHeaderInfo } from "../../src/common/btc-block";
 import { BtcWatcher } from "../../src/services/btc-watcher";
-import { Branch, BranchItem } from "../../src/common/branch";
+import { Branch, BranchItem, RangeForkInMainchain } from "../../src/common/branch";
 import { expect } from "chai";
 import { ForkDetector } from "../../src/services/fork-detector";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
@@ -119,7 +119,10 @@ describe("Overlap CPV", () => {
     const forkData = new ForkDetectionData(new ForkDetectionData(RSKTAG));
     const rskBlock = new RskBlock(1, "hash", "prevHash", forkData);
     const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
-    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Branch(mainchainBlock.rskInfo, new BranchItem(btcInfo, rskBlock))]);
+
+    let rangeForkInMainchain = new RangeForkInMainchain(rskBlock, rskBlock);
+
+    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock))]);
     let posibleBranches: Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
     sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock);
 
@@ -138,8 +141,10 @@ describe("Overlap CPV", () => {
     const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
     const forkData1 = new ForkDetectionData(RSKTAG1);
     const rskBlock1 = new RskBlock(1, "hash", "prevHash", forkData1);
-  
-    let list = [new Branch(mainchainBlock.rskInfo, new BranchItem(btcInfo, rskBlock)), new Branch(mainchainBlock.rskInfo, new BranchItem(btcInfo, rskBlock1))]
+
+    let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
+
+    let list = [new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock)), new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock1))]
 
     sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns(list);
     let posibleBranches: Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
