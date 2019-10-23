@@ -8,8 +8,10 @@
         }
     },
     "rskApi": {
-        "host": "localhost",
-        "port": 4444
+        "completeUrl": "https://public-node.rsk.co/1.1.0"
+    },
+    "rskApi-local": {
+        "completeUrl": "http://localhost:4444"
     },
     "btcApi": {
         "host": "localhost",

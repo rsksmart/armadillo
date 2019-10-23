@@ -1,5 +1,4 @@
 import "mocha";
-import { BtcHeaderInfo } from "../../src/common/btc-block";
 import { RskApiService } from "../../src/services/rsk-api-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
 import { stubObject } from "ts-sinon";
@@ -7,6 +6,7 @@ import { RskBlock } from "../../src/common/rsk-block";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import sinon from "sinon";
 import { expect } from "chai";
+import { RangeForkInMainchain } from "../../src/common/branch";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPVMatch0 = "77665544332211";
@@ -40,50 +40,61 @@ describe("Rsk Service api tests", () => {
   it("getRskBlockAtCertainHeight method, match in 0 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
 
     let blockSameHeightMatch3 = new RskBlock(1000, "", "", new ForkDetectionData(RskTagMatch0));
-    let blockToBeReturn = new RskBlock(1, "", "", new ForkDetectionData(RskTagMatch7));
-    let prevBlock = new RskBlock(960, "", "", new ForkDetectionData(RSKTagMatch6));
-    var getBlock = sinon.stub(rskApiService, <any>'getBlock');
-    getBlock.withArgs(1).returns(blockToBeReturn);
-    let blockReturn = await rskApiService.getRskBlockAtCertainHeight(rskBlock, blockSameHeightMatch3);
+    let blockHeight1 = new RskBlock(1, "", "", new ForkDetectionData(RskTagMatch7));
+    let bestBlock = new RskBlock(10, "", "", new ForkDetectionData(RskTagMatch7));
+    var getBlockAtHeight1 = sinon.stub(rskApiService, <any>'getBlock');
+    getBlockAtHeight1.withArgs(1).returns(blockHeight1);
+    var getBestBlock = sinon.stub(rskApiService, <any>'getBestBlock');
+    getBestBlock.returns(bestBlock);
+    
+    let blockReturn : RangeForkInMainchain = await rskApiService.getRskBlockAtCertainHeight(rskBlock, blockSameHeightMatch3);
 
-    expect(blockReturn).to.deep.equal(blockToBeReturn);
+    let rangeExpected = new RangeForkInMainchain(blockHeight1, bestBlock);
+    expect(blockReturn).to.deep.equal(rangeExpected);
   });
 
   it("getRskBlockAtCertainHeight method, match in 3 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
 
     let blockSameHeightDontMatch = new RskBlock(1000, "", "", new ForkDetectionData(RskTagMatch3));
-    let blockToBeReturn = new RskBlock(769, "", "", new ForkDetectionData(RskTagMatch3));
-    let prevBlock = new RskBlock(768, "", "", new ForkDetectionData(RskTagMatch2));
+    let block768 = new RskBlock(768, "", "", new ForkDetectionData(RskTagMatch2));
+    let block832 = new RskBlock(832, "", "", new ForkDetectionData(RskTagMatch2));
     var getBlock = sinon.stub(rskApiService, <any>'getBlock');
-    getBlock.withArgs(768).returns(prevBlock);
-    getBlock.withArgs(769).returns(blockToBeReturn);
-    let blockReturn = await rskApiService.getRskBlockAtCertainHeight(rskBlock, blockSameHeightDontMatch);
+    getBlock.withArgs(768).returns(block768);
+    getBlock.withArgs(832).returns(block832);
 
-    expect(blockReturn).to.deep.equal(blockToBeReturn);
+    let blockReturn : RangeForkInMainchain = await rskApiService.getRskBlockAtCertainHeight(rskBlock, blockSameHeightDontMatch);
+    let rangeExpected = new RangeForkInMainchain(block768, block832);
+
+    expect(rangeExpected).to.deep.equal(blockReturn);
   });
 
   it("getRskBlockAtCertainHeight method, match in 5 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
 
     let blockSameHeightDontMatch = new RskBlock(1000, "", "", new ForkDetectionData(RskTagMatch5));
-    let blockToBeReturn = new RskBlock(833, "", "", new ForkDetectionData(RskTagMatch5));
-    let prevBlock = new RskBlock(832, "", "", new ForkDetectionData(RskTagMatch4));
+    let block832 = new RskBlock(832, "", "", new ForkDetectionData(RskTagMatch5));
+    let block896 = new RskBlock(896, "", "", new ForkDetectionData(RskTagMatch5));
     var getBlock = sinon.stub(rskApiService, <any>'getBlock');
-    getBlock.withArgs(832).returns(prevBlock);
-    getBlock.withArgs(833).returns(blockToBeReturn);
-    let blockReturn = await rskApiService.getRskBlockAtCertainHeight(rskBlock, blockSameHeightDontMatch);
+    getBlock.withArgs(832).returns(block832);
+    getBlock.withArgs(896).returns(block896);
 
-    expect(blockReturn).to.deep.equal(blockToBeReturn);
+    let blockReturn : RangeForkInMainchain = await rskApiService.getRskBlockAtCertainHeight(rskBlock, blockSameHeightDontMatch);
+
+    let rangeExpected = new RangeForkInMainchain(block832, block896);
+
+    expect(rangeExpected).to.deep.equal(blockReturn);
   });
 
   it("getRskBlockAtCertainHeight method, match in 7 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
 
-    let blockToBeReturn = new RskBlock(961, "", "", new ForkDetectionData(RskTagMatch7));
-    let prevBlock = new RskBlock(960, "", "", new ForkDetectionData(RSKTagMatch6));
+    let block960 = new RskBlock(960, "", "", new ForkDetectionData(RskTagMatch7));
+    let block1000 = new RskBlock(1000, "", "", new ForkDetectionData(RskTagMatch7));
     var getBlock = sinon.stub(rskApiService, <any>'getBlock');
-    getBlock.withArgs(960).returns(prevBlock);
-    getBlock.withArgs(961).returns(blockToBeReturn);
-    let blockReturn = await rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlock);
+    getBlock.withArgs(960).returns(block960);
+    getBlock.withArgs(1000).returns(block1000);
+    let blockReturn : RangeForkInMainchain = await rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlock);
 
-    expect(blockReturn).to.deep.equal(blockToBeReturn);
+    let rangeExpected = new RangeForkInMainchain(block960, block1000);
+    
+    expect(rangeExpected).to.deep.equal(blockReturn);
   });
 });
