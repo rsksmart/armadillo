@@ -1,4 +1,6 @@
 import { MainchainService } from '../../services/mainchain-service';
+import { BranchItem } from '../../common/branch';
+import { MessageResponse } from '../common/message-response';
 
 /* eslint-disable class-methods-use-this */
 
@@ -10,37 +12,39 @@ export class MainchainController {
     this.service.createIndex({ "rskInfo.height": 1 }, { unique: true });
   }
 
-  public async getLastBlocks(req: any, res: any): Promise<any> {
+  public async getLastBlocks(req: any, res: any): Promise<MessageResponse<BranchItem[]>> {
     const n: number = parseInt(req.params.n);
-    var blocks: any[] = await this.service.getLastItems(n);
-
-    return res.status(200).send({
-      success: 'true',
-      message: `get last ${blocks.length}/${req.params.n} blocks in mainchain`,
-      blocks: blocks,
-    });
+    var blocks: BranchItem[] = await this.service.getLastItems(n);
+    
+    return res.status(200).send(
+      new MessageResponse<BranchItem[]>(
+        `Get last ${blocks.length}/${req.params.n} blocks in mainchain`,
+        true,
+        blocks
+      )
+    );
   }
 
-  public async removeLastBlocks(req: any, res: any): Promise<any> {
+  public async removeLastBlocks(req: any, res: any): Promise<MessageResponse<any>> {
     const n: number = parseInt(req.params.n);
 
     this.service.removeLastBlocks(n);
     
-    return res.status(200).send({
-      success: 'true',
-      message: `remove last ${req.params.n} blocks in mainchain`,
-    });
+    return res.status(200).send(new MessageResponse(
+      `remove last ${req.params.n} blocks in mainchain`,
+      true
+    ));
   }
 
-  public async getAll(req: any, res: any): Promise<any> {
+  public async getAll(req: any, res: any): Promise<MessageResponse<any>> {
     const n: number = parseInt(req.params.n);
 
-    var items = await this.service.getAll();
+    var items : BranchItem[] = await this.service.getAll();
     
-    return res.status(200).send({
-      success: 'true',
-      message: `get all`,
-      items: items
-    });
+    return res.status(200).send(new MessageResponse<BranchItem[]>(
+      `Get all items`,
+      true,
+      items
+    ));
   }
 }

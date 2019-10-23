@@ -8,6 +8,8 @@ import { RskBlock } from "../../src/common/rsk-block";
 import { MainchainController } from "../../src/api/controllers/mainchain-controller";
 import { BranchItem } from "../../src/common/branch";
 import { ApiConfig } from "../../src/config/api-config";
+import { MessageResponse } from "../../src/api/common/message-response";
+import { copy } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; 
@@ -35,13 +37,13 @@ describe("Mainchain api tests", () => {
 
     let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", new ForkDetectionData(RSKTAG)));
 
-    await mainchainService.save([branchItem1]);
+    await mainchainService.save([copy(branchItem1)]);
 
     let mainchainController = new MainchainController(mainchainService);
     let param = { "params": { "n": 1 } };
-    let data = await mainchainController.getLastBlocks(param, mockRes);
+    let response : MessageResponse<BranchItem[]> = await mainchainController.getLastBlocks(param, mockRes);
 
-    expect(data.blocks.length).to.equal(1);
+    expect(response.data.length).to.equal(1);
 
     let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
     let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
@@ -49,22 +51,22 @@ describe("Mainchain api tests", () => {
     let branchItem5 = new BranchItem(btcInfo, new RskBlock(5, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
     
     let blocks = [branchItem2, branchItem5, branchItem3, branchItem4];
-    await mainchainService.save(blocks);
-    data = await mainchainController.getLastBlocks(param, mockRes);
+    await mainchainService.save(copy(blocks));
+    response = await mainchainController.getLastBlocks(param, mockRes);
 
-    expect(data.blocks.length).to.equal(1);
-    expect(data.blocks).to.deep.equal([branchItem5]);
+    expect(response.data.length).to.equal(1);
+    expect(response.data).to.deep.equal([branchItem5]);
 
-    var ok = await mainchainService.save([branchItem4]);
-    data = await mainchainController.getLastBlocks(param, mockRes);
+    var ok = await mainchainService.save([copy(branchItem4)]);
+    response = await mainchainController.getLastBlocks(param, mockRes);
 
     expect(ok).to.be.false;
-    expect(data.blocks.length).to.equal(1);
-    expect(data.blocks).to.deep.equal([branchItem5]);
+    expect(response.data.length).to.equal(1);
+    expect(response.data).to.deep.equal([branchItem5]);
 
     param = { "params": { "n": 5 } }
-    data = await mainchainController.getLastBlocks(param, mockRes);
-    expect(data.blocks.length).to.equal(5);
-    expect(data.blocks).to.deep.equal([branchItem5, branchItem4, branchItem3, branchItem2, branchItem1]);
+    response = await mainchainController.getLastBlocks(param, mockRes);
+    expect(response.data.length).to.equal(5);
+    expect(response.data).to.deep.equal([branchItem5, branchItem4, branchItem3, branchItem2, branchItem1]);
   });
 });
