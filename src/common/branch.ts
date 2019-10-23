@@ -2,15 +2,25 @@ import { ForkDetectionData } from "./fork-detection-data";
 import { BtcHeaderInfo } from "./btc-block";
 import { RskBlock } from "./rsk-block";
 
+export class RangeForkInMainchain {
+    public startBlock: RskBlock;
+    public endBlock: RskBlock;
+
+    constructor(_startBlock: RskBlock, _endBlock: RskBlock){
+        this.startBlock = _startBlock;
+        this.endBlock = _endBlock;
+    }
+}
+
 export class Branch {
-   
-    private firstDetected: ForkDetectionData; //rsk item when fork started
+    //firstDetected is the first item detected and why the fork was created
+    private firstDetected: ForkDetectionData; 
     private lastDetectedHeight: number;
     private items: BranchItem[];
-    private mainchainBlockForkCouldHaveStarted: RskBlock
+    private mainchainRangeForkCouldHaveStarted: RangeForkInMainchain;
 
-    constructor(mainchainBlockForkCouldHaveStarted: RskBlock, branchItems: BranchItem | BranchItem[]) {
-        this.mainchainBlockForkCouldHaveStarted = mainchainBlockForkCouldHaveStarted;
+    constructor(mainchainRangeForkCouldHaveStarted: RangeForkInMainchain, branchItems: BranchItem | BranchItem[]) {
+        this.mainchainRangeForkCouldHaveStarted = mainchainRangeForkCouldHaveStarted;
         
         if (branchItems instanceof BranchItem) {
             this.items = [];
@@ -59,7 +69,10 @@ export class Branch {
 
     //This getter return all the forks items + mainchain connection block
     public getCompleteBranch(): BranchItem[] {
-        return this.items.concat(new BranchItem(null, this.mainchainBlockForkCouldHaveStarted));
+        var completeBranch : BranchItem[];
+        completeBranch = this.items.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.endBlock));
+        completeBranch.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.endBlock));
+        return completeBranch;
     }
 
     public forkLenght(): number {
