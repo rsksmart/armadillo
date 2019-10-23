@@ -31,3 +31,9 @@ export const toHex = (val, inByte: number) => {
 export const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+
+export const copy = (object: any) => {
+    return JSON.parse(JSON.stringify(object));
+}
+  
