@@ -22,10 +22,8 @@ export class BranchService extends BaseService {
                 $gte: heightToSearch,
             }
         }).toArray();
-        
-        //TODO: add into toReturn object the new item which is going to be connected to mainchain
 
-        return branches;
+        return branches.map(x => Branch.fromObject(x));
     }
 
     //FOR TESTING

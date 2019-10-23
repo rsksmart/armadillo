@@ -1,6 +1,17 @@
 import { MainchainService } from '../../services/mainchain-service';
 import { BranchService } from '../../services/branch-service';
-import { Branch } from '../../common/branch';
+import { Branch, BranchItem } from '../../common/branch';
+import { MessageResponse } from '../common/message-response';
+
+export class BlockchainHistory {
+  public forks: BranchItem[][];
+  public mainchain: BranchItem[];
+
+  constructor(mainchain: BranchItem[], forks: BranchItem[][]) {
+    this.forks = forks;
+    this.mainchain = mainchain;
+  }
+}
 
 export class BlockchainController {
   private mainchainService: MainchainService;
@@ -11,29 +22,30 @@ export class BlockchainController {
     this.branchService = branchService;
   }
 
-  public async getLastBlockchains(req: any, res: any): Promise<any> {
+  public async getLastBlockchains(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
     let n: number = parseInt(req.params.n);
-    var blockchains = { mainchain : [], forks: []};
 
-    if(n > 5000){
+    if (n > 5000) {
       n = 5000;
     }
-    
-    blockchains.mainchain = await this.mainchainService.getLastItems(n);
-    
+
+    var mainchain : BranchItem[] = await this.mainchainService.getLastItems(n);
+
     let heightToGetForksFrom = 0;
-    
-    if( blockchains.mainchain.length != 0){
-      heightToGetForksFrom = blockchains.mainchain[0].rskInfo.height - (n - 1);
+
+    if (mainchain.length != 0) {
+      heightToGetForksFrom = mainchain[0].rskInfo.height - (n - 1);
     }
 
     let forksBranches = await this.branchService.getForksDetected(heightToGetForksFrom);
-    blockchains.forks = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
+    var forks: BranchItem[][] = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
 
-    return res.status(200).send({
-      success: 'true',
-      message: `Get mainchain and forks in the last ${n} blocks`,
-      blockchains: blockchains,
-    });
+    return res.status(200).send(
+      new MessageResponse(
+        `Get mainchain and forks in the last ${n} blocks`,
+        true,
+        new BlockchainHistory(mainchain, forks)
+      )
+    );
   }
 }
