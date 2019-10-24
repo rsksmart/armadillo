@@ -19,7 +19,8 @@ export class BtcWatcher extends EventEmitter {
     private btcApi: HttpBtcApi;
     private running: boolean;
     private btcService: BtcService;
-    
+    private lastBLockDetected: BtcBlock;
+
     constructor(btcApi: HttpBtcApi, btcService: BtcService) {
         super();
 
@@ -34,32 +35,35 @@ export class BtcWatcher extends EventEmitter {
         this.running = true;
         let lastBLockDetected : BtcBlock;
         let bestBtcBlock: BtcBlock;
+ 
+        this.logger.info("Starting to sincronize...");
+            
+        let checkpoint = new BtcBlock(600561, "", "");
+
+        this.lastBLockDetected = checkpoint || await this.btcService.getLastBlockDetected();
 
         while (this.running) {
-          
-            lastBLockDetected = await this.btcService.getLastBlockDetected();
-            bestBtcBlock = await this.btcApi.getBestBlock();
-           
-            this.logger.info("Starting to sincronize...");
             
-            if(!lastBLockDetected){
+            bestBtcBlock = await this.btcApi.getBestBlock();
+          
+            if(!this.lastBLockDetected){
                 this.logger.warn('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
                 await this.saveBlockAtHeight(bestBtcBlock);
-                lastBLockDetected = bestBtcBlock;
+                this.lastBLockDetected = bestBtcBlock;
             }
 
-            this.logger.info("Last BTC block detected is at height", lastBLockDetected.btcInfo.height);
+            this.logger.info("Last BTC block detected is at height", this.lastBLockDetected.btcInfo.height);
             this.logger.info("Best BTC block is at height", bestBtcBlock.btcInfo.height);
 
             
-            if(lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
-                let blockMissing = lastBLockDetected.btcInfo.height + 1;
+            if(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
+                let blockMissing = this.lastBLockDetected.btcInfo.height + 1;
                 let blockAtHeightN : BtcBlock = await this.btcApi.getBlock(blockMissing);
 
                 await this.saveBlockAtHeight(blockAtHeightN);
             }
 
-            await sleep(5000);
+            await sleep(1000);
         }
     }
 
@@ -73,8 +77,9 @@ export class BtcWatcher extends EventEmitter {
     }
 
     private async saveBlock(block: BtcBlock) {
-        this.logger.info("New BTC block with hash:", block.btcInfo.hash, "and height:", block.btcInfo.height)
+        this.logger.info("New BTC block: hash:", block.btcInfo.hash, " height:", block.btcInfo.height)
         await this.btcService.save(block);
+        this.lastBLockDetected = block;
         this.emit(BTCEvents.NEW_BLOCK, block);
     }
 }
