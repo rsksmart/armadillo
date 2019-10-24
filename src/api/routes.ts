@@ -11,7 +11,7 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         const router: express.Router = express.Router();
         const mainchainService: MainchainService = new MainchainService(mainchainStore);
         const branchService: BranchService = new BranchService(branchStore);
-        const branchController: BlockController = new BranchController(branchService);
+        const branchController: BranchController = new BranchController(branchService);
         const mainchainController: MainchainController = new MainchainController(mainchainService);
         const blockchainsController: BlockchainController = new BlockchainController(mainchainService, branchService);
 
@@ -24,9 +24,11 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         //Blockchain routers
         router.get('/blockchains/:n', blockchainsController.getLastBlockchains.bind(blockchainsController));
 
-
         //For testing 
         router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
+        router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
+        router.get('/forks/removeAll', branchController.removeAll.bind(branchController));
+
 
         return router;
 }

@@ -31,7 +31,7 @@ export class MainchainController {
     this.service.removeLastBlocks(n);
     
     return res.status(200).send(new MessageResponse(
-      `remove last ${req.params.n} blocks in mainchain`,
+      `Remove last ${req.params.n} blocks in mainchain`,
       true
     ));
   }
@@ -42,7 +42,7 @@ export class MainchainController {
     var items : BranchItem[] = await this.service.getAll();
     
     return res.status(200).send(new MessageResponse<BranchItem[]>(
-      `Get all items`,
+      `Get all mainnet items`,
       true,
       items
     ));
