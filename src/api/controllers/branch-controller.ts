@@ -29,4 +29,14 @@ export default class BranchController {
       next(error);
     }
   }
+
+  public async removeAll(req: any, res: any): Promise<MessageResponse<any>> {
+
+    this.service.removeAll();
+    
+    return res.status(200).send(new MessageResponse(
+      `Remove all forks`,
+      true
+    ));
+  }
 }
