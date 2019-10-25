@@ -20,14 +20,20 @@ export class BtcWatcher extends EventEmitter {
     private running: boolean;
     private btcService: BtcService;
     private lastBLockDetected: BtcBlock;
+    private checkpoint: BtcBlock;
 
-    constructor(btcApi: HttpBtcApi, btcService: BtcService) {
+    constructor(btcApi: HttpBtcApi, btcService: BtcService, heightBtcCheckpoint?: number) {
         super();
 
         this.btcApi = btcApi;
         this.logger = getLogger('btc-watcher');
         this.running = false;
         this.btcService = btcService;
+
+        if(heightBtcCheckpoint != null && heightBtcCheckpoint > 1){
+            this.checkpoint =  new BtcBlock(heightBtcCheckpoint, "", "");
+            this.logger.info("CHECKPOINT Watcher: starting to sincronize at BTC heignt",heightBtcCheckpoint);
+        }
     }
 
     public async start() : Promise<void> {
@@ -37,10 +43,8 @@ export class BtcWatcher extends EventEmitter {
         let bestBtcBlock: BtcBlock;
  
         this.logger.info("Starting to sincronize...");
-            
-        let checkpoint = new BtcBlock(600561, "", "");
-
-        this.lastBLockDetected = checkpoint || await this.btcService.getLastBlockDetected();
+        
+        this.lastBLockDetected = this.checkpoint || await this.btcService.getLastBlockDetected();
 
         while (this.running) {
             
