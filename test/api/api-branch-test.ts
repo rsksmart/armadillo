@@ -33,10 +33,10 @@ describe("Branche api tests", () => {
 
   it("getForksDetected method", async () => {
 
-    let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
-    let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
-    let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
-    let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
+    let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
+    let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
+    let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
+    let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
     
     let rangeForkInMainchain = new RangeForkInMainchain(branchItem1.rskInfo, branchItem1.rskInfo);
     let branch1 = new Branch(rangeForkInMainchain, [branchItem1,branchItem2]);
@@ -47,32 +47,33 @@ describe("Branche api tests", () => {
 
     let branchController = new BranchController(branchService);
     let param = { "params": { "n": 0 } };
-    let response : MessageResponse<Branch[]> = await branchController.getForksDetected(param, mockRes);
+    let next =  () => {};
+    let response : MessageResponse<Branch[]> = await branchController.getForksDetected(param, mockRes, next);
     expect(response.data.length).to.equal(2);
     expect(response.data).to.deep.equal([branch1,branch2]);
 
     param = { "params": { "n": 1 } };
-    response = await branchController.getForksDetected(param, mockRes);
+    response = await branchController.getForksDetected(param, mockRes, next);
     expect(response.data.length).to.equal(2);
     expect(response.data).to.deep.equal([branch1,branch2]);
 
     param = { "params": { "n": 2 } };
-    response = await branchController.getForksDetected(param, mockRes);
+    response = await branchController.getForksDetected(param, mockRes, next);
     expect(response.data.length).to.equal(2);
     expect(response.data).to.deep.equal([branch1, branch2]);
 
     param = { "params": { "n": 3 } };
-    response = await branchController.getForksDetected(param, mockRes);
+    response = await branchController.getForksDetected(param, mockRes, next);
     expect(response.data.length).to.equal(1);
     expect(response.data).to.deep.equal([branch2]);
     
     param = { "params": { "n": 4} };
-    response = await branchController.getForksDetected(param, mockRes);
+    response = await branchController.getForksDetected(param, mockRes, next);
     expect(response.data.length).to.equal(1);
     expect(response.data).to.deep.equal([branch2]);
 
     param = { "params": { "n": 5} };
-    response = await branchController.getForksDetected(param, mockRes);
+    response = await branchController.getForksDetected(param, mockRes, next);
     expect(response.data.length).to.equal(0);
   });
 });

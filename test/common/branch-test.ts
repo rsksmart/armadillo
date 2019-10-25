@@ -15,13 +15,13 @@ const btcInfo = new BtcHeaderInfo(0, "");
 describe("Branch class test", () => {
   it("Test all methods", async () => {
 
-    let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
-    let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
-    let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
-    let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
-    let branchItem5 = new BranchItem(btcInfo, new RskBlock(5, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
-    let branchItem6 = new BranchItem(btcInfo, new RskBlock(6, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
-    let branchItem7 = new BranchItem(btcInfo, new RskBlock(7, "hash", "prevHash", new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
+    let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
+    let branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
+    let branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
+    let branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
+    let branchItem5 = new BranchItem(btcInfo, new RskBlock(5, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
+    let branchItem6 = new BranchItem(btcInfo, new RskBlock(6, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
+    let branchItem7 = new BranchItem(btcInfo, new RskBlock(7, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
 
     let rangeForkInMainchain = new RangeForkInMainchain(branchItem1.rskInfo, branchItem1.rskInfo);
     let branch = new Branch(rangeForkInMainchain, [branchItem3,branchItem4,branchItem5]);
