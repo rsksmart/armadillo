@@ -8,12 +8,17 @@
         }
     },
     "rskApi": {
-        "completeUrl": "https://public-node.rsk.co/1.1.0"
+        "completeUrl": "https://public-node.rsk.co/1.1.0",
+        "lastBtcBlockDetectedCheckpoint": 600561
     },
     "rskApi-local": {
         "completeUrl": "http://localhost:4444"
     },
     "btcApi": {
+        "host": "34.67.238.129",
+        "port": 5000
+    },
+    "btcApi-local": {
         "host": "localhost",
         "port": 5000
     },
