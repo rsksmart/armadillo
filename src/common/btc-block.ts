@@ -19,13 +19,10 @@ export class BtcBlock {
     }
     if (_rskTag) {
       this.rskTag = new ForkDetectionData(_rskTag);
-<<<<<<< HEAD
     }
     
     if(_rskTag){
       this.rskTag = new ForkDetectionData(_rskTag);
-=======
->>>>>>> 69cf957f377e021dec1571c27e90cfbb98727c2b
     }
   }
 }
