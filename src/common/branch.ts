@@ -52,7 +52,9 @@ export class Branch {
 
     static fromObjectToListBranchItems(branch: any): BranchItem[] {
         let items: BranchItem[] = [];
-        
+        branch.items.map(x => items.push(BranchItem.fromObject(x)));
+
+        return items.concat(branch.mainchainBlockForkCouldHaveStarted);
 
     }
 
