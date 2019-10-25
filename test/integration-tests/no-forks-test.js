@@ -9,7 +9,7 @@ const firstBtcBlock = 8704;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveRskTags = firstBtcBlock + 3;
 const heightOfDistancedRskTags = firstBtcBlock + 5;
-const apiPoolingTime = 1000;
+const apiPoolingTime = 5000;
 const loadingTime = 700;
 const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const dataInputPath = "test/integration-tests/data/";
@@ -17,7 +17,7 @@ const consecutive2RskBlocks = "testInput_consecutive2RSKtags.json";
 const consecutive3RskBlocks = "testInput_consecutive3RSKtags.json";
 const jump3BtcBlocksToRskBlocks = "testInput_RskJumpOf3btcBlocks.json";
 
-describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
+describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -49,7 +49,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(mongoBlocks).to.be.an('array').that.is.empty;
     }).timeout(2 * 2 * apiPoolingTime);
-    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end", async () => {
+    it.only("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -61,6 +61,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const blocks = mainchainResponse.blocks;
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        console.log(blocks);
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(21);
         for (let block in blocks) {
