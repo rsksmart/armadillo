@@ -8,7 +8,7 @@ export enum BTCEvents {
     NEW_BLOCK = 'newBlock'
 }
 
-async function sleep(ms) : Promise<void> {
+async function sleep(ms): Promise<void> {
     return new Promise((res, rej) => {
         setTimeout(res, ms);
     });
@@ -30,27 +30,30 @@ export class BtcWatcher extends EventEmitter {
         this.running = false;
         this.btcService = btcService;
 
-        if(heightBtcCheckpoint != null && heightBtcCheckpoint > 1){
-            this.checkpoint =  new BtcBlock(heightBtcCheckpoint, "", "");
-            this.logger.info("CHECKPOINT Watcher: starting to sincronize at BTC heignt",heightBtcCheckpoint);
+        if (heightBtcCheckpoint != null && heightBtcCheckpoint > 1) {
+            this.checkpoint = new BtcBlock(heightBtcCheckpoint, "", "");
+            this.logger.info("CHECKPOINT Watcher: starting to sincronize at BTC heignt", heightBtcCheckpoint);
         }
     }
 
-    public async start() : Promise<void> {
-        this.logger.info('Starting btc watcher');
+    public async start(): Promise<void> {
+        this.logger.info('Starting btc watcher to sincronize...');
         this.running = true;
-        let lastBLockDetected : BtcBlock;
+        let lastBLockDetected: BtcBlock;
         let bestBtcBlock: BtcBlock;
- 
-        this.logger.info("Starting to sincronize...");
-        
-        this.lastBLockDetected = this.checkpoint || await this.btcService.getLastBlockDetected();
+        this.lastBLockDetected = await this.btcService.getLastBlockDetected();
+
+        if (this.checkpoint && this.lastBLockDetected){
+            if(this.checkpoint.btcInfo.height > 0 && this.lastBLockDetected.btcInfo.height < this.checkpoint.btcInfo.height) {
+                this.lastBLockDetected = this.checkpoint
+            }      
+        }
 
         while (this.running) {
-            
+
             bestBtcBlock = await this.btcApi.getBestBlock();
-          
-            if(!this.lastBLockDetected){
+
+            if (!this.lastBLockDetected) {
                 this.logger.warn('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
                 await this.saveBlockAtHeight(bestBtcBlock);
                 this.lastBLockDetected = bestBtcBlock;
@@ -59,10 +62,10 @@ export class BtcWatcher extends EventEmitter {
             this.logger.info("Last BTC block detected is at height", this.lastBLockDetected.btcInfo.height);
             this.logger.info("Best BTC block is at height", bestBtcBlock.btcInfo.height);
 
-            
-            if(this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height){
+
+            if (this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height) {
                 let blockMissing = this.lastBLockDetected.btcInfo.height + 1;
-                let blockAtHeightN : BtcBlock = await this.btcApi.getBlock(blockMissing);
+                let blockAtHeightN: BtcBlock = await this.btcApi.getBlock(blockMissing);
 
                 await this.saveBlockAtHeight(blockAtHeightN);
             }
@@ -75,13 +78,13 @@ export class BtcWatcher extends EventEmitter {
         await this.saveBlock(block);
     }
 
-    public async stop() : Promise<void> {
+    public async stop(): Promise<void> {
         this.logger.info('Stopping btc watcher');
         this.running = false;
     }
 
     private async saveBlock(block: BtcBlock) {
-        this.logger.info("New BTC block: hash:", block.btcInfo.hash, " height:", block.btcInfo.height)
+        this.logger.info("New BTC block - hash:", block.btcInfo.hash, " height:", block.btcInfo.height)
         await this.btcService.save(block);
         this.lastBLockDetected = block;
         this.emit(BTCEvents.NEW_BLOCK, block);
