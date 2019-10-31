@@ -58,20 +58,21 @@ export class ForkDetector {
             return;
         }
 
-        let blockMachingInMainnet: RskBlock = this.getBlockMatchWithRskTag(rskBlocksSameHeight, rskTag);
-        let bestBlock : RskBlock = this.getBlockInMainchain(rskBlocksSameHeight);
+        let rskBlockMatchingInMainnet: RskBlock = this.getBlockMatchWithRskTag(rskBlocksSameHeight, rskTag);
+        let rskBestBlockAtHeigth : RskBlock = this.getBlockInMainchain(rskBlocksSameHeight);
 
-        if (!blockMachingInMainnet) {
-            this.addOrCreateBranch(blockMachingInMainnet, newBtcBlock, rskBlocksSameHeight[0]);
+        if (!rskBlockMatchingInMainnet) {
+            this.addOrCreateBranch(null, newBtcBlock, rskBlocksSameHeight[0]);
         } else {
-            this.addInMainchain(newBtcBlock, blockMachingInMainnet, bestBlock);
+            rskBlockMatchingInMainnet.mainchain = rskBlockMatchingInMainnet.hash == rskBestBlockAtHeigth.hash;
+          
+            this.addInMainchain(newBtcBlock, rskBlockMatchingInMainnet, rskBestBlockAtHeigth);
 
             this.logger.info('RSKTAG', newBtcBlock.rskTag.toString(), 'found in block', newBtcBlock.btcInfo.hash, 'found in RSK blocks at height', newBtcBlock.rskTag.BN);
         }
     }
 
     public async addInMainchain(btcBlock: BtcBlock, rskBlockMatching: RskBlock, bestBlock: RskBlock): Promise<void> {
-
         if(rskBlockMatching.hash != bestBlock.hash){
             var objectToPrint = { 
                 "btc-hash": btcBlock.btcInfo.hash,
@@ -214,7 +215,7 @@ export class ForkDetector {
         var itemsBranch : BranchItem[];
 
         if (!rskBlock) {
-            rskBlock = new RskBlock(btcBlock.rskTag.BN, "", "", true, btcBlock.rskTag);
+            rskBlock = new RskBlock(btcBlock.rskTag.BN, "", "", false, btcBlock.rskTag);
         }
 
         //Possible mainchain block from where it started to fork
