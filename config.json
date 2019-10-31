@@ -9,7 +9,11 @@
     },
     "rskApi": {
         "completeUrl": "https://public-node.rsk.co/1.1.0",
+<<<<<<< HEAD
         "lastBtcBlockDetectedCheckpoint": 600561
+=======
+        "lastBtcBlockDetectedCheckpoint": 0
+>>>>>>> 4d4fc4d4e0f216448ddb1628293c1f123c5308f5
     },
     "rskApi-local": {
         "completeUrl": "http://localhost:4444"
