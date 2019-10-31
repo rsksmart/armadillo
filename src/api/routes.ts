@@ -1,5 +1,4 @@
 import * as express from "express"
-import BlockController from './controllers/branch-controller';
 import { MainchainService } from "../services/mainchain-service";
 import BranchController from "./controllers/branch-controller";
 import { MongoStore } from "../storage/mongo-store";
@@ -28,7 +27,6 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
         router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
         router.get('/forks/removeAll', branchController.removeAll.bind(branchController));
-
 
         return router;
 }
