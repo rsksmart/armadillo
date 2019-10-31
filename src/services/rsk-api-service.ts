@@ -19,10 +19,11 @@ export class RskApiService {
     public async getBlocksByNumber(height: number): Promise<RskBlock[]> {
         var blocksInfo: any[] = await this.nod3.rsk.getBlocksByNumber('0x' + height.toString(16), true);
         var blocks: RskBlock[] = [];
-
+console.log(blocksInfo);
         for (const blockInfo of blocksInfo) {
             var block = await this.nod3.eth.getBlock(blockInfo.hash);
-            blocks.push(new RskBlock(block.number, block.hash, block.parentHash, block.mainchain, new ForkDetectionData(block.hashForMergedMining)));
+            // console.log(block.mainchain + " ________ " + blockInfo.inMainChain)
+            blocks.push(new RskBlock(block.number, block.hash, block.parentHash, blockInfo.inMainChain, new ForkDetectionData(block.hashForMergedMining)));
         }
 
         return blocks;

@@ -83,15 +83,10 @@ function rskBlockHeightsWithBtcBlock() {
     }
 }
 
-
 async function MockBtcApiChangeRoute(route) {
     let response = await fetch(`${BtcApiURL}route/${route}`);
     return response;
 }
-
-
-
-
 
 async function getMainchainBlocks(number) {
     let response = await fetch(ArmadilloApiURL + "mainchain/getLastBlocks/" + number);
@@ -392,14 +387,11 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainI
 
 async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
-        // console.log(Object.values(btcRskMap));
-        // console.log(armadilloBlock);
         let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
         // console.log("mainchainInFork: " + mainchainInFork);
         // console.log("--- block: " + JSON.stringify(armadilloBlock, null, 2));
         if (!shouldHaveBtcInfo) {
-            expect(armadilloBlock.btcInfo.height).to.be.null;
-            expect(armadilloBlock.btcInfo.hash).to.be.null;
+            expect(armadilloBlock.btcInfo).to.be.null;
         }
         else {
             expect(armadilloBlock.btcInfo.height).not.to.be.null;

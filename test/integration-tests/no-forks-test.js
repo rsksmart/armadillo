@@ -9,7 +9,7 @@ const firstBtcBlock = 8704;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveRskTags = firstBtcBlock + 3;
 const heightOfDistancedRskTags = firstBtcBlock + 5;
-const apiPoolingTime = 5000;
+const apiPoolingTime = 1000;
 const loadingTime = 700;
 const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const dataInputPath = "test/integration-tests/data/";
@@ -30,7 +30,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         //Wait until the monitor can read the new block (pooling every 5s)
         await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.empty;
@@ -58,15 +58,15 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         //the mainchain is completed (pooling every 5s)
         await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        console.log(blocks);
+        
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(21);
         for (let block in blocks) {
-            utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
-            utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock);
+           await utils.validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+           await utils.validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(2 * 2 * apiPoolingTime);
     it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation", async () => {
@@ -101,7 +101,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         expect(mongoBlocks).to.be.an('array').that.is.not.empty;
         expect(mongoBlocks.length).to.be.equal(21);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(21);
         expect(blocks).to.be.eql(mongoBlocks.reverse());
@@ -117,7 +117,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
         await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(100);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.not.empty;
@@ -159,7 +159,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         expect(mongoBlocks).to.be.an('array').that.is.not.empty;
         expect(mongoBlocks.length).to.be.equal(41);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(41);
         expect(blocks).to.be.eql(mongoBlocks.reverse());
@@ -175,7 +175,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
         await utils.sleep(apiPoolingTime + loadingTime);
         const mainchainResponse = await utils.getMainchainBlocks(100);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(blocks).to.be.an('array').that.is.not.empty;
@@ -215,7 +215,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         expect(mongoBlocks).to.be.an('array').that.is.not.empty;
         expect(mongoBlocks.length).to.be.equal(81);
         const mainchainResponse = await utils.getMainchainBlocks(1000);
-        const blocks = mainchainResponse.blocks;
+        const blocks = mainchainResponse.data;
         expect(blocks).to.be.an('array').that.is.not.empty;
         expect(blocks.length).to.be.equal(81);
         expect(blocks).to.be.eql(mongoBlocks.reverse());
