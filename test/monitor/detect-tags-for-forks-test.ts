@@ -113,7 +113,7 @@ describe('Forks branch tests', () => {
       });
 
       let rangeForkInMainchain = new RangeForkInMainchain(block1, block100);
-      const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, new RskBlock(btcBlock100.rskTag.BN, "", "", true, btcBlock100.rskTag));
+      const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, new RskBlock(btcBlock100.rskTag.BN, "", "", false, btcBlock100.rskTag));
       const branchExpected = new Branch(rangeForkInMainchain, branchItemWhichForkNetwork);
 
       let save = sinon.stub(branchService, <any>'save');
@@ -179,10 +179,10 @@ describe('Forks branch tests', () => {
     it("Created a new branch", async () => {
 
       let item0 = new BranchItem(null, rskBlock1);
-      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", true, btcBlock5.rskTag));
+      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", false, btcBlock5.rskTag));
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
-      let branchToBeValid = new Branch(rangeForkInMainchain, [item1, item0])
+      let branchExpected = new Branch(rangeForkInMainchain, [item1, item0])
 
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBlock1);
@@ -195,7 +195,7 @@ describe('Forks branch tests', () => {
 
       let saveBranch = sinon.stub(branchService, <any>'save')
       saveBranch.callsFake(function (branchToSave) {
-        expect(branchToBeValid).to.deep.equal(branchToSave);
+        expect(branchExpected).to.deep.equal(branchToSave);
       });
 
       await forkDetector.onNewBlock(btcBlock5);
@@ -209,8 +209,8 @@ describe('Forks branch tests', () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
       let item0 = new BranchItem(null, rskBlock1);
-      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", true, btcBlock5.rskTag));
-      let item2 = new BranchItem(btcBlock6.btcInfo, new RskBlock(btcBlock6.rskTag.BN, "", "", true, btcBlock6.rskTag));
+      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", false, btcBlock5.rskTag));
+      let item2 = new BranchItem(btcBlock6.btcInfo, new RskBlock(btcBlock6.rskTag.BN, "", "", false, btcBlock6.rskTag));
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1, item0]);
 
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
