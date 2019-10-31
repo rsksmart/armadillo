@@ -28,7 +28,6 @@ class MonitorRunner {
         this.branchService = new BranchService(mongoBranchesStore);
         this.mainchainService = new MainchainService(mongoMainchainStore);
         this.btcService = new BtcService(mongoBtcStore);
-        console.log( this.monitorConfig.rskApi)
         this.btcWatcher = new BtcWatcher(new HttpBtcApi(this.monitorConfig.btcApi), this.btcService, this.monitorConfig.rskApi.lastBtcBlockDetectedCheckpoint);
         this.rskApiService = new RskApiService(this.monitorConfig.rskApi);
         this.forkDetector = new ForkDetector(this.branchService, this.mainchainService, this.btcWatcher, this.rskApiService);
