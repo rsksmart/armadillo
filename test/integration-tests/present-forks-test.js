@@ -25,15 +25,29 @@ const HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 6
 const HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 70;
 const HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 63;
 const HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 67;
+const HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 66;
+const HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 66;
 
+const HNoMatchRSK8CPVDiffConsecutive = firstBtcBlock + 52;
+const HNoMatchRSK8CPVDiffNonConsecutive = firstBtcBlock + 57;
+const HMatchRSK8CPVDiffConsecutive = firstBtcBlock + 51;
+const HMatchRSK8CPVDiffNonConsecutive = firstBtcBlock + 55;
+const HNoMatch8CPVDiffConsecutiveMatches = firstBtcBlock + 54;
+const HNoMatch8CPVDiffNonConsecutiveMatches = firstBtcBlock + 61;
 
+const HNoMatch8CPVDiffConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 78;
+const HNoMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 84;
+const HMatch8CPVDiffConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 77;
+const HMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 81;
+const HNoMatch8CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 79;
+const HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 86;
 
 const apiPoolingTime = 1000;
 const loadingTime = 700;
 
 const btcApiRoute = "raw";
 describe("RSK no match at same height with matching CPV", () => {
-    this.slow(7 * (apiPoolingTime + loadingTime));
+    // this.slow(7 * (apiPoolingTime + loadingTime));
     it("should not create branch for BTC block matching RSK tag, end to end, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, heightOfConsecutiveRskTags, 0, 1000, apiPoolingTime, loadingTime);
@@ -217,287 +231,253 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             }).timeout(1 * 2 * apiPoolingTime + 2000);
     });
     describe("No matching RSK tags no match CPV among each other", () => {
-        it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+        it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther, 1, 2000, apiPoolingTime, loadingTime,[1,1]);
+                btcApiRoute, HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther, 1, 2000, apiPoolingTime, loadingTime);
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1, 1]);
         }).timeout(1 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+        it("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 3, 2000, apiPoolingTime, loadingTime);
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1,[1,1]);
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1, 1]);
+        }).timeout(3 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther, 2, 2000, apiPoolingTime, loadingTime);
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1,[1,1,1]);
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1, 1, 1]);
+        }).timeout(2 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 5, 2000, apiPoolingTime, loadingTime);
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following consecutive BTC block with "
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1, 1, 1]);
+        }).timeout(5 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following consecutive BTC block with "
             + "\n\tno matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther, 1, 2000, apiPoolingTime, loadingTime);
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 await utils.setHeightInMockBTCApi(heightOfNoRskTags);
                 //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following non consecutive BTC block "
+                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1]);
+            }).timeout(1 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following non consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 3, 2000, apiPoolingTime, loadingTime);
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 await utils.setHeightInMockBTCApi(heightOfNoRskTags);
                 //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block "
+                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1]);
+            }).timeout(3 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther, 2, 2000, apiPoolingTime, loadingTime);
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 await utils.setHeightInMockBTCApi(heightOfNoRskTags);
                 //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block "
+                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1,1]);
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 6, 2000, apiPoolingTime, loadingTime);
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 await utils.setHeightInMockBTCApi(heightOfNoRskTags);
                 //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block "
+                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1,1]);
+            }).timeout(6 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block "
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk, 1, 2000, apiPoolingTime, loadingTime);
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 await utils.setHeightInMockBTCApi(heightOfNoRskTags);
                 //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block "
+                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1,1]);
+            }).timeout(1 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block "
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk, 2, 2000, apiPoolingTime, loadingTime);
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 await utils.setHeightInMockBTCApi(heightOfNoRskTags);
                 //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1);
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+                await utils.validateForksCreated(blockchainsResponse, lastForksResponse, 1, rskBlockHeightsWithBtcBlock, 1, [1]);
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
     });
 
 });
-
-describe("RSK no match at same height with no match CPV", () => {
+describe.skip("RSK no match at same height with no match CPV", () => {
     describe("No matching RSK tags match CPV among each other", () => {
-        it.skip("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
+        it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatchRSK8CPVDiffConsecutive, 1, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(2 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatchRSK8CPVDiffNonConsecutive, 2, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+             
+        }).timeout(2 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatchRSK8CPVDiffConsecutive, 3, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(3 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatchRSK8CPVDiffNonConsecutive, 4, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
-            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
-            const lastForksResponse = await utils.getForksFromHeight(0);
-            expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(4 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatchRSK8CPVDiffConsecutive, 1, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following non consecutive BTC "
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(1 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following non consecutive BTC "
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatchRSK8CPVDiffNonConsecutive, 2, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block "
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatchRSK8CPVDiffConsecutive, 2, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC "
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC "
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatchRSK8CPVDiffNonConsecutive, 4, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block "
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(4 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block "
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HNoMatch8CPVDiffConsecutiveMatches, 1, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with no matching RSK tag, following non consecutive BTC "
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(1 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first BTC block with no matching RSK tag, following non consecutive BTC "
             + "\n\tblock with matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HNoMatch8CPVDiffNonConsecutiveMatches, 2, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
     });
     describe("No matching RSK tags no match CPV among each other", () => {
-        it.skip("should create branch for first BTC blocks with no matching RSK tag, end to end", async () => {
+        it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatch8CPVDiffConsecutiveRskBlocksDontMatchEachOther, 1, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(1 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 3, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(3 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatch8CPVDiffConsecutiveRskBlocksDontMatchEachOther, 3, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(3 * 2 * apiPoolingTime + 2000);
+        it("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                btcApiRoute, HNoMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 6, 2000, apiPoolingTime, loadingTime);
             expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
             const lastForksResponse = await utils.getForksFromHeight(0);
             expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end", async () => {
-            const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-            expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
-            const lastForksResponse = await utils.getForksFromHeight(0);
-            expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-            //Lacks blocks validation
-        }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+            //TODO: Lacks blocks validation - utils.validateForksCreated
+        }).timeout(6 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with matching RSK tag, following consecutive BTC block "
             + "\n\twith no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatch8CPVDiffConsecutiveRskBlocksDontMatchEachOther, 2, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with matching RSK tag, following non consecutive BTC "
             + "\n\tblock with no matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther, 6, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block "
-            + "\n\twith no matching RSK tag, end to end", async () => {
-                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
-                const lastForksResponse = await utils.getForksFromHeight(0);
-                expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
-        it.skip("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC "
-            + "\n\tblock with no matching RSK tag, end to end", async () => {
-                const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
-                expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
-                const lastForksResponse = await utils.getForksFromHeight(0);
-                expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(6 * 2 * apiPoolingTime + 2000);
+
         it.skip("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block "
             + "\n\twith matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HNoMatch8CPVDiffConsecutiveRskBlocksFollowingMatchesRsk, 2, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(2 * 2 * apiPoolingTime + 2000);
         it.skip("should create branch for first BTC block with no matching RSK tag, following non consecutive BTC "
             + "\n\tblock with matching RSK tag, end to end", async () => {
                 const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
-                    btcApiRoute, /*TODO: Create DataSet*/TBD_InitialHeight, TBD_NbrOfBlocks, 2000, apiPoolingTime, loadingTime);
+                    btcApiRoute, HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk, 6, 2000, apiPoolingTime, loadingTime);
                 expect(blockchainsResponse.blockchains).to.be.an('array').that.is.not.empty;
                 const lastForksResponse = await utils.getForksFromHeight(0);
                 expect(lastForksResponse.forks).to.be.an('array').that.is.not.empty;
-                //Lacks blocks validation
-            }).timeout(/*TODO: TBD*/4 * 2 * apiPoolingTime + 2000);
+                //TODO: Lacks blocks validation - utils.validateForksCreated
+            }).timeout(6 * 2 * apiPoolingTime + 2000);
     });
 });
