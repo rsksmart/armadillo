@@ -29,25 +29,26 @@ export class ForkDetector {
     }
 
     public async onNewBlock(newBtcBlock: BtcBlock) {
-         
         if (newBtcBlock.rskTag == null) {
             this.logger.info('NO RSKTAG present - Skipping block hash:', newBtcBlock.btcInfo.hash, 'height:', newBtcBlock.btcInfo.height);
+            await this.btcWatcher.blockSuccessfullyProcessed(newBtcBlock);
             //TODO: Do we need to have some alarm if we don't find some blocks in the last X BTC blocks ?
             return;
-        }else{
+        } else {
             this.logger.info('RSKTAG present - hash:', newBtcBlock.btcInfo.hash, 'height:', newBtcBlock.btcInfo.height);
         }
 
         let rskTag: ForkDetectionData = newBtcBlock.rskTag;
         let rskBestBlock: RskBlock = await this.rskApiService.getBestBlock();
-        
+
         if (rskTag.BN > rskBestBlock.height) {
             this.logger.warn("Newtwork could be behind some blocks");
             this.logger.warn("FORK: found a block in the future");
-            this.addOrCreateBranch(null, newBtcBlock, rskBestBlock);
+            await this.addOrCreateBranch(null, newBtcBlock, rskBestBlock);
+            await this.btcWatcher.blockSuccessfullyProcessed(newBtcBlock);
             return;
         }
-        
+
         let rskBlocksSameHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
 
         if (rskBlocksSameHeight.length == 0) {
@@ -59,96 +60,94 @@ export class ForkDetector {
         }
 
         let rskBlockMatchingInMainnet: RskBlock = this.getBlockMatchWithRskTag(rskBlocksSameHeight, rskTag);
-        let rskBestBlockAtHeigth : RskBlock = this.getBlockInMainchain(rskBlocksSameHeight);
+        let rskBestBlockAtHeigth: RskBlock = this.getBlockInMainchain(rskBlocksSameHeight);
 
         if (!rskBlockMatchingInMainnet) {
-            this.addOrCreateBranch(null, newBtcBlock, rskBlocksSameHeight[0]);
+            await this.addOrCreateBranch(null, newBtcBlock, rskBlocksSameHeight[0]);
         } else {
-            rskBlockMatchingInMainnet.mainchain = rskBlockMatchingInMainnet.hash == rskBestBlockAtHeigth.hash;
-          
-            this.addInMainchain(newBtcBlock, rskBlockMatchingInMainnet, rskBestBlockAtHeigth);
+
+            let ok = await this.addInMainchain(newBtcBlock, rskBestBlockAtHeigth);
+
+            if (!ok) {
+                return;
+            }
+
+            if (rskBlockMatchingInMainnet.hash != rskBestBlockAtHeigth.hash) {
+                // TODO:  We have to consider if the btc block has a rskTag which is not a mainChain.
+                // So block will not connect with the mainchain
+                //this.addInMainchain(newBtcBlock, rskBestBlockAtHeigth);
+            }
 
             this.logger.info('RSKTAG', newBtcBlock.rskTag.toString(), 'found in block', newBtcBlock.btcInfo.hash, 'found in RSK blocks at height', newBtcBlock.rskTag.BN);
         }
+
+        await this.btcWatcher.blockSuccessfullyProcessed(newBtcBlock);
     }
 
-    public async addInMainchain(btcBlock: BtcBlock, rskBlockMatching: RskBlock, bestBlock: RskBlock): Promise<void> {
-        if(rskBlockMatching.hash != bestBlock.hash){
-            var objectToPrint = { 
-                "btc-hash": btcBlock.btcInfo.hash,
-                "btc-height": btcBlock.btcInfo.height,
-                "rsk-best-block-hash" : bestBlock.hash,
-                "rsk-best-block-height":bestBlock.height
-            }
+    public async addInMainchain(newBtcBlock: BtcBlock, rskBlockInMainchain: RskBlock): Promise<boolean> {
+        let bestBlockInMainchain: BranchItem = await this.mainchainService.getBestBlock();
 
-            this.logger.info("RSKTAG found but not in mainchain, using best block.");
-            this.logger.info(objectToPrint);
-        }
-
-        let newItemInMainchain = new BranchItem(BtcHeaderInfo.fromObject(btcBlock), bestBlock);
-        let mainchain: BranchItem[] = await this.mainchainService.getLastItems(1);
-        
-        if (mainchain.length == 0) {
+        if (bestBlockInMainchain == null) {
             // There is no mainnet yet, we create it now.
-            
+
             // TODO: For now we are saving the bestBLock in mainchain instead his imported not best (uncle at same level)
             // Also, we have to save the no mainchain branch, rsk tag found in btc block is not mainchain but may be creating a new uncle chain  
-            let newMainnet : BranchItem = new BranchItem(btcBlock.btcInfo, bestBlock);
+            let newMainnet: BranchItem = new BranchItem(newBtcBlock.btcInfo, rskBlockInMainchain);
 
-            this.mainchainService.save([newMainnet]);
+            await this.mainchainService.save([newMainnet]);
 
             this.logger.info("Mainchain: Created the first item in mainchain");
 
-            return;
+            return true;
         }
-        // Search last block in mainchain   
-        let lastBLockInMainchain : RskBlock = mainchain[0].rskInfo;
-        let lastRskBNInMainchainbranch : number = lastBLockInMainchain.height;
-
-        // Rebuilding the chain between last tag find up to the new tag, to have the complete mainchain
-        let rskHashToFind : string = lastBLockInMainchain.hash;
+        // Rebuilding the chain between last tag find up to the new tag height, to have the complete mainchain
+        let prevRskHashToMatch: string = bestBlockInMainchain.rskInfo.hash;
         let itemsToSaveInMainchain: BranchItem[] = [];
-        for (let i = lastRskBNInMainchainbranch + 1; i < newItemInMainchain.rskInfo.height; i++) {
-            this.logger.info("Getting all RSK blocks at height", i)
-            let blocks: RskBlock[] = await this.rskApiService.getBlocksByNumber(i);
-            var blockThatShouldBeInMainchain: RskBlock = this.getBlockThatMatch(blocks, rskHashToFind);
-           
-            if (!blockThatShouldBeInMainchain) {
-                this.logger.fatal("Mainchain: building mainchain can not find a block in RSK at height:", i, "with prev hash:", rskHashToFind)
-                process.exit();
-            }else{
-                this.logger.fatal("Mainchain: adding RSK block into mainchain at height:", i, "with hash:", rskHashToFind)
-            }
+        let searchFromHeight = bestBlockInMainchain.rskInfo.height + 1;
+        let searchToHeight = rskBlockInMainchain.height;
 
-            rskHashToFind = blockThatShouldBeInMainchain.hash;
-            itemsToSaveInMainchain.push(new BranchItem(null, blockThatShouldBeInMainchain));
-        }
-        const hashTopInMainchain = lastBLockInMainchain.hash;
-        
-        var branchItemToSave : BranchItem = new BranchItem(btcBlock.btcInfo, rskBlockMatching)
-        
-        if (rskHashToFind != rskBlockMatching.prevHash) {
-            if(rskHashToFind != bestBlock.prevHash){
-                this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain with hash:", hashTopInMainchain, " should connect with prevHash:", rskHashToFind)
-                // process.exit(); // Should we finish the process ? 
+        if (searchFromHeight != searchToHeight) {
 
-              
-                return;
-            } else{
-                // Tag  found in  BTC block doesn't match into rsk mainchain as best block, 
-                // so for now we just use the best block and leave the btc block found
-    
-                // TODO: In the future we have to be able to save the uncles, and check if a miner is building a public parallel mainchain, 
-                // so the block are public as an uncles.
+            this.logger.info("Getting all RSK blocks from height", searchFromHeight, "to height", searchToHeight)
 
-                // In this case best block doesn't have a bitcoin data because bitcoin data is in the uncle
-                branchItemToSave = new BranchItem(null, bestBlock);
+            for (let i = searchFromHeight; i < searchToHeight; i++) {
+                let block: RskBlock = await this.rskApiService.getBlock(i);
+                if (block.prevHash != prevRskHashToMatch) {
+                    this.logger.fatal("Mainchain: building mainchain can not find a block in RSK at height:", i, "with prev hash:", prevRskHashToMatch)
+                    return false;
+                } else {
+                    this.logger.info("Mainchain: adding RSK block into mainchain at height:", i, "with hash:", prevRskHashToMatch, "prevHash:", prevRskHashToMatch)
+                }
+
+                prevRskHashToMatch = block.hash;
+                itemsToSaveInMainchain.push(new BranchItem(null, block));
             }
         }
 
-        itemsToSaveInMainchain.push(branchItemToSave);
+        if (bestBlockInMainchain.rskInfo.height != rskBlockInMainchain.height && prevRskHashToMatch != rskBlockInMainchain.prevHash) {
+            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain with hash:", bestBlockInMainchain.rskInfo.hash, " should connect with prevHash:", prevRskHashToMatch)
+            //process.exit(); // Should we finish the process ?
+            return false;
+        }
+
+        //TODO: up to now all new btc blocks tags are in mainchain, so branchItem for that height should be btc data, 
+        // if is not in mainchain (is an uncle), btc data should be in null.
+        // Now also if is an uncle, we are saving btc data into branchitem.
+
+        // if()
+
+        //     // TODO: In the future we have to be able to save the uncles, and check if a miner is building a public parallel mainchain, 
+        //     // so the block are public as an uncles.
+
+        //     // In this case best block doesn't have a bitcoin data because bitcoin data is in the uncle
+        //     branchItemToSave = new BranchItem(null, rskBlockInMainchain);
+        // }
+
+        itemsToSaveInMainchain.push(new BranchItem(newBtcBlock.btcInfo, rskBlockInMainchain));
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height))
-        this.mainchainService.save(itemsToSaveInMainchain);
+        await this.mainchainService.save(itemsToSaveInMainchain);
+
+        return true;
     }
 
     public stop() {
@@ -212,14 +211,14 @@ export class ForkDetector {
     }
 
     private async addOrCreateBranch(rskBlock: RskBlock, btcBlock: BtcBlock, rskBlocksSameHeight: RskBlock) {
-        var itemsBranch : BranchItem[];
+        var itemsBranch: BranchItem[];
 
         if (!rskBlock) {
             rskBlock = new RskBlock(btcBlock.rskTag.BN, "", "", false, btcBlock.rskTag);
         }
 
         //Possible mainchain block from where it started to fork
-        let item : BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);
+        let item: BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);
         itemsBranch = [item];
 
         if (btcBlock.rskTag.BN > rskBlocksSameHeight.height) {
@@ -242,12 +241,13 @@ export class ForkDetector {
             // TODO: We have to check last height branch item before connect new item branch
             // Otherwise we could be adding heights already added
 
-            this.branchService.addBranchItem(existingBranch.getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
+            await this.branchService.addBranchItem(existingBranch.getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
         } else {
             let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
-           
+
             this.logger.warn('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
-            this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, itemsBranch));
+
+            await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, itemsBranch));
         }
     }
 }
