@@ -37,10 +37,8 @@ export class MainchainController {
   }
 
   public async getAll(req: any, res: any): Promise<MessageResponse<any>> {
-    const n: number = parseInt(req.params.n);
-
     var items : BranchItem[] = await this.service.getAll();
-    
+
     return res.status(200).send(new MessageResponse<BranchItem[]>(
       `Get all mainnet items`,
       true,

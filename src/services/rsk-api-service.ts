@@ -22,7 +22,6 @@ export class RskApiService {
 console.log(blocksInfo);
         for (const blockInfo of blocksInfo) {
             var block = await this.nod3.eth.getBlock(blockInfo.hash);
-            // console.log(block.mainchain + " ________ " + blockInfo.inMainChain)
             blocks.push(new RskBlock(block.number, block.hash, block.parentHash, blockInfo.inMainChain, new ForkDetectionData(block.hashForMergedMining)));
         }
 

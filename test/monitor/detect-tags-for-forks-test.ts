@@ -14,6 +14,7 @@ import { MongoStore } from "../../src/storage/mongo-store";
 import { BranchService } from "../../src/services/branch-service";
 import { BtcService } from "../../src/services/btc-service";
 import { sleep } from "../../src/util/helper";
+import { HttpBtcApi } from "../../src/services/btc-api";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00"; // 0
@@ -56,7 +57,7 @@ const branch1 = new Branch(rangeForkInMainchain, [new BranchItem(btcBlock1.btcIn
 const branch2 = new Branch(rangeForkInMainchain, [new BranchItem(btcBlock2.btcInfo, rskBlock2)])
 
 const btcBlock = new BtcBlock(2, "btcHash", RSKTAG1);
-let btcStub;
+let btcWatcher;
 let rskApiConfig: RskApiConfig;
 let mongoStore: MongoStore;
 let btcStore: MongoStore;
@@ -72,7 +73,8 @@ describe('Forks branch tests', () => {
   });
 
   beforeEach(function () {
-    btcStub = stubObject<BtcWatcher>(BtcWatcher.prototype);
+    var httpBtcApi = stubObject<HttpBtcApi>(HttpBtcApi.prototype);
+    btcWatcher = new BtcWatcher(httpBtcApi, null, 0);
     rskApiConfig = stubObject<RskApiConfig>(RskApiConfig.prototype);
     mongoStore = stubObject<MongoStore>(MongoStore.prototype);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
@@ -80,8 +82,8 @@ describe('Forks branch tests', () => {
     rskService = new RskApiService(rskApiConfig);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     btcService = new BtcService(btcStore);
+    forkDetector = new ForkDetector(branchService, null, btcWatcher, rskService);
 
-    forkDetector = new ForkDetector(branchService, null, btcStub, rskService);
   });
 
   describe("Forks in present and in the past", () => {
@@ -107,13 +109,15 @@ describe('Forks branch tests', () => {
 
       var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
       getLastBlockDetected.returns(btcBlockPrev);
+ 
+      sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
 
       sinon.stub(btcService, <any>'save').callsFake(function (blockToSave) {
         expect(blockToSave).to.deep.equal(btcBlock100);
       });
-
+      
       let rangeForkInMainchain = new RangeForkInMainchain(block1, block100);
-      const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, new RskBlock(btcBlock100.rskTag.BN, "", "", true, btcBlock100.rskTag));
+      const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, new RskBlock(btcBlock100.rskTag.BN, "", "", false, btcBlock100.rskTag));
       const branchExpected = new Branch(rangeForkInMainchain, branchItemWhichForkNetwork);
 
       let save = sinon.stub(branchService, <any>'save');
@@ -163,6 +167,8 @@ describe('Forks branch tests', () => {
       let getRskBlockAtCertainHeight = sinon.stub(rskService, <any>'getRskBlockAtCertainHeight')
       getRskBlockAtCertainHeight.returns(rskBlock0);
 
+      sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
+
       await forkDetector.onNewBlock(btcBlock1);
       await forkDetector.onNewBlock(btcBlock2);
       await forkDetector.onNewBlock(btcBlock3);
@@ -179,10 +185,10 @@ describe('Forks branch tests', () => {
     it("Created a new branch", async () => {
 
       let item0 = new BranchItem(null, rskBlock1);
-      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", true, btcBlock5.rskTag));
+      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", false, btcBlock5.rskTag));
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
-      let branchToBeValid = new Branch(rangeForkInMainchain, [item1, item0])
+      let branchExpected = new Branch(rangeForkInMainchain, [item1, item0])
 
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBlock1);
@@ -195,8 +201,10 @@ describe('Forks branch tests', () => {
 
       let saveBranch = sinon.stub(branchService, <any>'save')
       saveBranch.callsFake(function (branchToSave) {
-        expect(branchToBeValid).to.deep.equal(branchToSave);
+        expect(branchExpected).to.deep.equal(branchToSave);
       });
+
+      sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
 
       await forkDetector.onNewBlock(btcBlock5);
       await sleep(100)
@@ -209,8 +217,8 @@ describe('Forks branch tests', () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
       let item0 = new BranchItem(null, rskBlock1);
-      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", true, btcBlock5.rskTag));
-      let item2 = new BranchItem(btcBlock6.btcInfo, new RskBlock(btcBlock6.rskTag.BN, "", "", true, btcBlock6.rskTag));
+      let item1 = new BranchItem(btcBlock5.btcInfo, new RskBlock(btcBlock5.rskTag.BN, "", "", false, btcBlock5.rskTag));
+      let item2 = new BranchItem(btcBlock6.btcInfo, new RskBlock(btcBlock6.rskTag.BN, "", "", false, btcBlock6.rskTag));
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1, item0]);
 
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
@@ -233,6 +241,8 @@ describe('Forks branch tests', () => {
         expect(prefixHash).to.deep.equal(branchFirstSaved.getFirstDetected().rskInfo.forkDetectionData.prefixHash);
         expect(branchPassToMethod).to.deep.equal(item2);
       });
+      
+      sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
 
       await forkDetector.onNewBlock(btcBlock5);
       await forkDetector.onNewBlock(btcBlock6);
