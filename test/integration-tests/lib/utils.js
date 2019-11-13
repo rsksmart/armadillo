@@ -426,10 +426,8 @@ async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
         let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
-
         if (!shouldHaveBtcInfo) {
-            expect(armadilloBlock.btcInfo.height).to.be.null;
-            expect(armadilloBlock.btcInfo.hash).to.be.null;
+            expect(armadilloBlock.btcInfo).to.be.null;
         }
         else {
             expect(armadilloBlock.btcInfo.height).not.to.be.null;
@@ -458,8 +456,22 @@ async function getBlockchainsAfterMovingXBlocks(
     await sleep(loadingTime);
     return blockchainsResponse = await getBlockchains(amountOfBlockchains);
 }
-
-async function validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
+async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMainchain) {
+    const mainchainResponse = await getMainchainBlocks(nbrOfMainchainBlocksToFetch);
+    const blocks = mainchainResponse.data;
+    expect(blocks).to.be.an('array').that.is.not.empty;
+    expect(blocks.length).to.be.equal(lengthOfExpectedMainchain);
+    for (let block in blocks) {
+        validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
+        validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock());
+    }
+}
+async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
+    if (lengthOfForks === undefined || blockchainForks.length !== lengthOfForks.length) {
+        console.log("=============== MISSING length of forks!!! ===============");
+        this.skip();
+    }
+    const numberOfForksExpected = lengthOfForks.length;
     expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
     const blockchainForks = blockchainsResponse.blockchains.forks;
     const lastForks = lastForksResponse.forks;
@@ -467,12 +479,9 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, numb
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
     expect(lastForks).to.be.an('array').that.is.not.empty;
     expect(lastForks.length).to.be.equal(numberOfForksExpected);
-    if (lengthOfForks === undefined || blockchainForks.length !== lengthOfForks.length) {
-        console.log ("=============== MISSING length of forks!!! ===============");
-    }
     for (forkPos in blockchainForks) {
         const fork = blockchainForks[forkPos];
-        expect(fork.length).to.be.equal(lengthOfForks[forkPos]+2);
+        expect(fork.length).to.be.equal(lengthOfForks[forkPos] + 2);
         for (pos in fork) {
             fork[pos].src = "blockchains";
             fork[pos].pos = pos;
@@ -516,5 +525,6 @@ module.exports = {
     getBlockchains,
     getBlockchainsAfterMovingXBlocks,
     validateForksCreated,
-    rskBlockHeightsWithBtcBlock
+    rskBlockHeightsWithBtcBlock,
+    validateMainchain
 }
