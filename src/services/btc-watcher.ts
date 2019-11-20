@@ -121,7 +121,7 @@ export class BtcWatcher extends EventEmitter {
           await this.saveBlock(blockAtHeightN);
         }
       }
-      await sleep(300);
+      await sleep(5000);
     }
   }
 
