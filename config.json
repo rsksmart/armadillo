@@ -7,18 +7,25 @@
             "configFile": "./log-api-config.json"
         }
     },
-    "rskApi": {
+    "rskApi-prod": {
         "completeUrl": "https://public-node.rsk.co/1.1.0",
         "lastBtcBlockDetectedCheckpoint": 0
     },
     "rskApi-local": {
         "completeUrl": "http://localhost:4444"
     },
-    "btcApi": {
+    "rskApi": {
+        "completeUrl": "http://localhost:4444"
+    },
+    "btcApi-prod": {
         "host": "34.67.238.129",
         "port": 5000
     },
     "btcApi-local": {
+        "host": "localhost",
+        "port": 5000
+    },
+    "btcApi": {
         "host": "localhost",
         "port": 5000
     },

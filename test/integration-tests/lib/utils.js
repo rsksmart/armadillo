@@ -459,7 +459,6 @@ async function getBlockchainsAfterMovingXBlocks(
 async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMainchain) {
     const mainchainResponse = await getMainchainBlocks(nbrOfMainchainBlocksToFetch);
     const blocks = mainchainResponse.data;
-    expect(blocks).to.be.an('array').that.is.not.empty;
     expect(blocks.length).to.be.equal(lengthOfExpectedMainchain);
     for (let block in blocks) {
         validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
