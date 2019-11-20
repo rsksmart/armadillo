@@ -43,7 +43,7 @@ const HMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 
 const HNoMatch8CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 79;
 const HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 86;
 
-const apiPoolingTime = 1000;
+const apiPoolingTime = 5000;
 const loadingTime = 700;
 
 const btcApiRoute = "raw";
