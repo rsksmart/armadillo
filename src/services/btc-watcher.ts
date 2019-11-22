@@ -41,7 +41,7 @@ export class BtcWatcher extends EventEmitter {
         this.logger.info('Starting btc watcher to sincronize...');
         this.running = true;
         let lastBLockDetected: BtcBlock;
-        let bestBtcBlock: BtcBlock;
+        let bestBtcBlock: BtcBlock =  await this.btcApi.getBestBlock();
         this.lastBLockDetected = await this.btcService.getLastBlockDetected();
 
         if (this.checkpoint) {
@@ -60,9 +60,9 @@ export class BtcWatcher extends EventEmitter {
         }
 
         while (this.running) {
-
+            this.lastBLockDetected = await this.btcService.getLastBlockDetected();
+            
             if (this.prevBlockProcessed) {
-
                 bestBtcBlock = await this.btcApi.getBestBlock();
 
                 this.logger.info("Last BTC block detected is at height", this.lastBLockDetected.btcInfo.height);
