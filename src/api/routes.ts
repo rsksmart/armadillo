@@ -24,9 +24,11 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         router.get('/blockchains/:n', blockchainsController.getLastBlockchains.bind(blockchainsController));
 
         //For testing 
-        router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
-        router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
-        router.get('/forks/removeAll', branchController.removeAll.bind(branchController));
+        if (true) {
+                router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
+                router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
+                router.get('/forks/removeAll', branchController.removeAll.bind(branchController));
+        }
 
         return router;
 }
