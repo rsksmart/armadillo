@@ -48,6 +48,7 @@ let findBlocks = async (_db, _collection) => {
             result = await dbo
                 .collection(_collection)
                 .find({})
+                .project({_id:0})
                 .toArray();
         }
         catch (e) {
