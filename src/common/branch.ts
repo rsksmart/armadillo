@@ -52,13 +52,10 @@ export class Branch {
 
     static fromObjectToListBranchItems(branch: any): BranchItem[] {
         let items: BranchItem[] = [];
+        
         branch.items.map(x => items.push(BranchItem.fromObject(x)));
-        let mainchainBlockForkCouldHaveStarted = {
-            btcInfo: null,
-            rskInfo: branch.mainchainBlockForkCouldHaveStarted
-        }
-        return items.concat(mainchainBlockForkCouldHaveStarted);
-        // return items.concat(branche.mainchainBlockForkCouldHaveStarted);
+
+        return items.concat(branch.mainchainBlockForkCouldHaveStarted);
     }
 
     public addNewForkItem(branch: BranchItem) {
