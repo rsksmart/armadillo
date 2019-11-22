@@ -9,8 +9,8 @@ const firstBtcBlock = 8704;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveRskTags = firstBtcBlock + 3;
 const heightOfDistancedRskTags = firstBtcBlock + 5;
-const apiPoolingTime = 5000;
-const loadingTime = 700;
+const apiPoolingTime = 3000;
+const loadingTime = 1700;
 const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const dataInputPath = "test/integration-tests/data/";
 const consecutive2RskBlocks = "testInput_consecutive2RSKtags.json";
@@ -18,6 +18,9 @@ const consecutive3RskBlocks = "testInput_consecutive3RSKtags.json";
 const jump3BtcBlocksToRskBlocks = "testInput_RskJumpOf3btcBlocks.json";
 
 describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
+    it("REMOVE THIS", async () => {
+        await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+    });
     it("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -46,7 +49,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         expect(mongoBlocks).to.be.an('array').that.is.empty;
     }).timeout(2 * 2 * apiPoolingTime);
-    it.only("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end", async () => {
+    it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -81,7 +84,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         }
     }).timeout(2 * 2 * apiPoolingTime);
     it.skip("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation", async () => {
-        await mongo_utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteDB(db, mainchain);
         await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive2RskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);
@@ -96,7 +99,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         expect(blocks.length).to.be.equal(21);
         expect(blocks).to.be.eql(mongoBlocks.reverse());
     });
-    it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, end to end", async () => {
+    it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -105,7 +108,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         }
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime + loadingTime);
+        await utils.sleep(10000);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         await utils.validateMainchain(1000, 41);
@@ -119,7 +122,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         }
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(apiPoolingTime + loadingTime);
+        await utils.sleep(10000);
         const mongoBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -180,7 +183,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         }
     }).timeout(5 * 2 * apiPoolingTime);
     it.skip("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation", async () => {
-        await mongo_utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteDB(db, mainchain);
         await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + jump3BtcBlocksToRskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);
