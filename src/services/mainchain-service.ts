@@ -1,7 +1,6 @@
 import { MongoStore } from "../storage/mongo-store";
 import { BranchItem } from "../common/branch";
 import BaseService from "./base-service";
-import { RskBlock } from "../common/rsk-block";
 
 export class MainchainService  extends BaseService {
 
@@ -12,6 +11,11 @@ export class MainchainService  extends BaseService {
     public async getLastItems(numberOfItems): Promise<BranchItem[]> {
         let robjectsToReturn : any[] = await this.store.getCollection().find().sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
         return robjectsToReturn.map(x => BranchItem.fromObject(x));
+    }
+
+    public async getBestBlock(): Promise<BranchItem> {
+       let items : BranchItem[] = await this.getLastItems(1);
+       return items.length > 0 ? items[0] : null;
     }
 
     public async save(items: BranchItem[]): Promise<boolean> {
@@ -37,7 +41,10 @@ export class MainchainService  extends BaseService {
 
     public async getAll() : Promise<BranchItem[]>{
         let items : any[] = await this.store.getCollection().find({}).toArray();
-
         return items.map(x => BranchItem.fromObject(x));
+    }
+
+    public async deleteAll(){
+        await this.store.getCollection().drop();
     }
 }

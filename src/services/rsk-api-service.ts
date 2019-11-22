@@ -22,7 +22,7 @@ export class RskApiService {
 
         for (const blockInfo of blocksInfo) {
             var block = await this.nod3.eth.getBlock(blockInfo.hash);
-            blocks.push(new RskBlock(block.number, block.hash, block.parentHash, true, new ForkDetectionData(block.hashForMergedMining)));
+            blocks.push(new RskBlock(block.number, block.hash, block.parentHash, blockInfo.inMainChain, new ForkDetectionData(block.hashForMergedMining)));
         }
 
         return blocks;
