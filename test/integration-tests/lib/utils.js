@@ -458,6 +458,7 @@ async function getBlockchainsAfterMovingXBlocks(
     await MockBtcApiChangeRoute(btcApiRoute);
     await setHeightInMockBTCApi(initialHeight);
     await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+    await setBlockAsLastChecked(initialHeight-1);
     await sleep(apiPoolingTime + loadingTime);
     const blocksToAdvance = blocksToMove;
     for (let i = 0; i < blocksToAdvance; i++) {
@@ -477,28 +478,35 @@ async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMa
 }
 
 async function setBlockAsLastChecked (blockNumber) {
-    const btcBlock = await getBtcApiBlockNumber (blockNumber);
-    console.log(JSON.stringify(btcBlock,null,2));
-    mongo_utils.updateLastCheckedBtcBlock(btcBlock);
+    try {
+        const btcBlock = await getBtcApiBlockNumber (blockNumber);
+        await mongo_utils.updateLastCheckedBtcBlock(btcBlock);
+        console.log(btcBlock.btcInfo.height);
+    }
+    catch (e) {
+        return;
+    }
 }
 
 async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
+    const blockchainForks = blockchainsResponse.data.forks;
     if (lengthOfForks === undefined || blockchainForks.length !== lengthOfForks.length) {
         console.log("=============== MISSING length of forks!!! ===============");
         this.skip();
     }
     const numberOfForksExpected = lengthOfForks.length;
-    expect(blockchainsResponse.blockchains).to.be.an('object').that.is.not.empty;
-    const blockchainForks = blockchainsResponse.blockchains.forks;
-    const lastForks = lastForksResponse.forks;
+    expect(blockchainsResponse.data).to.be.an('object').that.is.not.empty;
+    const lastForks = lastForksResponse.data;
     expect(blockchainForks).to.be.an('array').that.is.not.empty;
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
     expect(lastForks).to.be.an('array').that.is.not.empty;
     expect(lastForks.length).to.be.equal(numberOfForksExpected);
     for (forkPos in blockchainForks) {
         const fork = blockchainForks[forkPos];
-        expect(fork.length).to.be.equal(lengthOfForks[forkPos] + 2);
+        expect(fork.length).to.be.equal(lengthOfForks[forkPos] + 1);
+        
         for (pos in fork) {
+            expect(fork[pos]).not.to.be.null;//
             fork[pos].src = "blockchains";
             fork[pos].pos = pos;
             let mainchainInFork = (pos >= (fork.length - expectedMainchainBlocks));

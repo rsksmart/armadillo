@@ -17,7 +17,7 @@ const consecutive2RskBlocks = "testInput_consecutive2RSKtags.json";
 const consecutive3RskBlocks = "testInput_consecutive3RSKtags.json";
 const jump3BtcBlocksToRskBlocks = "testInput_RskJumpOf3btcBlocks.json";
 
-describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
+describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
     
     it.skip("REMOVE THIS", async () => {
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -141,7 +141,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         }
     }).timeout(3 * 2 * apiPoolingTime);
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
-        await mongo_utils.DeleteCollection(db, mainchain);
+        await mongo_utils.DeleteDB(db);
         await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive3RskBlocks);
         const insertDataJSON = JSON.parse(insertDataText);

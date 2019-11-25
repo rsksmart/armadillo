@@ -43,21 +43,21 @@ const HMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 
 const HNoMatch8CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 79;
 const HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 86;
 
-const apiPoolingTime = 5000;
-const loadingTime = 700;
+const apiPoolingTime = 2000;
+const loadingTime = 1700;
 
 const btcApiRoute = "raw";
-describe("RSK no match at same height with matching CPV", () => {
-    it("should not create branch for BTC block matching RSK tag, end to end, end to end", async () => {
+describe.only("RSK no match at same height with matching CPV", () => {
+    it("should not create branch for BTC block matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, heightOfConsecutiveRskTags, 0, 1000, apiPoolingTime, loadingTime);
-        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        expect(blockchainsResponse.blockchains.forks).to.be.an('array').that.is.empty;
+        // await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        expect(blockchainsResponse.data.forks).to.be.an('array').that.is.empty;
         const lastForksResponse = await utils.getForksFromHeight(0);
-        expect(lastForksResponse.forks).to.be.an('array').that.is.empty;
+        expect(lastForksResponse.data).to.be.an('array').that.is.empty;
         await utils.validateMainchain(1000, 1);
     }).timeout(1 * 2 * apiPoolingTime + 2000);
-    it("should create branch for first BTC block with no matching RSK tag, end to end", async () => {
+    it.only("should create branch for first BTC block with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
             btcApiRoute, HConsecutiveNoMatchRskTags, 0, 100, apiPoolingTime, loadingTime);
         const lastForksResponse = await utils.getForksFromHeight(0);
