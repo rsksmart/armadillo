@@ -50,12 +50,15 @@ export class Branch {
         return new Branch(RangeForkInMainchain.fromObject(branch.mainchainRangeForkCouldHaveStarted), items);
     }
 
-    static fromObjectToListBranchItems(branch: any): BranchItem[] {
+    static fromObjectToListBranchItems(branch: Branch): BranchItem[] {
         let items: BranchItem[] = [];
         
         branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
-        return items.concat(branch.mainchainBlockForkCouldHaveStarted);
+        return items.concat([
+                new BranchItem(null, branch.mainchainRangeForkCouldHaveStarted.endBlock),
+                new BranchItem(null, branch.mainchainRangeForkCouldHaveStarted.startBlock)]
+                );
     }
 
     public addNewForkItem(branch: BranchItem) {
