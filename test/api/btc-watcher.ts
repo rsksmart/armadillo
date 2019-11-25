@@ -31,7 +31,8 @@ describe("Btc watcher tests, synchronization with BTC, ", () => {
     getBestBlock.returns(bestBlock);
 
     var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
-    getLastBlockDetected.returns(null);
+    getLastBlockDetected.onCall(0).returns(null);
+    getLastBlockDetected.onCall(1).returns(bestBlock);
 
     let save = sinon.stub(btcService, <any>'save').withArgs(bestBlock).callsFake(()=>{});
 
