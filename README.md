@@ -3,10 +3,9 @@
 
 # Armadillo
 It consists of two services: 
-1. Armadillo Monitor is a tool which intend to bring protection to RSK network, and is base on the RSKIP110
-This tool consume data from:
-    - [ BTC API ](https://github.com/rootstock/btc-api) to get the current BTC block and detect if has an rsk tag, base on that decides if is a fork or not.
-    - Rsk Node 
+1. Armadillo Monitor is a tool that intends to bring protection to the RSK network base on the RSKIP110. This tool consumes data from:
+    - [ BTC API ](https://github.com/rootstock/btc-api) to get BTC block information. if the current BTC block has an RSK tag present,  Armadillo decides it is a fork or not.
+    - Rsk Node: to validate if the rsk tag found in BTC block is in rsk mainnet or not.
 2. Armadillo API: Offers an endpoint set to get the current armadillo mainchain and posibles found forks
 
 ## Documentation
