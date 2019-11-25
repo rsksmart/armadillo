@@ -230,7 +230,7 @@ export class ForkDetector {
 
             // For now, we get the first branch, there is a minimun change to get 2 items that match,  but what happens if we find more ?
             if (branches.length > 1) {
-                this.logger.warn("FORK: More branchs that we expect, found:", branches.length, "branches", "with CPV:", rskBlock.forkDetectionData.CPV);
+                this.logger.warn("FORK: More branches that we expect, found:", branches.length, "branches", "with CPV:", rskBlock.forkDetectionData.CPV);
             }
 
             const existingBranch: Branch = branches[0];
