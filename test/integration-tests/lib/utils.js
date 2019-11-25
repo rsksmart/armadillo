@@ -88,6 +88,16 @@ async function MockBtcApiChangeRoute(route) {
     return response;
 }
 
+async function getBtcApiBlockNumber(number) {
+    let response = await fetch(`${BtcApiURL}block/getBlock/${number}`);
+    let result = await response.json();
+    let btcInfo = {btcInfo: {
+        height: result.block.header.height,
+        hash: result.block.header.hash
+    }};
+    return btcInfo;
+}
+
 async function getMainchainBlocks(number) {
     let response = await fetch(ArmadilloApiURL + "mainchain/getLastBlocks/" + number);
     let result = await response.json();
@@ -465,6 +475,13 @@ async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMa
         validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock());
     }
 }
+
+async function setBlockAsLastChecked (blockNumber) {
+    const btcBlock = await getBtcApiBlockNumber (blockNumber);
+    console.log(JSON.stringify(btcBlock,null,2));
+    mongo_utils.updateLastCheckedBtcBlock(btcBlock);
+}
+
 async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
     if (lengthOfForks === undefined || blockchainForks.length !== lengthOfForks.length) {
         console.log("=============== MISSING length of forks!!! ===============");
@@ -525,5 +542,6 @@ module.exports = {
     getBlockchainsAfterMovingXBlocks,
     validateForksCreated,
     rskBlockHeightsWithBtcBlock,
-    validateMainchain
+    validateMainchain,
+    setBlockAsLastChecked
 }

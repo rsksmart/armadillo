@@ -18,9 +18,12 @@ const consecutive3RskBlocks = "testInput_consecutive3RSKtags.json";
 const jump3BtcBlocksToRskBlocks = "testInput_RskJumpOf3btcBlocks.json";
 
 describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
-    it("REMOVE THIS", async () => {
+    
+    it.skip("REMOVE THIS", async () => {
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        await utils.setBlockAsLastChecked (heightOfDistancedRskTags-1);
     });
+
     it("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
@@ -53,6 +56,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        await utils.setBlockAsLastChecked(heightOfConsecutiveRskTags-1);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting 
         //the mainchain is completed (pooling every 5s)
@@ -66,6 +70,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        await utils.setBlockAsLastChecked(heightOfConsecutiveRskTags-1);
         const blocksToAdvance = 1;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
@@ -103,6 +108,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        await utils.setBlockAsLastChecked(heightOfConsecutiveRskTags-1);
         const blocksToAdvance = 2;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
@@ -116,6 +122,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo input validation", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
+        await utils.setBlockAsLastChecked(heightOfConsecutiveRskTags-1);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
         const blocksToAdvance = 2;
         for (let i = 0; i < blocksToAdvance; i++) {
@@ -153,6 +160,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        await utils.setBlockAsLastChecked(heightOfDistancedRskTags-1);
         const blocksToAdvance = 4;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
@@ -167,6 +175,7 @@ describe.only("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfDistancedRskTags);//P5,H956
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+        await utils.setBlockAsLastChecked(heightOfDistancedRskTags-1);
         const blocksToAdvance = 4;
         for (let i = 0; i < blocksToAdvance; i++) {
             await utils.getNextBlockInMockBTCApi(apiPoolingTime);
