@@ -84,7 +84,7 @@ describe("Rsk Service api tests", () => {
     expect(rangeExpected).to.deep.equal(blockReturn);
   });
 
-  it.only("getRskBlockAtCertainHeight method, match in 7 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
+  it("getRskBlockAtCertainHeight method, match in 7 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
 
     let block960 = new RskBlock(960, "", "", true, new ForkDetectionData(RskTagMatch7));
     let block999 = new RskBlock(999, "", "", true, new ForkDetectionData(RskTagMatch7));

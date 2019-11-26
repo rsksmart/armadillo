@@ -30,12 +30,12 @@ export class ForkDetector {
 
     public async onNewBlock(newBtcBlock: BtcBlock) {
         if (newBtcBlock.rskTag == null) {
-            this.logger.info('NO RSKTAG present - Skipping block hash:', newBtcBlock.btcInfo.hash, 'height:', newBtcBlock.btcInfo.height);
+            this.logger.info('NO RSKTAG present - Skipping BTC block with hash:', newBtcBlock.btcInfo.hash, 'and height:', newBtcBlock.btcInfo.height);
             await this.btcWatcher.blockSuccessfullyProcessed(newBtcBlock);
-            //TODO: Do we need to have some alarm if we don't find some blocks in the last X BTC blocks ?
+            //TODO: Do we need to have some alarm if we don't find some blocks in the last X BTC blocks?
             return;
         } else {
-            this.logger.info('RSKTAG present - hash:', newBtcBlock.btcInfo.hash, 'height:', newBtcBlock.btcInfo.height);
+            this.logger.info('RSKTAG present - BTC hash:', newBtcBlock.btcInfo.hash, 'and height:', newBtcBlock.btcInfo.height);
         }
 
         let rskTag: ForkDetectionData = newBtcBlock.rskTag;
@@ -53,9 +53,6 @@ export class ForkDetector {
 
         if (rskBlocksSameHeight.length == 0) {
             this.logger.fatal("RSKd: The service is not working as expected, blocks at height", rskTag.BN, 'with tag in BTC', rskTag.toString(), "are not in the rskd");
-            //TODO: I'm not sure if we, have to forget this BTC block besides triggering an alarm. 
-            //If blocks are empty, could means that there are not height at that BN.
-            //maybe we have to check best block and compare the height to be sure if tag is well form
             return;
         }
 
@@ -73,8 +70,8 @@ export class ForkDetector {
             }
 
             if (rskBlockMatchingInMainnet.hash != rskBestBlockAtHeigth.hash) {
-                // TODO:  We have to consider if the btc block has a rskTag which is not a mainChain.
-                // So block will not connect with the mainchain
+                // TODO:  We have to consider that BTC blocks can have a rskTag which is not belongs to the mainChain. 
+                // Could be a uncle, so this block won't be able to connect into the mainchain because prev hash
                 //this.addInMainchain(newBtcBlock, rskBestBlockAtHeigth);
             }
 

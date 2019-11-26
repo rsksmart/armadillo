@@ -221,7 +221,7 @@ describe("RSK no match at same height with difference in 2 bytes in CPV", () => 
             }).timeout(3 * 2 * apiPoolingTime + 2000);
     });
     describe("No matching RSK tags no match CPV among each other", () => {
-        it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
+        it.only("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
             //TODO: Re check test parameters
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther, 1, 2000, apiPoolingTime, loadingTime);
