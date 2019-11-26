@@ -140,7 +140,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
         }
     }).timeout(3 * 2 * apiPoolingTime);
-    it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
+    it.skip("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
         await mongo_utils.DeleteDB(db);
         await utils.sleep(loadingTime);
         const insertDataText = fs.readFileSync(dataInputPath + consecutive3RskBlocks);

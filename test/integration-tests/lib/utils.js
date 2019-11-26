@@ -493,10 +493,8 @@ async function setBlockAsLastChecked (blockNumber) {
 
 async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
     const blockchainForks = blockchainsResponse.data.forks;
-    if (lengthOfForks === undefined || blockchainForks.length !== lengthOfForks.length) {
-        console.log("=============== MISSING length of forks!!! ===============");
-        this.skip();
-    }
+
+    expect(lengthOfForks).not.to.be.null;
     const numberOfForksExpected = lengthOfForks.length;
     expect(blockchainsResponse.data).to.be.an('object').that.is.not.empty;
     const lastForks = lastForksResponse.data;
