@@ -492,7 +492,6 @@ async function setBlockAsLastChecked (blockNumber) {
 
 async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
     const blockchainForks = blockchainsResponse.data.forks;
-
     expect(lengthOfForks).not.to.be.null;
     const numberOfForksExpected = lengthOfForks.length;
     expect(blockchainsResponse.data).to.be.an('object').that.is.not.empty;
