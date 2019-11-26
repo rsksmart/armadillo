@@ -378,10 +378,10 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainI
         let mergeMiningHash = rskBlock.result.hashForMergedMining;
         // console.log(mergeMiningHash);
         // console.log(armadilloBlock);
-        // expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash); TODO: [hash RSK] Re activate validation once issue fixed
-        // expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash); TODO: [prevHash RSK] Re activate validation once issue fixed
+        expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
+        expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
         let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
-        // expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock); TODO: [prefixHash] Re activate validation once issue fixed
+        expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
         let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
         expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
         let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
