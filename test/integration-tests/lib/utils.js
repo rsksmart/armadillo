@@ -484,7 +484,6 @@ async function setBlockAsLastChecked (blockNumber) {
     try {
         const btcBlock = await getBtcApiBlockNumber (blockNumber);
         await mongo_utils.updateLastCheckedBtcBlock(btcBlock);
-        console.log(btcBlock.btcInfo.height);
     }
     catch (e) {
         return;
