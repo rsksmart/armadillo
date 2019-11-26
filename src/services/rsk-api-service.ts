@@ -29,7 +29,7 @@ export class RskApiService {
     }
 
     public async getBestBlock(): Promise<RskBlock> {
-        let number : number = await this.nod3.eth.blockNumber();
+        let number: number = await this.nod3.eth.blockNumber();
         let block = await this.nod3.eth.getBlock(number);
         return new RskBlock(block.number, block.hash, block.parentHash, true, new ForkDetectionData(block.hashForMergedMining));
     }
@@ -44,9 +44,9 @@ export class RskApiService {
     }
 
     //This method returns the nearest block in rsk blockchain where we thought the fork could have started
-    public async getRskBlockAtCertainHeight(forkBlock: RskBlock, rskBlockAtSameOrPrevHeight: RskBlock): Promise<RangeForkInMainchain> {
-        let bytesOverlaps = forkBlock.forkDetectionData.getNumberOfOverlapInCPV(rskBlockAtSameOrPrevHeight.forkDetectionData.CPV);
-       
+    public async getRskBlockAtCertainHeight(forkBlock: RskBlock, rskBlocksSameHeight: RskBlock): Promise<RangeForkInMainchain> {
+        let bytesOverlaps: number = forkBlock.forkDetectionData.getNumberOfOverlapInCPV(rskBlocksSameHeight.forkDetectionData.CPV);
+
         if (bytesOverlaps == 0) {
             //Range is from the begining of the times up to best block
             let startBlock: RskBlock = await this.getBlock(1);
@@ -56,7 +56,7 @@ export class RskApiService {
         }
 
         let jumpsBackwards = (7 - bytesOverlaps) * 64;
-        let heightBackwards = Math.floor((rskBlockAtSameOrPrevHeight.height - 1) / 64) * 64 - jumpsBackwards;
+        let heightBackwards = Math.floor((rskBlocksSameHeight.height - 1) / 64) * 64 - jumpsBackwards;
         let blockAfterChangeCPV: RskBlock = await this.getBlock(heightBackwards);
         let startBlock: RskBlock = blockAfterChangeCPV;
         let endBlock: RskBlock = forkBlock;
@@ -64,6 +64,8 @@ export class RskApiService {
         if (bytesOverlaps != 7) {
             heightBackwards += 64;
             endBlock = await this.getBlock(heightBackwards);
+        } else {
+            endBlock = await this.getBlock(forkBlock.height - 1);
         }
 
         return new RangeForkInMainchain(startBlock, endBlock);
