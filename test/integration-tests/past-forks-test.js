@@ -3,44 +3,76 @@ const utils = require('./lib/utils');
 const mongo_utils = require('./lib/mongo-utils');
 const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const firstBtcBlock = 8704;
-const heightOfConsecutiveRSKnoMatchPastSameBranch = firstBtcBlock;
-const heightOfNonConsecutiveRSKnoMatchPastSameBranch = firstBtcBlock;
-const heightOfConsecutiveRSKnoMatchPastDiffBranch = firstBtcBlock;
-const heightOfNonConsecutiveRSKnoMatchPastDiffBranch = firstBtcBlock;
-const heightOfConsecutiveRSKnoMatchPastFollowingMatch = firstBtcBlock;
-const heightOfNonConsecutiveRSKnoMatchPastFollowingMatch = firstBtcBlock;
+const heightOfConsecutiveRSKnoMatchPastSameBranch = firstBtcBlock + 92;
+const heightOfNonConsecutiveRSKnoMatchPastSameBranch = firstBtcBlock + 97;
+const heightOfConsecutiveRSKnoMatchPastDiffBranch = firstBtcBlock + 115;
+const heightOfNonConsecutiveRSKnoMatchPastDiffBranch = firstBtcBlock + 119;
+const heightOfConsecutiveRSKnoMatchPastFollowingMatch = firstBtcBlock + 95;
+const heightOfNonConsecutiveRSKnoMatchPastFollowingMatch = firstBtcBlock + 107;
+const timeoutTests = 600000;
 
 describe("RSK no match at same height with matching CPV, RSK height in the past regarding BTC chain", () => {
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found", async () => {
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfConsecutiveRSKnoMatchPastSameBranch, 1, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+        await utils.validateMainchain(1000, 1);
     });
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found and there is a not match of same branch in the following consecutive BTC block", async () => {
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following consecutive BTC block", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfConsecutiveRSKnoMatchPastSameBranch, 2, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [2]);
+        await utils.validateMainchain(1000, 1);
     });
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found and there is a not match of same branch in the following non consecutive BTC block", async () => {
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following non consecutive BTC block", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfNonConsecutiveRSKnoMatchPastSameBranch, 1, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+        await utils.validateMainchain(1000, 1);
     });
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found and there is a not match of different branch in the following consecutive BTC block", async () => {
-
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following consecutive BTC block", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfConsecutiveRSKnoMatchPastDiffBranch, 2, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1, 1]);
+        await utils.validateMainchain(1000, 1);
     });
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found and there is a not match of different branch in the following non consecutive BTC block", async () => {
-
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following non consecutive BTC block", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfNonConsecutiveRSKnoMatchPastDiffBranch, 8, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1, 1]);
+        await utils.validateMainchain(1000, 1);
     });
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found and there is a RSK tag match in the following consecutive BTC block", async () => {
-
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following consecutive BTC block", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfConsecutiveRSKnoMatchPastFollowingMatch, 2, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+        await utils.validateMainchain(1000, 16);
     });
-    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than "
-    +"previous RSK tag found and there is a RSK tag match in the following non consecutive BTC block", async () => {
-
-
+    it.skip("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following non consecutive BTC block", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfNonConsecutiveRSKnoMatchPastFollowingMatch,, 2000, apiPoolingTime, loadingTime);
+        const lastForksResponse = await utils.getForksFromHeight(0);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
+        await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+        await utils.validateMainchain(1000, 6);
     });
-});
+}).timeout(timeoutTests);
