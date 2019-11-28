@@ -8,15 +8,52 @@ const ArmadilloForks = "branches";
 let DeleteDB = async (_db) => {
     var connection = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
     var dbo = await connection.db(_db);
-
+    let colNames = [];
     try {
-        await dbo.dropDatabase();
+        colNames = await dbo.listCollections().toArray();
     }
-    catch (e) { 
-        console.error("Problem dropping DB"); 
+    catch (e) {
+        console.error("Problem getting collection names");
+    }
+    try {
+        //remove all collections except btc
+        for (let colName in colNames) {
+            if (colNames[colName].name !== ArmadilloStateTracker) {
+                await dbo.collection(colNames[colName].name).drop();
+            }
+        }
+    }
+    catch (e) {
+        console.error("Problem dropping DB");
     }
     finally {
         await connection.close();
+    }
+}
+
+let updateLastCheckedBtcBlock = async (btcBlock) => {
+    try {
+        let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+        var dbo = await db.db(ArmadilloDB);
+        let result = [];
+        //Delete the collection:
+        var query = {};
+        var newvalue = { $set: btcBlock };
+        try {
+            
+            result = await dbo
+                .collection(ArmadilloStateTracker)
+                .updateOne(query, newvalue);
+        }
+        catch (e) {
+            console.error(e.message)
+        }
+        finally {
+            await db.close();
+        }
+        return result;
+    } catch (err) {
+        throw err;
     }
 }
 
@@ -30,7 +67,7 @@ let findBlocks = async (_db, _collection) => {
             result = await dbo
                 .collection(_collection)
                 .find({})
-                .project({_id:0})
+                .project({ _id: 0 })
                 .toArray();
         }
         catch (e) {
@@ -73,5 +110,6 @@ module.exports = {
     ArmadilloStateTracker,
     findBlocks,
     insertDocuments,
-    ArmadilloForks
+    ArmadilloForks,
+    updateLastCheckedBtcBlock
 }

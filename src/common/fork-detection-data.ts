@@ -25,7 +25,6 @@ export class ForkDetectionData {
             this.NU = parseInt(tag.substring(54, 56), 16);
             this.BN = parseInt(tag.substring(56, 64), 16);
         } else {
-            // TODO: throw error if length is not 32 bytes
             return null;
         }
     }
@@ -58,13 +57,12 @@ export class ForkDetectionData {
         const CPVLENGTH = 7;
         let cpvSplit = this.hexToBytes(this.CPV);
         let cpvToCheckSplit = this.hexToBytes(cpvToCheck);
-        for (var i = 0; i < cpvSplit.length; i++) {
-            for (var j = 0; j < cpvToCheckSplit.length; j++) {
-                if (cpvSplit[i] == cpvToCheckSplit[j]) {
-                    if (cpvSplit.slice(i, CPVLENGTH - j).toString() == cpvToCheckSplit.slice(j, CPVLENGTH - i).toString()) {
-                        return cpvSplit.slice(i, CPVLENGTH - j).length;
-                    };
-                }
+        
+        for (var j = 0; j < cpvToCheckSplit.length; j++) {
+            if (cpvSplit[0] == cpvToCheckSplit[j]) {
+                if (cpvSplit.slice(0, CPVLENGTH - j).toString() == cpvToCheckSplit.slice(j, CPVLENGTH).toString()) {
+                    return CPVLENGTH - j;
+                };
             }
         }
 

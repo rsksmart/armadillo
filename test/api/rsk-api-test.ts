@@ -87,13 +87,13 @@ describe("Rsk Service api tests", () => {
   it("getRskBlockAtCertainHeight method, match in 7 bytes the CPV, then get Block from rsk that connect fork with mainchain", async () => {
 
     let block960 = new RskBlock(960, "", "", true, new ForkDetectionData(RskTagMatch7));
-    let block1000 = new RskBlock(1000, "", "", true, new ForkDetectionData(RskTagMatch7));
+    let block999 = new RskBlock(999, "", "", true, new ForkDetectionData(RskTagMatch7));
     var getBlock = sinon.stub(rskApiService, <any>'getBlock');
     getBlock.withArgs(960).returns(block960);
-    getBlock.withArgs(1000).returns(block1000);
+    getBlock.withArgs(999).returns(block999);
     let blockReturn : RangeForkInMainchain = await rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlock);
 
-    let rangeExpected = new RangeForkInMainchain(block960, block1000);
+    let rangeExpected = new RangeForkInMainchain(block960, block999);
     
     expect(rangeExpected).to.deep.equal(blockReturn);
   });

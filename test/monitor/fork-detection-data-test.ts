@@ -94,23 +94,24 @@ describe("Overlap CPV", () => {
 
     let forkData = new ForkDetectionData(RSKTAG);
 
-    //match with "d2", "e4", "34"
-    let cpv1 = "d2e43411223344"; //["d2", "e4", "34", "11", "22", "33", "44"]
+    //match with "89", "9d", "8b"
+    let cpv1 = "11111111d89d8b"; 
     let overlapped = forkData.overlapCPV(cpv1, 3);
     expect(overlapped).to.equal(true);
 
     //match with "e4", "34"
-    cpv1 = "e4341122334455"; //["e4", "34", "11", "22", "33", "44", "55"]
+    "d89d8bf4d2e434"
+    cpv1 = "1122334455e434"; //["11", "22", "33", "44", "55", "e4", "34"]
     overlapped = forkData.overlapCPV(cpv1, 3);
     expect(overlapped).to.equal(false);
 
     //match with "34"
-    cpv1 = "34112233445566"; //["34", "11", "22", "33", "44", "55", "66"]
+    cpv1 = "11223344556634"; //["11", "22", "33", "44", "55", "66", "34"]
     overlapped = forkData.overlapCPV(cpv1, 3);
     expect(overlapped).to.equal(false);
 
     //doesn"t match match anything
-    cpv1 = "34112233445566"; //["11", "22", "33", "44", "55", "66", "77"]
+    cpv1 = "11223344556677"; //["11", "22", "33", "44", "55", "66", "77"]
     overlapped = forkData.overlapCPV(cpv1, 3);
     expect(overlapped).to.equal(false);
   });
@@ -148,11 +149,14 @@ describe("Overlap CPV", () => {
 
     sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns(list);
     let posibleBranches: Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
-    expect(posibleBranches.length).to.equal(2);
+    expect(posibleBranches.length).to.equal(1);
     expect(posibleBranches[0].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData);
     expect(posibleBranches[0].getLastDetected().rskInfo.forkDetectionData).to.equal(forkData);
-    expect(posibleBranches[1].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData1);
-    expect(posibleBranches[1].getLastDetected().rskInfo.forkDetectionData).to.equal(forkData1);
+  });
+
+  it("TEst nuevo", async () => {
+    var data1 = new ForkDetectionData("0x" + PREFIX + "a1b2fe878ad3e3" + NU + BN)
+    const data = data1.getNumberOfOverlapInCPV("c746fe878ad3e3");
   });
 });
 

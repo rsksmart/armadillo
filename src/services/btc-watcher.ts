@@ -76,7 +76,7 @@ export class BtcWatcher extends EventEmitter {
                 }
             }
 
-            await sleep(1000);
+            await sleep(700);
         }
     }
 

@@ -9,7 +9,7 @@
     "lint": "tslint -t stylish -c tslint.json 'src/**/*.ts' & tslint -t stylish -c tslint.json 'test/**/*.ts'",
     "test": "cross-env TS_NODE_FILES=true  mocha -exit --timeout 5000 -r ts-node/register -colors test/**/*.ts",
     "test-js": "cross-env TS_NODE_FILES=true  mocha -exit --timeout 5000 -r ts-node/register -colors test/**/*.js",
-    "test-integration": "mocha test/integration-tests",
+    "test-integration": "mocha test/integration-tests/*.js",
     "coverage-js": "nyc npm run test-js",
     "coverage": "nyc npm run test",
     "build": "tsc -p tsconfig.json"
