@@ -8,7 +8,8 @@ const CURL_DEFAULT_HTTP_VERSION = "	1.1";
 const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
 const mongo_utils = require("./mongo-utils");
-
+const timeoutTests = 600000;
+const apiPoolingTime = 1500;
 
 const mapRskMatch = {
     "3": 450,
@@ -27,7 +28,19 @@ const mapRskMatch = {
     "67": 4973,
     "77": 5228,
     "81": 6234,
-    "92": 7274
+    "92": 7274,
+    "95": 7304,
+    "97": 7319,
+    "107": 7380,
+    "115": 7385,
+    "118": 7415,
+    "119": 7435,
+    "129": 7490,
+    "130": 7510,
+    "131": 7382,
+    "133": 7384,
+    "134": 7519,
+    "135": 7654
 };
 
 const mapRskNoMatchMatchCPV = {
@@ -57,14 +70,27 @@ const mapRskNoMatchMatchCPV = {
     "64": 4713,
     "70": 5093,
     "78": 5728,
-    "84": 6744
+    "84": 6744,
+    "84": 6744,
+    "93": 7264,
+    "94": 7284,
+    "96": 7299,
+    "100": 7304,
+    "104": 7320,
+    "110": 7365,
+    "116": 7375,
+    "124": 7425,
+    "132": 7512
 };
 
 const mapRskNoMatchNoMatchCPV2B = {
     "65": 4723,
     "66": 4733,
     "73": 5102,
-    "75": 5108
+    "75": 5108,
+    "117": 7395,
+    "127": 7440,
+    "132": 7512
 };
 
 const mapRskNoMatchNoMatchCPV7B = {
@@ -550,5 +576,7 @@ module.exports = {
     validateForksCreated,
     rskBlockHeightsWithBtcBlock,
     validateMainchain,
-    setBlockAsLastChecked
+    setBlockAsLastChecked,
+    apiPoolingTime,
+    timeoutTests
 }
