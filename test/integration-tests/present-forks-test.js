@@ -44,7 +44,7 @@ const HNoMatch8CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 
 const HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 86;
 
 const apiPoolingTime = utils.apiPoolingTime;
-const loadingTime = 1700;
+const loadingTime = utils.loadingTime;
 
 const btcApiRoute = "raw";
 describe("RSK no match at same height with matching CPV", () => {
