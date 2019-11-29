@@ -28,7 +28,7 @@ const HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 63;
 const HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 67;
 const HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 66;
 const HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 66;
-const timeoutTests = 600000;
+const timeoutTests = utils.timeoutTests;
 const HNoMatchRSK8CPVDiffConsecutive = firstBtcBlock + 52;
 const HNoMatchRSK8CPVDiffNonConsecutive = firstBtcBlock + 57;
 const HMatchRSK8CPVDiffConsecutive = firstBtcBlock + 51;
@@ -43,8 +43,8 @@ const HMatch8CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = firstBtcBlock + 
 const HNoMatch8CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 79;
 const HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock + 86;
 
-const apiPoolingTime = 1500;
-const loadingTime = 1700;
+const apiPoolingTime = utils.apiPoolingTime;
+const loadingTime = utils.loadingTime;
 
 const btcApiRoute = "raw";
 describe("RSK no match at same height with matching CPV", () => {
