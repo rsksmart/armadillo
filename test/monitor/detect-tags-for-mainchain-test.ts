@@ -67,6 +67,7 @@ describe('Mainchain test', () => {
 
     await forkDetector.onNewBlock(btcBlock);
 
+    //Validations
     expect(getBlocksByNumber.called).to.be.true;
   });
 
@@ -83,6 +84,7 @@ describe('Mainchain test', () => {
       
       await forkDetector.onNewBlock(btcBlock);
 
+      //Validations
       expect(saveMainchain.called).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
@@ -100,7 +102,8 @@ describe('Mainchain test', () => {
 
       await forkDetector.onNewBlock(btcBlock);
 
-      sleep(100)
+      //Validations
+      sleep(100);
       expect(blockSuccessfullyProcessed.called).to.be.false;
       expect(saveMainchain.called).to.be.false;
     });
@@ -118,6 +121,7 @@ describe('Mainchain test', () => {
 
       await forkDetector.onNewBlock(btcBlock);
 
+      //Validations
       expect(saveMainchain.called).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
@@ -149,28 +153,33 @@ describe('Mainchain test', () => {
 
       await forkDetector.onNewBlock(btcBlock);
 
+      //Validations
       expect(saveMainchain.called).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
   })
 
-  describe('New btc block with RSK tag is an uncle', () => {
-    it("Connect best block into mainchain instead the uncle at that height", async () => {
+  describe('New btc block with RSK tag is pointing to an RSK uncle', () => {
+    it("Buinding mainchain with best block instead using the uncle at that height, also save uncle", async () => {
       const rskTag = PREFIX + CPV + NU + "00000002"
       const forkData1 = new ForkDetectionData(rskTag);
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskNoBest = new RskBlock(2, "hash2_NoBest", "hash1_NoBest", false, forkData1);
-      const rskBest = new RskBlock(2, "hash2", "hash1", true, forkData1);
       const btcBlock = new BtcBlock(200, "btcHash", rskTag);
-      const branchItemToBeSaved = new BranchItem(btcBlock.btcInfo, rskBest);
-
+      const rskNoBest = new RskBlock(2, "hash2_NoBest", "hash1", false, forkData1);
+      const rskNoBestBranchItem = new BranchItem(btcBlock.btcInfo, rskNoBest);
+      const rskBest = new RskBlock(2, "hash2", "hash1", true, forkData);
+      const rskBestBranchItem = new BranchItem(null, rskBest);
+      
       const getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumber.withArgs(2).returns([rskNoBest, rskBest]);
 
-      sinon.stub(mainchainService, <any>'getBestBlock').returns(new BranchItem(btcBlock.btcInfo, rskBlock1));
+      sinon.stub(mainchainService, <any>'getBestBlock').returns(new BranchItem(null, rskBest));
 
-      const saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake((branchItems) => {
-        expect([branchItemToBeSaved]).to.deep.equal(branchItems);
+      const saveMainchain = sinon.stub(mainchainService, <any>'save');
+      saveMainchain.withArgs([rskNoBestBranchItem]).callsFake((branchItems) => {
+        expect([rskNoBestBranchItem]).to.deep.equal(branchItems);
+      });
+      saveMainchain.withArgs([rskBestBranchItem]).callsFake((branchItems) => {
+        expect([rskBestBranchItem]).to.deep.equal(branchItems);
       });
 
       sinon.stub(rskService, <any>'getBestBlock').returns(rskNoBest);
@@ -179,7 +188,9 @@ describe('Mainchain test', () => {
 
       await forkDetector.onNewBlock(btcBlock);
 
+      //Validations
       expect(saveMainchain.called).to.be.true;
+      expect(saveMainchain.calledTwice).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
   })
