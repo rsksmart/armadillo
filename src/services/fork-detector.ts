@@ -28,11 +28,11 @@ export class ForkDetector {
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
 
+    // main function, it's called every times a BTC block arrives
     public async onNewBlock(newBtcBlock: BtcBlock) {
         if (newBtcBlock.rskTag == null) {
             this.logger.info('NO RSKTAG present - Skipping BTC block with hash:', newBtcBlock.btcInfo.hash, 'and height:', newBtcBlock.btcInfo.height);
             await this.btcWatcher.blockSuccessfullyProcessed(newBtcBlock);
-            //TODO: Do we need to have some alarm if we don't find some blocks in the last X BTC blocks?
             return;
         } else {
             this.logger.info('RSKTAG present - BTC hash:', newBtcBlock.btcInfo.hash, 'and height:', newBtcBlock.btcInfo.height);
@@ -56,23 +56,32 @@ export class ForkDetector {
             return;
         }
 
-        let rskBlockMatchingInMainnet: RskBlock = this.getBlockMatchWithRskTag(rskBlocksSameHeight, rskTag);
-        let rskBestBlockAtHeigth: RskBlock = this.getBlockInMainchain(rskBlocksSameHeight);
+        let rskBLockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksSameHeight, rskTag);
+        let rskBestBlockAtHeigth: RskBlock = this.getBestBlock(rskBlocksSameHeight);
 
-        if (!rskBlockMatchingInMainnet) {
+        if (!rskBLockMatchInHeight) {
             await this.addOrCreateBranch(null, newBtcBlock, rskBlocksSameHeight[0]);
+
         } else {
 
-            let ok = await this.addInMainchain(newBtcBlock, rskBestBlockAtHeigth);
+            let ok: boolean = false;
+
+            // Because rsk tag in current BTC block is pointing to an rsk uncle block, we save:
+            // 1) best rsk block to keep the armadillo mainchain well form
+
+
+            // 2) rsk uncle block with the BTC block information associated because RSK's tag found in BTC
+            if (rskBLockMatchInHeight.hash != rskBestBlockAtHeigth.hash) {
+                //save uncle to have information of where rsk tag in btc is pointing
+                this.logger.info("Mainchain: Saving an uncle in mainchain with rsk tag btc height:", newBtcBlock.btcInfo.height, "rsk height:", rskBLockMatchInHeight.height);
+                await this.mainchainService.save([new BranchItem(newBtcBlock.btcInfo, rskBLockMatchInHeight)]);
+                ok = await this.addInMainchain(null, rskBestBlockAtHeigth);
+            } else {
+                ok = await this.addInMainchain(newBtcBlock, rskBestBlockAtHeigth);
+            }
 
             if (!ok) {
                 return;
-            }
-
-            if (rskBlockMatchingInMainnet.hash != rskBestBlockAtHeigth.hash) {
-                // TODO:  We have to consider that BTC blocks can have a rskTag which is not belongs to the mainChain. 
-                // Could be a uncle, so this block won't be able to connect into the mainchain because prev hash
-                //this.addInMainchain(newBtcBlock, rskBestBlockAtHeigth);
             }
 
             this.logger.info('RSKTAG', newBtcBlock.rskTag.toString(), 'found in block', newBtcBlock.btcInfo.hash, 'found in RSK blocks at height', newBtcBlock.rskTag.BN);
@@ -82,21 +91,18 @@ export class ForkDetector {
     }
 
     public async addInMainchain(newBtcBlock: BtcBlock, rskBlockInMainchain: RskBlock): Promise<boolean> {
+        const btcInfo = newBtcBlock != null ? newBtcBlock.btcInfo : null;
+
         let bestBlockInMainchain: BranchItem = await this.mainchainService.getBestBlock();
 
+        // There is no Armadillo Mainnet yet, let's create it!.
         if (bestBlockInMainchain == null) {
-            // There is no mainnet yet, we create it now.
-
-            // TODO: For now we are saving the bestBLock in mainchain instead his imported not best (uncle at same level)
-            // Also, we have to save the no mainchain branch, rsk tag found in btc block is not mainchain but may be creating a new uncle chain  
-            let newMainnet: BranchItem = new BranchItem(newBtcBlock.btcInfo, rskBlockInMainchain);
-
+            let newMainnet: BranchItem = new BranchItem(btcInfo, rskBlockInMainchain);
             await this.mainchainService.save([newMainnet]);
-
             this.logger.info("Mainchain: Created the first item in mainchain");
-
             return true;
         }
+
         // Rebuilding the chain between last tag find up to the new tag height, to have the complete mainchain
         let prevRskHashToMatch: string = bestBlockInMainchain.rskInfo.hash;
         let itemsToSaveInMainchain: BranchItem[] = [];
@@ -127,20 +133,7 @@ export class ForkDetector {
             return false;
         }
 
-        //TODO: up to now all new btc blocks tags are in mainchain, so branchItem for that height should be btc data, 
-        // if is not in mainchain (is an uncle), btc data should be in null.
-        // Now also if is an uncle, we are saving btc data into branchitem.
-
-        // if()
-
-        //     // TODO: In the future we have to be able to save the uncles, and check if a miner is building a public parallel mainchain, 
-        //     // so the block are public as an uncles.
-
-        //     // In this case best block doesn't have a bitcoin data because bitcoin data is in the uncle
-        //     branchItemToSave = new BranchItem(null, rskBlockInMainchain);
-        // }
-
-        itemsToSaveInMainchain.push(new BranchItem(newBtcBlock.btcInfo, rskBlockInMainchain));
+        itemsToSaveInMainchain.push(new BranchItem(btcInfo, rskBlockInMainchain));
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height))
         await this.mainchainService.save(itemsToSaveInMainchain);
 
@@ -161,7 +154,7 @@ export class ForkDetector {
         return blocks.find(b => b.forkDetectionData.equals(rskTag));
     }
 
-    public getBlockInMainchain(blocks: RskBlock[]): RskBlock {
+    public getBestBlock(blocks: RskBlock[]): RskBlock {
         return blocks.find(b => b.mainchain);
     }
 
