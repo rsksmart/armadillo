@@ -55,7 +55,7 @@ describe("Overlap CPV", () => {
 
   beforeEach(function () {
     btcStub = stubObject<BtcWatcher>(BtcWatcher.prototype);
-    rskApiConfig = stubObject<RskApiConfig>(RskApiConfig.prototype);
+    rskApiConfig =  new RskApiConfig("localhost:4444",0);
     rskService = new RskApiService(rskApiConfig);
     forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService);
   });
