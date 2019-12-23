@@ -1,0 +1,14 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "heartbeat.js",
+  "scripts": {
+    "start": "node heartbeat.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "curl-request": "^1.1.1"
+  }
+}
