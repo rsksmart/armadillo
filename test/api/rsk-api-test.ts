@@ -33,7 +33,7 @@ let rskApiService: RskApiService;
 //Before you run this test you have to run a mongo instance
 describe("Rsk Service api tests", () => {
   beforeEach(async function () {
-    rskApiConfig = stubObject<RskApiConfig>(RskApiConfig.prototype);
+    rskApiConfig =  new RskApiConfig("localhost:4444",0);
     rskApiService = new RskApiService(rskApiConfig)
   });
 

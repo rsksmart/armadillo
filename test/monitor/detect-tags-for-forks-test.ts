@@ -65,7 +65,7 @@ describe('Forks branch tests', () => {
   beforeEach(function () {
     var httpBtcApi = stubObject<HttpBtcApi>(HttpBtcApi.prototype);
     btcWatcher = new BtcWatcher(httpBtcApi, null, 0);
-    rskApiConfig = stubObject<RskApiConfig>(RskApiConfig.prototype);
+    rskApiConfig =  new RskApiConfig("localhost:4444",0);
     mongoStore = stubObject<MongoStore>(MongoStore.prototype);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     branchService = new BranchService(mongoStore);

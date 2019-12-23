@@ -44,8 +44,7 @@ describe('Mainchain test', () => {
   beforeEach(function () {
     var httpBtcApi = stubObject<HttpBtcApi>(HttpBtcApi.prototype);
     btcWatcher = new BtcWatcher(httpBtcApi, null, 0);
-
-    rskApiConfig = stubObject<RskApiConfig>(RskApiConfig.prototype);
+    rskApiConfig =  new RskApiConfig("localhost:4444",0);
     mongoStore = stubObject<MongoStore>(MongoStore.prototype);
     mainchainService = new MainchainService(mongoStore);
     rskService = new RskApiService(rskApiConfig);
