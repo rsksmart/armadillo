@@ -1,11 +1,21 @@
 import { MongoStore } from "../storage/mongo-store";
 import { BranchItem } from "../common/branch";
 import BaseService from "./base-service";
+import { ForkDetectionData } from "../common/fork-detection-data";
+import { UpdateWriteOpResult } from "mongodb";
 
 export class MainchainService  extends BaseService {
-
-     constructor(store: MongoStore) {
+    constructor(store: MongoStore) {
        super(store);
+    }
+
+    public async updateBtcInfoBranchItem(mainchainBlockAtHeight: BranchItem) : Promise<UpdateWriteOpResult>{
+        return this.store.getCollection().updateOne({"rskInfo.forkDetectionData": mainchainBlockAtHeight.rskInfo.forkDetectionData }, { $set: {"btcInfo": mainchainBlockAtHeight.btcInfo}});
+    }
+
+    public async getBlockByForkDataDetection(forkDetectionData: ForkDetectionData) : Promise<BranchItem> {
+        let objectsToReturn : any[] = await this.store.getCollection().find({"rskInfo.forkDetectionData": forkDetectionData }).toArray();
+        return objectsToReturn.length > 0 ? BranchItem.fromObject(objectsToReturn[0]) : null;
     }
 
     public async getLastItems(numberOfItems): Promise<BranchItem[]> {
