@@ -1,6 +1,5 @@
 import { ForkDetectionData } from "./fork-detection-data";
 import { checkTag } from "../util/helper";
-import { throws } from "assert";
 
 export class BtcBlock {
   public btcInfo: BtcHeaderInfo;
@@ -16,6 +15,10 @@ export class BtcBlock {
     if(_rskTag){
       this.rskTag = new ForkDetectionData(_rskTag);
     }
+  };
+
+  public hasRskTag(): boolean{
+    return this.rskTag != null;
   }
 }
 

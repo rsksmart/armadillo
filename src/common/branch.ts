@@ -96,7 +96,7 @@ export class Branch {
 }
 
 export class BranchItem {
-    public btcInfo: BtcHeaderInfo;
+    public btcInfo?: BtcHeaderInfo;
     public rskInfo: RskBlock;
 
     constructor(btcInfo: BtcHeaderInfo, rskBlock: RskBlock) {
