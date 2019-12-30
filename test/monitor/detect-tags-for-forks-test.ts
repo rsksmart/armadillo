@@ -1,5 +1,5 @@
 import "mocha";
-import { BtcBlock } from "../../src/common/btc-block";
+import { BtcBlock, BtcHeaderInfo } from "../../src/common/btc-block";
 import { BtcWatcher } from "../../src/services/btc-watcher";
 import { BranchItem, Branch, RangeForkInMainchain } from "../../src/common/branch";
 import { expect } from "chai";
@@ -15,6 +15,7 @@ import { BranchService } from "../../src/services/branch-service";
 import { BtcService } from "../../src/services/btc-service";
 import { sleep } from "../../src/util/helper";
 import { HttpBtcApi } from "../../src/services/btc-api";
+import { MainchainService } from "../../src/services/mainchain-service";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00"; // 0
@@ -55,6 +56,7 @@ let branchService: BranchService;
 let rskService: RskApiService;
 let btcService: BtcService;
 let forkDetector: ForkDetector;
+let mainchainService: MainchainService;
 
 describe('Forks branch tests', () => {
 
@@ -72,8 +74,12 @@ describe('Forks branch tests', () => {
     rskService = new RskApiService(rskApiConfig);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     btcService = new BtcService(btcStore);
-    forkDetector = new ForkDetector(branchService, null, btcWatcher, rskService);
+    mainchainService = new MainchainService(mongoStore);
+  
+    var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
+    getBestBlockMainchainService.returns(null);
 
+    forkDetector = new ForkDetector(branchService, mainchainService, btcWatcher, rskService);
   });
 
   describe("Forks in present and in the past", () => {
@@ -231,7 +237,7 @@ describe('Forks branch tests', () => {
       expect(addBranchItem.calledOnce).to.be.true;
     });
 
-    it("Created one branch and other witch match but is same height so should be a new branch also", async () => {
+    it("Tag repeted arrive, should not create a new branch, because it is already a fork, tag exists in branch", async () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
 
       let item0 = new BranchItem(null, rskBlock111);
@@ -263,7 +269,7 @@ describe('Forks branch tests', () => {
 
       //Validations
       await sleep(100)
-      expect(saveBranch.calledTwice).to.be.true;
+      expect(saveBranch.calledOnce).to.be.true;
       expect(addBranchItem.notCalled).to.be.true;
     });
   });
