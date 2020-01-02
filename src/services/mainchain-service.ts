@@ -5,8 +5,25 @@ import { ForkDetectionData } from "../common/fork-detection-data";
 import { UpdateWriteOpResult } from "mongodb";
 
 export class MainchainService  extends BaseService {
+    
     constructor(store: MongoStore) {
        super(store);
+    }
+
+    public async changeBlockInMainchain(height: number, branchItemToReplace: BranchItem) {
+       //First remove the existing item and then save the new branchItem
+        var blocks = await this.store.getCollection().find({"rskInfo.height" : height}).toArray();
+        var block = blocks.find(b => b.rskInfo.mainchain);
+
+        if(block){
+            await this.store.getCollection().deleteMany({ _id: { $in: [block._id] }}); 
+            await this.save([branchItemToReplace]);
+        }
+    }
+    
+    public async getBlock(height: number) : Promise<BranchItem> {
+       var blocks  = await this.store.getCollection().find({"rskInfo.height" : height}).toArray();
+       return blocks.length > 0 ? BranchItem.fromObject(blocks.find(b => b.rskInfo.mainchain)): null;
     }
 
     public async updateBtcInfoBranchItem(mainchainBlockAtHeight: BranchItem) : Promise<UpdateWriteOpResult>{

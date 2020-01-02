@@ -107,4 +107,38 @@ describe("Mainchain api tests", () => {
 
     expect(branchItem1).to.deep.equal(branchItem);
   });
+
+  it("getBlock method", async () => {
+    var forkDetectionData = new ForkDetectionData(RSKTAG)
+    let branchItem1 = new BranchItem(null, new RskBlock(1, "hash", "prevHash", true, forkDetectionData));
+    let branchItemUncle = new BranchItem(null, new RskBlock(1, "otroHash", "otroPrevHash", false, forkDetectionData));
+
+    await mainchainService.save([copy(branchItem1)]);
+
+    var branchItemSaved = await mainchainService.getBlock(branchItem1.rskInfo.height);
+
+    expect(branchItem1).to.deep.equal(branchItemSaved);
+
+    await mainchainService.save([copy(branchItemUncle)]);
+
+    branchItemSaved = await mainchainService.getBlock(branchItem1.rskInfo.height);
+  
+    expect(branchItem1).to.deep.equal(branchItemSaved);
+    expect(branchItemSaved.rskInfo.mainchain).to.true;
+  });
+
+  it("changeBlockInMainchain method", async () => {
+    let branchItem1 = new BranchItem(null, new RskBlock(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
+    let branchItem2 = new BranchItem(null, new RskBlock(2, "hash", "prevHash", true,  new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
+    let branchItem3 = new BranchItem(null, new RskBlock(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
+    let branchToChange = new BranchItem(null, new RskBlock(1, "otroHash", "otroPrevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
+
+    await mainchainService.save([copy(branchItem1), copy(branchItem2), copy(branchItem3)]);
+
+    await mainchainService.changeBlockInMainchain(branchItem1.rskInfo.height, copy(branchToChange));
+
+    var branchItemSaved = await mainchainService.getBlock(branchItem1.rskInfo.height);
+
+    expect(branchToChange).to.deep.equal(branchItemSaved);
+  });
 });
