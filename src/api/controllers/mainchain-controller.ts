@@ -9,7 +9,7 @@ export class MainchainController {
 
   constructor(service: MainchainService) {
     this.service = service;
-    this.service.createIndex({ "rskInfo.height": 1 }, { unique: true });
+    this.service.createIndex({ "rskInfo.height": 1 , "rskInfo.mainchain": 1 }, { unique: true });
   }
 
   public async getLastBlocks(req: any, res: any): Promise<MessageResponse<BranchItem[]>> {

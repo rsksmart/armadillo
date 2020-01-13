@@ -3,6 +3,7 @@ import { BranchItem } from "../common/branch";
 import BaseService from "./base-service";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { UpdateWriteOpResult } from "mongodb";
+import { Printify } from "../util/printify";
 
 export class MainchainService  extends BaseService {
     

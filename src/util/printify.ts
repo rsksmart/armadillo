@@ -9,10 +9,10 @@ export class Printify {
 
         if (btcBlock != null) {
             if(btcBlock.rskTag != null){
-                info["rskInfo"] = { "height": btcBlock.rskTag.BN };
+                info["rskInfo"] = { "rskTag": btcBlock.rskTag.toString(), "BN": btcBlock.rskTag.BN, "CPV": btcBlock.rskTag.CPV, "prefixHash": btcBlock.rskTag.prefixHash, "NU": btcBlock.rskTag.NU};
             }
 
-            info["btcInfo"] = { "height": btcBlock.btcInfo.height, "hash": btcBlock.btcInfo.hash, "rskTag": btcBlock.rskTag.toString() };
+            info["btcInfo"] = { "height": btcBlock.btcInfo.height, "hash": btcBlock.btcInfo.hash};
         }
 
         return " - " + JSON.stringify(info);
@@ -21,9 +21,11 @@ export class Printify {
     public static getPrintifyInfoBranchItem(item: BranchItem) {
         var info = {};
 
-        if (item != null) {
-            info["btcInfo"] = { "height": item.btcInfo.height, "hash": item.btcInfo.hash, "rskTag": item.rskInfo.forkDetectionData.toString()};
+        if (item != null && item.btcInfo) {
+            info["btcInfo"] = { "height": item.btcInfo.height, "hash": item.btcInfo.hash};
         }
+
+        info["rskInfo"] = { "rskTag": item.rskInfo.forkDetectionData.toString() }
 
         return " - " + JSON.stringify(info);
     }
