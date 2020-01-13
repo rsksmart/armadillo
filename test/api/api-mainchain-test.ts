@@ -63,11 +63,19 @@ describe("Mainchain api tests", () => {
     expect(ok).to.be.false;
     expect(response.data.length).to.equal(1);
     expect(response.data).to.deep.equal([branchItem5]);
-
+   
     param = { "params": { "n": 5 } }
     response = await mainchainController.getLastBlocks(param, mockRes);
     expect(response.data.length).to.equal(5);
     expect(response.data).to.deep.equal([branchItem5, branchItem4, branchItem3, branchItem2, branchItem1]);
+
+    //Saving a uncle with same height is allow
+    branchItem4.rskInfo.mainchain = false;
+    var ok = await mainchainService.save([copy(branchItem4)]);
+    expect(ok).to.be.true;
+    param = { "params": { "n": 10 } }
+    response = await mainchainController.getLastBlocks(param, mockRes);
+    expect(response.data.length).to.equal(6);
   });
 
   it("getBlockByForkDataDetection method", async () => {
