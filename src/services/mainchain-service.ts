@@ -41,8 +41,13 @@ export class MainchainService  extends BaseService {
         return robjectsToReturn.map(x => BranchItem.fromObject(x));
     }
 
+    public async getLastMainchainItems(numberOfItems): Promise<BranchItem[]> {
+        let robjectsToReturn : any[] = await this.store.getCollection().find({ "rskInfo.mainchain": true }).sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
+        return robjectsToReturn.map(x => BranchItem.fromObject(x));
+    }
+
     public async getBestBlock(): Promise<BranchItem> {
-       let items : BranchItem[] = await this.getLastItems(1);
+       let items : BranchItem[] = await this.getLastMainchainItems(1);
        return items.length > 0 ? items[0] : null;
     }
 

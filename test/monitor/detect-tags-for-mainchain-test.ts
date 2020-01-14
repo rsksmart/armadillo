@@ -14,8 +14,7 @@ import { RskApiConfig } from "../../src/config/rsk-api-config";
 import { MongoStore } from "../../src/storage/mongo-store";
 import { BtcService } from "../../src/services/btc-service";
 import { HttpBtcApi } from "../../src/services/btc-api";
-import { sleep, copy } from "../../src/util/helper";
-import { unwatchFile } from "fs";
+import { sleep } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434";
