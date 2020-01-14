@@ -118,6 +118,9 @@ export class ForkDetector {
         if (!await this.blockStillBeingMainchain(bestBlockInMainchain.rskInfo)) {
             this.logger.warn("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(bestBlockInMainchain))
             await this.rebuildMainchainFromBlock(bestBlockInMainchain);
+
+            //there was an reorganization, so mainchain has changed!
+            bestBlockInMainchain = await this.mainchainService.getBestBlock();
         }
 
         // Rebuilding the chain between last tag find up to the new tag height, to have the complete mainchain
@@ -160,7 +163,6 @@ export class ForkDetector {
 
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height.toString()));
         await this.mainchainService.save(itemsToSaveInMainchain);
-
         return true;
     }
 
@@ -212,7 +214,7 @@ export class ForkDetector {
 
     private async addOrCreateBranch(btcBlock: BtcBlock, rskBlocksSameHeight: RskBlock) {
         var itemsBranch: BranchItem[];
-        var rskBlock = new RskBlock(btcBlock.rskTag.BN, "", "", false, btcBlock.rskTag);
+        var rskBlock = RskBlock.fromForkDetectionData(btcBlock.rskTag);
 
         //Possible mainchain block from where it started to fork
         let item: BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);

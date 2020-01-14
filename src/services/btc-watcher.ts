@@ -33,7 +33,7 @@ export class BtcWatcher extends EventEmitter {
 
         if (heightBtcCheckpoint != null && heightBtcCheckpoint > 1) {
             this.checkpoint = new BtcBlock(heightBtcCheckpoint, "", "");
-            this.logger.info("CHECKPOINT Watcher: starting to sincronize at BTC heignt", heightBtcCheckpoint);
+            this.logger.info("CHECKPOINT: There is a checkpoint at BTC heignt", heightBtcCheckpoint, "check if is posible to start from it");
         }
     }
 
@@ -76,7 +76,7 @@ export class BtcWatcher extends EventEmitter {
                 }
             }
 
-            await sleep(5000);
+            await sleep(700);
         }
     }
 
