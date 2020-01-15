@@ -57,8 +57,8 @@ export class ForkDetector {
 
         //Rsktag is comming pointing in a future rsk height, for armadillo monitor this is a fork
         if (rskTag.BN > rskBestBlock.height) {
-            this.logger.warn("Newtwork could be behind some blocks");
-            this.logger.warn("FORK: found a block in the future");
+            this.logger.info("Newtwork could be behind some blocks");
+            this.logger.info("FORK: found a block in the future");
             await this.addOrCreateBranch(newBtcBlock, rskBestBlock);
             return await this.blockSuccessfullyProcessed(newBtcBlock);
         }
@@ -67,7 +67,7 @@ export class ForkDetector {
         // If tag is in mainchain, it is very probable that a miner is stuck in the same rsk block.
         if (rskBlockInMainchain != null && rskTag.BN <= rskBlockInMainchain.rskInfo.height) {
 
-            this.logger.warn("Mainchain: A BTC block was found with a tag pointing at a backward height to the mainchain", Printify.getPrintifyInfo(newBtcBlock));
+            this.logger.info("Mainchain: A BTC block was found with a tag pointing at a backward height to the mainchain", Printify.getPrintifyInfo(newBtcBlock));
 
             //Check if this tag is in mainchain or uncles at certain height.
             var mainchainBlockAtHeight: BranchItem = await this.mainchainService.getBlockByForkDataDetection(rskBlockInMainchain.rskInfo.forkDetectionData);
@@ -116,7 +116,7 @@ export class ForkDetector {
         // Verify armadillo top of Mainchain is still being the best block, just to be sure there was't any reorganization.
         // In case there are update armadillo mainchain:
         if (!await this.blockStillBeingMainchain(bestBlockInMainchain.rskInfo)) {
-            this.logger.warn("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(bestBlockInMainchain))
+            this.logger.info("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(bestBlockInMainchain))
             await this.rebuildMainchainFromBlock(bestBlockInMainchain);
 
             //there was an reorganization, so mainchain has changed!
@@ -232,14 +232,14 @@ export class ForkDetector {
 
         //If rskTag is repeted
         if (branches.length > 0 && this.tagIsInBranch(branches, item)) {
-            this.logger.warn("FORK: Tag repeated")
+            this.logger.info("FORK: Tag repeated")
             return;
         }
 
         // TODO: For now, we get the first branch, there is a minimun change to get more than 1 item that match, but what happens if we find more?
         if (branches.length > 0 && this.newItemCanBeAddedInBranch(branches, item)) {
 
-            this.logger.warn('FORK: RSKTAG', rskBlock.forkDetectionData.toString(), 'was found in BTC block with hash:', btcBlock.btcInfo.hash,
+            this.logger.info('FORK: RSKTAG', rskBlock.forkDetectionData.toString(), 'was found in BTC block with hash:', btcBlock.btcInfo.hash,
                 'this new item was added in a existing branch');
 
             await this.branchService.addBranchItem(branches[0].getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
@@ -247,7 +247,7 @@ export class ForkDetector {
         } else {
             let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
 
-            this.logger.warn('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
+            this.logger.info('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
 
             await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, itemsBranch));
         }
