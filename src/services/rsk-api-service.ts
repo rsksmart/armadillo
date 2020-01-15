@@ -50,6 +50,10 @@ export class RskApiService {
         if (bytesOverlaps == 0) {
             //Range is from the begining of the times up to best block
             let startBlock: RskBlock = await this.getBlock(1);
+            // This block daesn't have forkDetectionData, 
+            // what it comes from RSK node is garbage for this block (Same happends to blocks before activation)
+            startBlock.forkDetectionData = null; 
+
             let lasBlock: RskBlock = await this.getBestBlock();
 
             return new RangeForkInMainchain(startBlock, lasBlock);
