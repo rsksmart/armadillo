@@ -61,7 +61,7 @@ describe("Blockchain api tests", () => {
     let blockchainController = new BlockchainController(mainchainService, branchService);
     let param = { "params": { "n": 10 }};
 
-    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlockchains(param, mockRes);
+    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
     expect(mainchainList).to.deep.equal(response.data.mainchain);
     expect(response.data.forks[0]).to.deep.equal(Branch.fromObjectToListBranchItems(branch));
   });
@@ -72,7 +72,7 @@ describe("Blockchain api tests", () => {
     
     let param = { "params": { "n": 6000 }};
 
-    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlockchains(param, mockRes);
+    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
     expect("Get mainchain and forks in the last 5000 blocks").to.deep.equal(response.message);
   });
 });

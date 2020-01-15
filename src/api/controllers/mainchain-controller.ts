@@ -14,7 +14,7 @@ export class MainchainController {
 
   public async getLastBlocks(req: any, res: any): Promise<MessageResponse<BranchItem[]>> {
     const n: number = parseInt(req.params.n);
-    var blocks: BranchItem[] = await this.service.getLastItems(n);
+    var blocks: BranchItem[] = await this.service. getLastItems(n);
     
     return res.status(200).send(
       new MessageResponse<BranchItem[]>(
