@@ -22,10 +22,11 @@ export class BlockchainController {
     this.branchService = branchService;
   }
 
-  public async getLastBlockchains(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
+  public async getLastBlocksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
     let n: number = parseInt(req.params.n);
 
     if (n > 5000) {
+      // 5000 is the maximum of data to return
       n = 5000;
     }
 
