@@ -29,8 +29,8 @@ describe("Blockchain api tests", () => {
   beforeEach(async function () {
     await branchService.connect();
     await mainchainService.connect();
-    await mainchainService.removeLastBlocks(100);
-    await branchService.removeAll();
+    await mainchainService.deleteAll();
+    await branchService.deleteAll();
   });
 
   after(async function () {

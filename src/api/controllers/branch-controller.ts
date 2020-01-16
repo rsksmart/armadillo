@@ -32,7 +32,7 @@ export default class BranchController {
 
   public async removeAll(req: any, res: any): Promise<MessageResponse<any>> {
 
-    this.service.removeAll();
+    this.service.deleteAll();
     
     return res.status(200).send(new MessageResponse(
       `Remove all forks`,
