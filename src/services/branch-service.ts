@@ -32,7 +32,7 @@ export class BranchService extends BaseService {
         return branches.map(x => Branch.fromObject(x));
     }
 
-    public async removeAll(): Promise<void> {
+    public async deleteAll(): Promise<void> {
         return this.store.getCollection().drop()
             .catch(function () {
             });
