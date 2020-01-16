@@ -16,6 +16,7 @@ export class ForkDetector {
     private btcWatcher: BtcWatcher;
     private maxBlocksBackwardsToSearch: number = 448;
     private mainchainService: MainchainService;
+    private firstPointWhereWeCanStartCheckForkDataDetection: number = 1000000; //TODO change this for the real value
 
     //TODO: move this into config file
     private minimunOverlapCPV: number = 3;
@@ -51,7 +52,10 @@ export class ForkDetector {
 
         this.logger.info('RSKTAG present', Printify.getPrintifyInfo(newBtcBlock));
 
-        //TODO: check minimum armadillo mainchain block to search.
+        // if (newBtcBlock.rskTag.BN < this.firstPointWhereWeCanStartCheckForkDataDetection) {
+        //     this.logger.warn("BTC block has a tag with invalid height");
+        //     return await this.blockSuccessfullyProcessed(newBtcBlock);
+        // }
 
         let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
         let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
@@ -68,7 +72,7 @@ export class ForkDetector {
             let blockInRskThatIsTheMaximumPosibleHeight;
 
             //Rsktag is comming pointing in a future rsk height, for armadillo monitor this is a fork
-            //TODO: check when a future case is a posible case or a miner is messed up.
+            //TODO: check when a future case is a posible case or a miner is messing up.
             if (newBtcBlock.rskTag.BN > rskBestBlock.height) {
                 this.logger.info("Newtwork could be behind some blocks");
                 this.logger.info("FORK: found a block in the future");
@@ -77,7 +81,6 @@ export class ForkDetector {
                 blockInRskThatIsTheMaximumPosibleHeight = this.getBestBlock(rskBlocksAtNewRskTagHeight);
             }
 
-            // New tag is a fork
             await this.addOrCreateBranch(newBtcBlock, blockInRskThatIsTheMaximumPosibleHeight);
         }
 
@@ -93,6 +96,7 @@ export class ForkDetector {
 
         // There is no Armadillo Mainnet yet, let's create it!.
         if (!rskBestBlockInMainchain) {
+            //TODO: there is a bug here. At this point we don't know if this tag is pointing to a uncle or a mainchain block
             let newMainnet: BranchItem = new BranchItem(newBtcBlock.btcInfo, rskBlockInMainchain);
             await this.mainchainService.save([newMainnet]);
             this.logger.info("Armadillo Mainchain: Created the first item in mainchain");
@@ -105,7 +109,7 @@ export class ForkDetector {
             this.logger.info("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(rskBestBlockInMainchain))
             await this.rebuildMainchainFromBlock(rskBestBlockInMainchain);
 
-            //there was a reorganization, mainchain has changed!
+            // There was a reorganization, mainchain has changed!
             rskBestBlockInMainchain = await this.mainchainService.getBestBlock();
         }
 
