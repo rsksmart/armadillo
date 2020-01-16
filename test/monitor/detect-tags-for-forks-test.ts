@@ -167,12 +167,13 @@ describe('Forks branch tests', () => {
 
   describe("Fork in future", () => {
     it("Created a new branch", async () => {
-
       let item0 = new BranchItem(null, rskBlock111);
       let item1 = new BranchItem(btcBlock5.btcInfo, RskBlock.fromForkDetectionData(btcBlock5.rskTag));
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
-
       let branchExpected = new Branch(rangeForkInMainchain, [item1, item0])
+
+      let getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
+      getBlocksByNumber.returns([]);
 
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBlock111);
@@ -204,7 +205,10 @@ describe('Forks branch tests', () => {
       let item1 = new BranchItem(btcBlock5.btcInfo, RskBlock.fromForkDetectionData(btcBlock5.rskTag));
       let item2 = new BranchItem(btcBlock6.btcInfo, RskBlock.fromForkDetectionData(btcBlock6.rskTag));
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1, item0]);
-
+     
+      let getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
+      getBlocksByNumber.returns([]);
+      
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBlock111);
 
@@ -244,6 +248,9 @@ describe('Forks branch tests', () => {
       let item1 = new BranchItem(btcBlock5.btcInfo, RskBlock.fromForkDetectionData(btcBlock5.rskTag));
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1, item0]);
 
+      let getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
+      getBlocksByNumber.returns([]);
+
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBlock111);
 
@@ -268,7 +275,6 @@ describe('Forks branch tests', () => {
       await forkDetector.onNewBlock(btcBlock5);
 
       //Validations
-      await sleep(100);
       expect(saveBranch.calledOnce).to.be.true;
       expect(addBranchItem.notCalled).to.be.true;
     });
