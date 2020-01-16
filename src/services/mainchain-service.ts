@@ -32,7 +32,7 @@ export class MainchainService  extends BaseService {
     }
 
     public async getBlockByForkDataDetection(forkDetectionData: ForkDetectionData) : Promise<BranchItem> {
-        let objectsToReturn : any[] = await this.store.getCollection().find({"rskInfo.forkDetectionData": forkDetectionData }).toArray();
+        let objectsToReturn : any[] = await this.store.getCollection().find({"rskInfo.forkDetectionData": forkDetectionData, "rskInfo.height": forkDetectionData.BN}).toArray();
         return objectsToReturn.length > 0 ? BranchItem.fromObject(objectsToReturn[0]) : null;
     }
 
@@ -44,6 +44,11 @@ export class MainchainService  extends BaseService {
     public async getLastMainchainItems(numberOfItems): Promise<BranchItem[]> {
         let robjectsToReturn : any[] = await this.store.getCollection().find({ "rskInfo.mainchain": true }).sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
         return robjectsToReturn.map(x => BranchItem.fromObject(x));
+    }
+
+    public async getFirstMainchainItem(numberOfItems): Promise<BranchItem> {
+        let robjectsToReturn : any[] = await this.store.getCollection().find({ "rskInfo.mainchain": true }).sort({ "rskInfo.height": 1 }).limit(1).toArray();
+        return robjectsToReturn.length > 0 ? BranchItem.fromObject(robjectsToReturn[0]) : null;
     }
 
     public async getBestBlock(): Promise<BranchItem> {

@@ -80,7 +80,7 @@ describe("Mainchain api tests", () => {
 
   it("getBlockByForkDataDetection method", async () => {
 
-    var forkDetectionData = new ForkDetectionData(RSKTAG)
+    var forkDetectionData = new ForkDetectionData(PREFIX + CPV + NU + "00000001")
     let branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", true, forkDetectionData));
 
     await mainchainService.save([copy(branchItem1)]);
@@ -102,7 +102,7 @@ describe("Mainchain api tests", () => {
 
   it("updateBtcInfoBranchItem method", async () => {
 
-    var forkDetectionData = new ForkDetectionData(RSKTAG)
+    var forkDetectionData = new ForkDetectionData(PREFIX + CPV + NU + "00000001");
     let branchItem1 = new BranchItem(null, new RskBlock(1, "hash", "prevHash", true, forkDetectionData));
 
     await mainchainService.save([copy(branchItem1)]);
