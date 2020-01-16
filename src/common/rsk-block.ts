@@ -21,6 +21,6 @@ export class RskBlock {
     }
 
     public static fromForkDetectionData(rskTag: ForkDetectionData) {
-        return new RskBlock(rskTag.BN, "", rskTag.prefixHash, false, new ForkDetectionData(rskTag));
+        return new RskBlock(rskTag.BN, "", "", false, new ForkDetectionData(rskTag));
     }
 }
