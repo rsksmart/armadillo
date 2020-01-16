@@ -144,12 +144,8 @@ export class ForkDetector {
                 // New btc block could be an uncle
                 var blockThatMatch: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtRskTagHeight, newBtcBlock.rskTag);
 
-                if (blockThatMatch) {
-                    var branchItem: BranchItem = new BranchItem(newBtcBlock.btcInfo, blockThatMatch);
-                    await this.mainchainService.save([branchItem]);
-                } else {
-                    this.logger.error("Shouldn't be passing from here");
-                }
+                var branchItem: BranchItem = new BranchItem(newBtcBlock.btcInfo, blockThatMatch);
+                await this.mainchainService.save([branchItem]);
             }
 
             return true;

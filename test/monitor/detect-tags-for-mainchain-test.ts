@@ -211,9 +211,40 @@ describe('Mainchain test', () => {
       await forkDetector.onNewBlock(btcBlock);
 
       //Validations
-      await sleep(500);
       expect(saveMainchain.called).to.be.false;
       expect(updateBtcInfoBranchItem.called).to.be.true;
+      expect(getBlockByForkDataDetection.called).to.be.true;
+      expect(blockSuccessfullyProcessed.called).to.be.true;
+    });
+
+    it("Rsk tag arrives with lower height, and is pointing to an uncle", async () => {
+      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
+      const rskBlock9 = new RskBlock(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
+      const branch9 = new BranchItem(new BtcHeaderInfo(9, "hash"), rskBlock9);
+      var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
+      getBlocksByNumberRrskService.returns([rskBlock1]);
+
+      sinon.stub(rskService, <any>'getBlock').returns(rskBlock1);
+      
+      var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
+      getBestBlockMainchainService.returns(branch9);
+
+       // this line implies that in mainchain there is no block that match with that tag
+      var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(null);
+      
+      var updateBtcInfoBranchItem = sinon.stub(mainchainService, <any>'updateBtcInfoBranchItem').callsFake(() => {});
+
+      sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock1);
+
+      var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
+
+      let blockSuccessfullyProcessed = sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
+
+      await forkDetector.onNewBlock(btcBlock);
+
+      //Validations
+      expect(saveMainchain.called).to.be.true;
+      expect(updateBtcInfoBranchItem.called).to.be.false;
       expect(getBlockByForkDataDetection.called).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
