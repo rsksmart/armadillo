@@ -153,15 +153,17 @@ describe('Mainchain test', () => {
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
 
-    it("Repeated Rsk tag arrives, discart new btc block", async () => {
+    it("Repeated rsk tag arrives, discart new btc block", async () => {
       const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
       const branch = new BranchItem(new BtcHeaderInfo(1, "hash"), rskBlock1)
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
       
       var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
-      getBestBlockMainchainService.onCall(1).callsFake(null);
-      getBestBlockMainchainService.onCall(2).returns(branch);
+      getBestBlockMainchainService.onCall(0).callsFake(null);
+      getBestBlockMainchainService.onCall(1).returns(branch);
+
+      sinon.stub(rskService, <any>'getBlock').returns(rskBlock1)
 
       var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(branch);
       var updateBtcInfoBranchItem = sinon.stub(mainchainService, <any>'updateBtcInfoBranchItem').callsFake(() => {});
@@ -191,6 +193,8 @@ describe('Mainchain test', () => {
       const branch9 = new BranchItem(new BtcHeaderInfo(9, "hash"), rskBlock9);
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
+
+      sinon.stub(rskService, <any>'getBlock').returns(rskBlock1);
       
       var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
       getBestBlockMainchainService.returns(branch9);

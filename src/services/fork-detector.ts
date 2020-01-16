@@ -40,9 +40,9 @@ export class ForkDetector {
         this.btcWatcher.start();
     }
 
-    // main function, it's called every times a BTC block arrives
+    // Main function, it's called every times a BTC block arrives
     public async onNewBlock(newBtcBlock: BtcBlock) {
-        this.logger.info("<< ----- NEW BTC BLOCK ------ >>");
+        this.logger.info("<< -------------- NEW BTC BLOCK ------------------ >>");
 
         if (!newBtcBlock.hasRskTag()) {
             this.logger.info('NO RSKTAG present - Skipping BTC block', Printify.getPrintifyInfo(newBtcBlock));
@@ -51,67 +51,48 @@ export class ForkDetector {
 
         this.logger.info('RSKTAG present', Printify.getPrintifyInfo(newBtcBlock));
 
-        let rskTag: ForkDetectionData = newBtcBlock.rskTag;
-        let rskBestBlock: RskBlock = await this.rskApiService.getBestBlock();
-        let rskBestBlockInMainchain: BranchItem = await this.mainchainService.getBestBlock();
-
-        //Rsktag is comming pointing in a future rsk height, for armadillo monitor this is a fork
-        //TODO: check when a future case is a posible case or a miner is messed up.
-        if (rskTag.BN > rskBestBlock.height) {
-            this.logger.info("Newtwork could be behind some blocks");
-            this.logger.info("FORK: found a block in the future");
-            await this.addOrCreateBranch(newBtcBlock, rskBestBlock);
-            return await this.blockSuccessfullyProcessed(newBtcBlock);
-        }
-
         //TODO: check minimum armadillo mainchain block to search.
 
-        let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(rskTag.BN);
-        let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, rskTag);
+        let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
+        let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
 
-        if (!rskBlockMatchInHeight) {
-            await this.addOrCreateBranch(newBtcBlock, rskBlocksAtNewRskTagHeight[0]);
-        } else {
-
-            // First of all we have to check if rsktag is in armadillo mainchain or not, or if it comes repeated.
-            // If tag is in mainchain, it is very probable that a miner is stuck in the same rsk block.
-            if (rskBestBlockInMainchain != null && rskTag.BN <= rskBestBlockInMainchain.rskInfo.height) {
-
-                this.logger.info("Mainchain: A BTC block was found with a tag pointing at a backward height to the mainchain", Printify.getPrintifyInfo(newBtcBlock));
-
-                //Check if this tag is in mainchain or uncles at certain height.
-                //TODO: check uncles, mainchainBlockAtHeight will be null in this case
-                var mainchainBlockAtHeight: BranchItem = await this.mainchainService.getBlockByForkDataDetection(rskTag);
-
-                if (mainchainBlockAtHeight.btcInfo == null) {
-                    mainchainBlockAtHeight.btcInfo = newBtcBlock.btcInfo
-                    await this.mainchainService.updateBtcInfoBranchItem(mainchainBlockAtHeight);
-                } else {
-                    this.logger.warn("Mainchain: New rsk tag is pointing to a existing armadillo mainchain height. A miner could be stuck");
-                }
-
-                return await this.blockSuccessfullyProcessed(newBtcBlock);
-            }
-
-            this.logger.info("Mainchain: Saving a new btc block in mainchain", Printify.getPrintifyInfo(newBtcBlock));
-            let ok = await this.addInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
+        if (rskBlockMatchInHeight) {
+            // New tag is in mainchain
+            let ok = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
 
             if (!ok) {
                 return;
             }
+        } else {
+            let rskBestBlock: RskBlock = await this.rskApiService.getBestBlock();
+            let blockInRskThatIsTheMaximumPosibleHeight;
+
+            //Rsktag is comming pointing in a future rsk height, for armadillo monitor this is a fork
+            //TODO: check when a future case is a posible case or a miner is messed up.
+            if (newBtcBlock.rskTag.BN > rskBestBlock.height) {
+                this.logger.info("Newtwork could be behind some blocks");
+                this.logger.info("FORK: found a block in the future");
+                blockInRskThatIsTheMaximumPosibleHeight = rskBestBlock;
+            } else {
+                blockInRskThatIsTheMaximumPosibleHeight = this.getBestBlock(rskBlocksAtNewRskTagHeight);
+            }
+
+            // New tag is a fork
+            await this.addOrCreateBranch(newBtcBlock, blockInRskThatIsTheMaximumPosibleHeight);
         }
 
         return await this.blockSuccessfullyProcessed(newBtcBlock);
     }
 
     // The idea of this method is build an armadillo mainchain (like rsk mainchain) adding btc information if applicable.
-    private async addInMainchain(newBtcBlock: BtcBlock, rskBlocksAtNewRskTagHeight: RskBlock[]): Promise<boolean> {
-        let rskBlockInMainchain: RskBlock = this.getBestBlock(rskBlocksAtNewRskTagHeight);
-        let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
+    private async tryToAddInMainchain(newBtcBlock: BtcBlock, rskBlocksAtNewRskTagHeight: RskBlock[]): Promise<boolean> {
+        this.logger.info("Mainchain: Saving a new btc block in mainchain", Printify.getPrintifyInfo(newBtcBlock));
 
-        let bestBlockInMainchain: BranchItem = await this.mainchainService.getBestBlock();
+        let rskBestBlockInMainchain: BranchItem = await this.mainchainService.getBestBlock();
+        let rskBlockInMainchain: RskBlock = this.getBestBlock(rskBlocksAtNewRskTagHeight);
+
         // There is no Armadillo Mainnet yet, let's create it!.
-        if (bestBlockInMainchain == null) {
+        if (!rskBestBlockInMainchain) {
             let newMainnet: BranchItem = new BranchItem(newBtcBlock.btcInfo, rskBlockInMainchain);
             await this.mainchainService.save([newMainnet]);
             this.logger.info("Armadillo Mainchain: Created the first item in mainchain");
@@ -120,18 +101,37 @@ export class ForkDetector {
 
         // Verify armadillo top of Mainchain is still being the best block, just to be sure there was't any reorganization.
         // In case there are update armadillo mainchain:
-        if (!await this.blockStillBeingMainchain(bestBlockInMainchain.rskInfo)) {
-            this.logger.info("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(bestBlockInMainchain))
-            await this.rebuildMainchainFromBlock(bestBlockInMainchain);
+        if (!await this.blockStillBeingMainchain(rskBestBlockInMainchain.rskInfo)) {
+            this.logger.info("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(rskBestBlockInMainchain))
+            await this.rebuildMainchainFromBlock(rskBestBlockInMainchain);
 
-            //there was an reorganization, so mainchain has changed!
-            bestBlockInMainchain = await this.mainchainService.getBestBlock();
+            //there was a reorganization, mainchain has changed!
+            rskBestBlockInMainchain = await this.mainchainService.getBestBlock();
+        }
+
+        // First of all, we have to check if rsktag is in armadillo mainchain or not, and if it comes repeated.
+        // If tag is in mainchain, it is very probable that a miner is stuck in the same rsk block.
+        if (this.tagIsPointingToABackwardHeight(newBtcBlock, rskBestBlockInMainchain)) {
+            this.logger.info("Mainchain: A BTC block was found with a tag pointing at a backward height to the mainchain", Printify.getPrintifyInfo(newBtcBlock));
+
+            // Check if this tag is in mainchain or uncles at certain height.
+            // TODO: check uncles, mainchainBlockAtHeight will be null in this case
+            var mainchainBlockAtHeight: BranchItem = await this.mainchainService.getBlockByForkDataDetection(newBtcBlock.rskTag);
+
+            if (!mainchainBlockAtHeight.btcInfo) {
+                mainchainBlockAtHeight.btcInfo = newBtcBlock.btcInfo
+                await this.mainchainService.updateBtcInfoBranchItem(mainchainBlockAtHeight);
+            } else {
+                this.logger.warn("Mainchain: New rsk tag is pointing to a existing armadillo mainchain height. A miner could be stuck");
+            }
+
+            return true;
         }
 
         // Rebuilding the chain between last tag find up to the new tag height, to have the complete mainchain
-        let prevRskHashToMatch: string = bestBlockInMainchain.rskInfo.hash;
+        let prevRskHashToMatch: string = rskBestBlockInMainchain.rskInfo.hash;
         let itemsToSaveInMainchain: BranchItem[] = [];
-        let searchFromHeight = bestBlockInMainchain.rskInfo.height + 1;
+        let searchFromHeight = rskBestBlockInMainchain.rskInfo.height + 1;
         let searchToHeight = rskBlockInMainchain.height;
 
         this.logger.info("Getting all RSK blocks from height", searchFromHeight, "to height", searchToHeight)
@@ -149,10 +149,12 @@ export class ForkDetector {
             itemsToSaveInMainchain.push(new BranchItem(null, block));
         }
 
-        if (bestBlockInMainchain.rskInfo.height != rskBlockInMainchain.height && prevRskHashToMatch != rskBlockInMainchain.prevHash) {
-            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain with hash:", bestBlockInMainchain.rskInfo.hash, " should connect with prevHash:", prevRskHashToMatch)
+        if (rskBestBlockInMainchain.rskInfo.height != rskBlockInMainchain.height && prevRskHashToMatch != rskBlockInMainchain.prevHash) {
+            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain with hash:", rskBestBlockInMainchain.rskInfo.hash, " should connect with prevHash:", prevRskHashToMatch)
             return;
         }
+
+        let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
 
         if (rskBlockMatchInHeight.hash != rskBlockInMainchain.hash) {
             // Because rsk tag in current BTC block is pointing to an rsk uncle block, we save:
@@ -168,6 +170,7 @@ export class ForkDetector {
 
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.height.toString()));
         await this.mainchainService.save(itemsToSaveInMainchain);
+
         return true;
     }
 
@@ -210,7 +213,7 @@ export class ForkDetector {
     }
 
     private tagIsInBranch(branches: Branch[], item: BranchItem): boolean {
-        return branches[0].getForkItems().some(x => x.rskInfo.forkDetectionData == item.rskInfo.forkDetectionData);
+        return branches[0].getForkItems().some(x => x.rskInfo.forkDetectionData.equals(item.rskInfo.forkDetectionData));
     }
 
     private newItemCanBeAddedInBranch(branches: Branch[], item: BranchItem) {
@@ -218,12 +221,11 @@ export class ForkDetector {
     }
 
     private async addOrCreateBranch(btcBlock: BtcBlock, rskBlocksSameHeight: RskBlock) {
-        var itemsBranch: BranchItem[];
-        var rskBlock = RskBlock.fromForkDetectionData(btcBlock.rskTag);
 
+        var rskBlock = RskBlock.fromForkDetectionData(btcBlock.rskTag);
         //Possible mainchain block from where it started to fork
         let item: BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);
-        itemsBranch = [item];
+        var itemsBranch: BranchItem[] = [item];
 
         if (btcBlock.rskTag.BN > rskBlocksSameHeight.height) {
             itemsBranch.unshift(new BranchItem(null, rskBlocksSameHeight));
@@ -267,6 +269,10 @@ export class ForkDetector {
         return bestblockAtHeight.hash == rskBlock.hash;
     }
 
+    private tagIsPointingToABackwardHeight(newBtcBlock: BtcBlock, rskBestBlockInMainchain: BranchItem) {
+        return newBtcBlock.rskTag.BN <= rskBestBlockInMainchain.rskInfo.height;
+    }
+
     // This function should be use if there are a reorganization. The intention of if is to rebuild 
     // the armadillo mainchain with the correct blocks. 
     public async rebuildMainchainFromBlock(itemIsNotMoreInMainchain: BranchItem) {
@@ -283,7 +289,7 @@ export class ForkDetector {
             itemIsNotMoreInMainchain.rskInfo.mainchain = false;
             await this.mainchainService.save([newBranchItem]);
         }
-        
+
         var bestblockAtHeight: RskBlock = await this.rskApiService.getBlock(itemIsNotMoreInMainchain.rskInfo.height);
         var branchItemToReplace = new BranchItem(null, bestblockAtHeight);
         this.logger.info("Mainchian Reorganization: Removing block that was best block", Printify.getPrintifyInfoBranchItem(itemIsNotMoreInMainchain), "for new block", Printify.getPrintifyInfoBranchItem(branchItemToReplace))
@@ -292,8 +298,8 @@ export class ForkDetector {
 
         //Now let's check if the reorganization took more blocks backwards.
         var prevBLockInMainchain = await this.mainchainService.getBlock(itemIsNotMoreInMainchain.rskInfo.height - 1)
-       
-        if (!await this.blockStillBeingMainchain(prevBLockInMainchain.rskInfo)) {
+
+        if (prevBLockInMainchain && !await this.blockStillBeingMainchain(prevBLockInMainchain.rskInfo)) {
             await this.rebuildMainchainFromBlock(prevBLockInMainchain);
         }
     }
