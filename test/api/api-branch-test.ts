@@ -28,6 +28,7 @@ describe("Branche api tests", () => {
   });
 
   after(async function () {
+    await branchService.deleteAll();
     await branchService.disconnect();
   });
 
