@@ -570,5 +570,6 @@ module.exports = {
     setBlockAsLastChecked,
     apiPoolingTime,
     timeoutTests,
-    loadingTime
+    loadingTime,
+    context
 }
