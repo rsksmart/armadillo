@@ -19,7 +19,7 @@ const RSKTAG = PREFIX + CPV + NU + BN;
 describe("Btc service tests", () => {
   beforeEach(async function () {
     await btcService.connect();
-    await btcService.removeAll();
+    await btcService.deleteAll();
   });
 
   it("getLastBlockDetected method, there is nothing in database", async () => {

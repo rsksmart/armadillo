@@ -17,7 +17,7 @@ export class BtcService extends BaseService {
         await this.store.getCollection().insertOne(btc);
     }
 
-    public async removeAll() {
-        await this.store.getCollection().drop().catch(function(){});
+    public async deleteAll() {
+        return this.store.getCollection().drop().catch(function(){});
     }
 }

@@ -9,12 +9,12 @@ export class MainchainController {
 
   constructor(service: MainchainService) {
     this.service = service;
-    this.service.createIndex({ "rskInfo.height": 1 }, { unique: true });
+    this.service.createIndex({ "rskInfo.height": 1 , "rskInfo.mainchain": 1 }, { unique: true });
   }
 
   public async getLastBlocks(req: any, res: any): Promise<MessageResponse<BranchItem[]>> {
     const n: number = parseInt(req.params.n);
-    var blocks: BranchItem[] = await this.service.getLastItems(n);
+    var blocks: BranchItem[] = await this.service. getLastItems(n);
     
     return res.status(200).send(
       new MessageResponse<BranchItem[]>(

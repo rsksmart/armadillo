@@ -1,6 +1,7 @@
 import { ForkDetectionData } from "./fork-detection-data";
 
 export class RskBlock {
+    
     public height: number;
     public forkDetectionData: ForkDetectionData;
     public hash: string;
@@ -17,5 +18,9 @@ export class RskBlock {
 
     public static fromObject(block: any): RskBlock {
         return new RskBlock(block.height, block.hash, block.prevHash, block.mainchain, new ForkDetectionData(block.forkDetectionData));
+    }
+
+    public static fromForkDetectionData(rskTag: ForkDetectionData) {
+        return new RskBlock(rskTag.BN, "", "", false, new ForkDetectionData(rskTag));
     }
 }

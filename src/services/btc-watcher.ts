@@ -33,20 +33,20 @@ export class BtcWatcher extends EventEmitter {
 
         if (heightBtcCheckpoint != null && heightBtcCheckpoint > 1) {
             this.checkpoint = new BtcBlock(heightBtcCheckpoint, "", "");
-            this.logger.info("CHECKPOINT Watcher: starting to sincronize at BTC heignt", heightBtcCheckpoint);
+            this.logger.info("CHECKPOINT: There is a checkpoint at BTC heignt", heightBtcCheckpoint, "check if is posible to start from it");
         }
     }
 
     public async start(): Promise<void> {
         this.logger.info('Starting btc watcher to sincronize...');
         this.running = true;
-        let lastBLockDetected: BtcBlock;
         let bestBtcBlock: BtcBlock =  await this.btcApi.getBestBlock();
         this.lastBLockDetected = await this.btcService.getLastBlockDetected();
 
         if (this.checkpoint) {
             if (!this.lastBLockDetected || (this.checkpoint.btcInfo.height > 0 && this.lastBLockDetected.btcInfo.height < this.checkpoint.btcInfo.height)) {
                 this.lastBLockDetected = this.checkpoint
+                await this.btcService.save(this.lastBLockDetected);
                 this.logger.info("Using CHEKPOINT: Starting to sincronize at BTC heignt", this.lastBLockDetected.btcInfo.height);
             } else {
                 this.logger.info("Discarting CHEKPOINT: Starting to sincronize at BTC heignt", this.lastBLockDetected.btcInfo.height);

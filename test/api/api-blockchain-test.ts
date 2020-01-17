@@ -29,17 +29,18 @@ describe("Blockchain api tests", () => {
   beforeEach(async function () {
     await branchService.connect();
     await mainchainService.connect();
-    await mainchainService.removeLastBlocks(100);
-    await branchService.removeAll();
+    await branchService.deleteAll();
+    await mainchainService.deleteAll();
   });
 
   after(async function () {
+    await branchService.deleteAll();
+    await mainchainService.deleteAll();
     await mainchainService.disconnect();
     await branchService.disconnect();
   });
 
   it("getLastBlochains method", async () => {
-
     const branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
     const branchItem2 = new BranchItem(btcInfo, new RskBlock(2, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
     const branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
@@ -61,7 +62,7 @@ describe("Blockchain api tests", () => {
     let blockchainController = new BlockchainController(mainchainService, branchService);
     let param = { "params": { "n": 10 }};
 
-    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlockchains(param, mockRes);
+    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
     expect(mainchainList).to.deep.equal(response.data.mainchain);
     expect(response.data.forks[0]).to.deep.equal(Branch.fromObjectToListBranchItems(branch));
   });
@@ -72,7 +73,7 @@ describe("Blockchain api tests", () => {
     
     let param = { "params": { "n": 6000 }};
 
-    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlockchains(param, mockRes);
+    let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
     expect("Get mainchain and forks in the last 5000 blocks").to.deep.equal(response.message);
   });
 });

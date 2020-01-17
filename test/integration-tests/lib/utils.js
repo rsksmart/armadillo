@@ -398,18 +398,27 @@ function getRskBlockByNumber(blockNumber, context) {
 async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainInFork, inForkedBlock) {
     if (!inForkedBlock && (mainchainInFork === undefined || mainchainInFork)) {
         let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
+        // console.log(height);
+
         let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
         let mergeMiningHash = rskBlock.result.hashForMergedMining;
         expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
         expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
         let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
-        expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
-        let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
-        expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
-        let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
-        expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
-        let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
-        expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
+        // console.log(armadilloBlock.rskInfo.forkDetectionData);
+        // console.log(prefixHashFromRskBlock);
+        if (armadilloBlock.rskInfo.height === 1 ){
+            expect(armadilloBlock.rskInfo.forkDetectionData).to.be.null;
+        } else {
+            expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
+            let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
+            expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
+            let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
+            expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
+            let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
+            expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
+        }
+
     } else {
         expect(armadilloBlock.rskInfo.hash).to.be.equal("");
         expect(armadilloBlock.rskInfo.prevHash).to.be.equal("");
@@ -533,18 +542,6 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, _num
             await validateRskBlockNodeVsArmadilloMonitor(fork[pos], mainchainInFork, !mainchainInFork);
         }
     }
-    // for (forkPos in lastForks) {
-    //     let forkItems = lastForks[forkPos].items;
-    //     expect(forkItems.length).to.be.equal(lengthOfForks[forkPos]);
-    //     forkItems.push({ btcInfo: null, rskInfo: lastForks[forkPos].mainchainBlockForkCouldHaveStarted });
-    //     for (pos in forkItems) {
-    //         forkItems[pos].src = "lastForks";
-    //         forkItems[pos].pos = pos;
-    //         let mainchainInFork = (pos >= (forkItems.length - expectedMainchainBlocks));
-    //         await validateBtcBlockNodeVsArmadilloMonitor(forkItems[pos], rskTagsMap, mainchainInFork);
-    //         await validateRskBlockNodeVsArmadilloMonitor(forkItems[pos], mainchainInFork, !mainchainInFork);
-    //     }
-    // }
 }
 
 module.exports = {
