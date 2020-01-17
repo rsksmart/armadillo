@@ -3,10 +3,28 @@ import { BranchItem } from "../common/branch";
 import BaseService from "./base-service";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { UpdateWriteOpResult } from "mongodb";
+import { Printify } from "../util/printify";
 
 export class MainchainService  extends BaseService {
+    
     constructor(store: MongoStore) {
        super(store);
+    }
+
+    public async changeBlockInMainchain(height: number, branchItemToReplace: BranchItem) {
+       //First remove the existing item and then save the new branchItem
+        var blocks = await this.store.getCollection().find({"rskInfo.height" : height}).toArray();
+        var block = blocks.find(b => b.rskInfo.mainchain);
+
+        if(block){
+            await this.store.getCollection().deleteMany({ _id: { $in: [block._id] }}); 
+            await this.save([branchItemToReplace]);
+        }
+    }
+    
+    public async getBlock(height: number) : Promise<BranchItem> {
+       var blocks  = await this.store.getCollection().find({"rskInfo.height" : height}).toArray();
+       return blocks.length > 0 ? BranchItem.fromObject(blocks.find(b => b.rskInfo.mainchain)): null;
     }
 
     public async updateBtcInfoBranchItem(mainchainBlockAtHeight: BranchItem) : Promise<UpdateWriteOpResult>{
@@ -14,7 +32,7 @@ export class MainchainService  extends BaseService {
     }
 
     public async getBlockByForkDataDetection(forkDetectionData: ForkDetectionData) : Promise<BranchItem> {
-        let objectsToReturn : any[] = await this.store.getCollection().find({"rskInfo.forkDetectionData": forkDetectionData }).toArray();
+        let objectsToReturn : any[] = await this.store.getCollection().find({"rskInfo.forkDetectionData": forkDetectionData, "rskInfo.height": forkDetectionData.BN}).toArray();
         return objectsToReturn.length > 0 ? BranchItem.fromObject(objectsToReturn[0]) : null;
     }
 
@@ -23,8 +41,18 @@ export class MainchainService  extends BaseService {
         return robjectsToReturn.map(x => BranchItem.fromObject(x));
     }
 
+    public async getLastMainchainItems(numberOfItems): Promise<BranchItem[]> {
+        let robjectsToReturn : any[] = await this.store.getCollection().find({ "rskInfo.mainchain": true }).sort({ "rskInfo.height": -1 }).limit(numberOfItems).toArray();
+        return robjectsToReturn.map(x => BranchItem.fromObject(x));
+    }
+
+    public async getFirstMainchainItem(numberOfItems): Promise<BranchItem> {
+        let robjectsToReturn : any[] = await this.store.getCollection().find({ "rskInfo.mainchain": true }).sort({ "rskInfo.height": 1 }).limit(1).toArray();
+        return robjectsToReturn.length > 0 ? BranchItem.fromObject(robjectsToReturn[0]) : null;
+    }
+
     public async getBestBlock(): Promise<BranchItem> {
-       let items : BranchItem[] = await this.getLastItems(1);
+       let items : BranchItem[] = await this.getLastMainchainItems(1);
        return items.length > 0 ? items[0] : null;
     }
 
@@ -55,6 +83,6 @@ export class MainchainService  extends BaseService {
     }
 
     public async deleteAll(){
-        await this.store.getCollection().drop();
+        return this.store.getCollection().drop().catch(function(){});
     }
 }

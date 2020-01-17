@@ -24,10 +24,11 @@ const mockRes = { "status": () => { return { "send": (y: any) => { return y } } 
 describe("Branche api tests", () => {
   beforeEach(async function () {
     await branchService.connect();
-    await branchService.removeAll();
+    await branchService.deleteAll();
   });
 
   after(async function () {
+    await branchService.deleteAll();
     await branchService.disconnect();
   });
 
