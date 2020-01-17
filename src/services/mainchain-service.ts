@@ -83,6 +83,6 @@ export class MainchainService  extends BaseService {
     }
 
     public async deleteAll(){
-        await this.store.getCollection().drop();
+        return this.store.getCollection().drop().catch(function(){});
     }
 }

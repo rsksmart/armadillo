@@ -26,10 +26,11 @@ const mockRes = { "status": () => { return { "send": (y: any) => { return y } } 
 describe("Mainchain api tests", () => {
   beforeEach(async function () {
     await mainchainService.connect();
-    await mainchainService.removeLastBlocks(100);
+    await mainchainService.deleteAll();
   });
 
   after(async function () {
+    await mainchainService.deleteAll();
     await mainchainService.disconnect();
   });
 
