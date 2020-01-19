@@ -9,7 +9,7 @@ import { MainchainController } from "../../src/api/controllers/mainchain-control
 import { BranchItem } from "../../src/common/branch";
 import { ApiConfig } from "../../src/config/api-config";
 import { MessageResponse } from "../../src/api/common/message-response";
-import { copy, sleep } from "../../src/util/helper";
+import { copy } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; 
