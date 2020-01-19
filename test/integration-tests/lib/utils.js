@@ -542,18 +542,6 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, _num
             await validateRskBlockNodeVsArmadilloMonitor(fork[pos], mainchainInFork, !mainchainInFork);
         }
     }
-    // for (forkPos in lastForks) {
-    //     let forkItems = lastForks[forkPos].items;
-    //     expect(forkItems.length).to.be.equal(lengthOfForks[forkPos]);
-    //     forkItems.push({ btcInfo: null, rskInfo: lastForks[forkPos].mainchainBlockForkCouldHaveStarted });
-    //     for (pos in forkItems) {
-    //         forkItems[pos].src = "lastForks";
-    //         forkItems[pos].pos = pos;
-    //         let mainchainInFork = (pos >= (forkItems.length - expectedMainchainBlocks));
-    //         await validateBtcBlockNodeVsArmadilloMonitor(forkItems[pos], rskTagsMap, mainchainInFork);
-    //         await validateRskBlockNodeVsArmadilloMonitor(forkItems[pos], mainchainInFork, !mainchainInFork);
-    //     }
-    // }
 }
 
 module.exports = {
@@ -582,5 +570,6 @@ module.exports = {
     setBlockAsLastChecked,
     apiPoolingTime,
     timeoutTests,
-    loadingTime
+    loadingTime,
+    context
 }
