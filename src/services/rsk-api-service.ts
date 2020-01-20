@@ -64,12 +64,17 @@ export class RskApiService {
         let blockAfterChangeCPV: RskBlock = await this.getBlock(heightBackwards);
         let startBlock: RskBlock = blockAfterChangeCPV;
         let endBlock: RskBlock = forkBlock;
+        let h = rskBlocksSameHeight.height;
 
         if (bytesOverlaps != 7) {
             heightBackwards += 64;
             endBlock = await this.getBlock(heightBackwards);
         } else {
-            endBlock = await this.getBlock(forkBlock.height - 1);
+            if (forkBlock.height > rskBlocksSameHeight.height){
+                endBlock = await this.getBlock(rskBlocksSameHeight.height);
+            } else {
+                endBlock = await this.getBlock(rskBlocksSameHeight.height - 1);
+            }
         }
 
         return new RangeForkInMainchain(startBlock, endBlock);
