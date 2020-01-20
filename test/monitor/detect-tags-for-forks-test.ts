@@ -190,7 +190,6 @@ describe('Forks branch tests', () => {
 
       let saveBranch = sinon.stub(branchService, <any>'save')
       saveBranch.callsFake(function (branchToSave) {
-        console.log(branchToSave)
         expect(branchExpected).to.deep.equal(branchToSave);
       });
 
