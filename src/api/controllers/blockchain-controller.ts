@@ -30,7 +30,7 @@ export class BlockchainController {
       n = 5000;
     }
 
-    var mainchain : BranchItem[] = await this.mainchainService.getLastItems(n);
+    var mainchain : BranchItem[] = await this.mainchainService.getLastBtcBlocksDetectedInChain(n);
 
     let heightToGetForksFrom = 0;
 

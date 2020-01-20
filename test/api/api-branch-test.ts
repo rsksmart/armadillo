@@ -21,7 +21,7 @@ const branchService = new BranchService(mongoStore);
 const mockRes = { "status": () => { return { "send": (y: any) => { return y } } } };
 
 //Before you run this test you have to run a mongo instance
-describe("Branche api tests", () => {
+describe("Branch api tests", () => {
   beforeEach(async function () {
     await branchService.connect();
     await branchService.deleteAll();
