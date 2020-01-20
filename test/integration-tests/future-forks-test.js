@@ -16,7 +16,7 @@ const heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff = firstBtcBlock + 133;
 
 const heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff = firstBtcBlock + 135;
 
-describe.only("RSK no match at same height with matching CPV, RSK height in the past regarding BTC chain", () => {
+describe("RSK no match at same height with matching CPV, RSK height in the past regarding BTC chain", () => {
     it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match", async () => {
         assert.equal(await utils.getLastRSKHeight(utils.context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(btcApiRoute, heightOfConsecutiveBTCwithFutureRSKtags0bCPVdiff, 1, 2000, apiPoolingTime, loadingTime);
