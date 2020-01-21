@@ -2,9 +2,9 @@
   "name": "scripts",
   "version": "1.0.0",
   "description": "",
-  "main": "heartbeat.js",
+  "main": "fork-detect-polling.js",
   "scripts": {
-    "start": "node heartbeat.js"
+    "start": "node fork-detect-polling.js"
   },
   "author": "",
   "license": "ISC",
