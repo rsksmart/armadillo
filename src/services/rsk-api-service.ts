@@ -69,7 +69,11 @@ export class RskApiService {
             heightBackwards += 64;
             endBlock = await this.getBlock(heightBackwards);
         } else {
-            endBlock = await this.getBlock(forkBlock.height - 1);
+            if (forkBlock.height > rskBlocksSameHeight.height){
+                endBlock = await this.getBlock(rskBlocksSameHeight.height);
+            } else {
+                endBlock = await this.getBlock(rskBlocksSameHeight.height - 1);
+            }
         }
 
         return new RangeForkInMainchain(startBlock, endBlock);
