@@ -64,7 +64,6 @@ export class RskApiService {
         let blockAfterChangeCPV: RskBlock = await this.getBlock(heightBackwards);
         let startBlock: RskBlock = blockAfterChangeCPV;
         let endBlock: RskBlock = forkBlock;
-        let h = rskBlocksSameHeight.height;
 
         if (bytesOverlaps != 7) {
             heightBackwards += 64;
