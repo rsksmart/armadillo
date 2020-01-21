@@ -9,7 +9,7 @@ import { MainchainController } from "../../src/api/controllers/mainchain-control
 import { BranchItem } from "../../src/common/branch";
 import { ApiConfig } from "../../src/config/api-config";
 import { MessageResponse } from "../../src/api/common/message-response";
-import { copy, sleep } from "../../src/util/helper";
+import { copy } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; 
@@ -149,5 +149,73 @@ describe("Mainchain api tests", () => {
     var branchItemSaved = await mainchainService.getBlock(branchItem1.rskInfo.height);
 
     expect(branchToChange).to.deep.equal(branchItemSaved);
+  });
+
+
+  it("getLastBtcBlocksDetectedInChain method", async () => {
+    // Add some items into armadillo chain and then check if the given chain is correct
+    let branchItem1WithBTC = new BranchItem(new BtcHeaderInfo(1000, ""), new RskBlock(100, "hash", "prevHash", true, new ForkDetectionData(RSKTAG)));
+
+    await mainchainService.save([copy(branchItem1WithBTC)]);
+
+    let response : BranchItem[] = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+
+    expect(response.length).to.equal(1);
+    expect([branchItem1WithBTC]).to.deep.equal(response);
+    
+    //Building chain between tags btcblock 1000 and btcblock 1020
+    var itemsToSave = [];
+    for(var i = 101; i <= 120; i++){
+      itemsToSave.push(new BranchItem(null, new RskBlock(i, "hash" + i, "prevHash" + (i-1), true, new ForkDetectionData(RSKTAG))));
+    }
+    let branchItem2WithBTC = new BranchItem(new BtcHeaderInfo(1120, ""), new RskBlock(121, "hash121", "prevHash120", true, new ForkDetectionData(RSKTAG)));
+    itemsToSave.push(branchItem2WithBTC);
+
+    await mainchainService.save(copy(itemsToSave));
+
+    response = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    expect(response.length).to.equal(22);
+    var itemsToCheck =[branchItem1WithBTC].concat(itemsToSave);
+    expect(itemsToCheck.reverse()).to.deep.equal(response);
+
+    itemsToSave = [];
+    for(var i = 122; i <= 130; i++){
+      itemsToSave.push(new BranchItem(null, new RskBlock(i, "hash" + i, "prevHash" + (i-1), true, new ForkDetectionData(RSKTAG))));
+    }
+    let branchItem3WithBTC = new BranchItem(new BtcHeaderInfo(1122, ""), new RskBlock(131, "hash121", "prevHash120", true, new ForkDetectionData(RSKTAG)));
+    itemsToSave.push(branchItem3WithBTC);
+
+    await mainchainService.save(copy(itemsToSave));
+
+    response = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    expect(response.length).to.equal(32);
+    itemsToCheck = itemsToCheck.reverse().concat(itemsToSave);
+    expect(itemsToCheck.reverse()).to.deep.equal(response);
+
+    //add btc item as a uncle
+    itemsToSave = [];
+    for(var i = 132; i <= 140; i++){
+      itemsToSave.push(new BranchItem(null, new RskBlock(i, "hash" + i, "prevHash" + (i-1), true, new ForkDetectionData(RSKTAG))));
+    }
+    let branchItem4WithBTC = new BranchItem(new BtcHeaderInfo(1125, ""), new RskBlock(140, "hash140", "prevHash139", false, new ForkDetectionData(RSKTAG)));
+    itemsToSave.push(branchItem4WithBTC);
+    let itemsToSaveBetween3and4 = itemsToSave;
+    await mainchainService.save(copy(itemsToSave));
+
+    response = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    
+    expect(response.length).to.equal(42);
+    itemsToCheck = itemsToCheck.reverse().concat(itemsToSave);
+    expect(itemsToCheck.reverse()).to.deep.equal(response);
+
+     //return just chain between last BTC block
+    response = await mainchainService.getLastBtcBlocksDetectedInChain(1);
+    expect(response.length).to.equal(1);
+    expect([branchItem4WithBTC]).to.deep.equal(response);
+
+    //return just chain between the last 2 BTC blocks
+    response = await mainchainService.getLastBtcBlocksDetectedInChain(2);
+    expect(response.length).to.equal(11);
+    expect([branchItem3WithBTC].concat(itemsToSaveBetween3and4).reverse()).to.deep.equal(response);
   });
 });

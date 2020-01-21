@@ -247,11 +247,6 @@ export class ForkDetector {
         var rskBlock = RskBlock.fromForkDetectionData(btcBlock.rskTag);
         //Possible mainchain block from where it started to fork
         let item: BranchItem = new BranchItem(btcBlock.btcInfo, rskBlock);
-        var itemsBranch: BranchItem[] = [item];
-
-        if (btcBlock.rskTag.BN > rskBlocksSameHeight.height) {
-            itemsBranch.unshift(new BranchItem(null, rskBlocksSameHeight));
-        }
 
         let branches: Branch[] = await this.getBranchesThatOverlap(rskBlock.forkDetectionData);
 
@@ -272,13 +267,12 @@ export class ForkDetector {
                 'this new item was added in a existing branch');
 
             await this.branchService.addBranchItem(branches[0].getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
-
         } else {
             let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
 
             this.logger.info('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
-
-            await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, itemsBranch));
+            // console.log(mainchainRangeForkCouldHaveStarted);
+            await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, [item]));
         }
     }
 
