@@ -165,16 +165,11 @@ export class ForkDetector {
                 this.logger.fatal("Mainchain: building mainchain can not find a block in RSK at height:", i, "with prev hash:", prevRskHashToMatch)
                 return false;
             } else {
-                this.logger.info("Mainchain: adding RSK block into mainchain at height:", i, "with hash:", prevRskHashToMatch, "prevHash:", prevRskHashToMatch)
+                this.logger.info("Mainchain: adding RSK block into mainchain at height:", i, "with hash:", block.hash, "prevHash:", block.prevHash)
             }
 
             prevRskHashToMatch = block.hash;
             itemsToSaveInMainchain.push(new BranchItem(null, block));
-        }
-
-        if (rskBestBlockInMainchain.rskInfo.height != rskBlockInMainchain.height && prevRskHashToMatch != rskBlockInMainchain.prevHash) {
-            this.logger.fatal("Mainchain: building mainchain can not connect the end of the chain. Last block in mainchain with hash:", rskBestBlockInMainchain.rskInfo.hash, " should connect with prevHash:", prevRskHashToMatch)
-            return;
         }
 
         let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtRskTagHeight, newBtcBlock.rskTag);
