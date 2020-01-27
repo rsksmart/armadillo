@@ -1,0 +1,6 @@
+{
+    "server": "a_server",
+    "user": "a_user",
+    "pass": "a_password",
+    "recipients": ["address1@mail.com", "address2@mail.com"]
+}
