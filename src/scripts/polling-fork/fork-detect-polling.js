@@ -8,11 +8,10 @@ start();
 
 async function start(){
     while (true) {
-        await sleep(INTERVAL);
-
         var data = await getCurrentMainchain();
 
         if (!data.ok){
+            console.log(data.error)
             console.log(`Failed to check for forks. Error: ${data.error}`)
             return;
         }
@@ -23,6 +22,8 @@ async function start(){
                 await sendAlert(data.data);
             }
         }
+
+        await sleep(INTERVAL);
     }
 }
 
@@ -31,7 +32,7 @@ function sleep(ms) {
 }
 
 async function getCurrentMainchain() {
-    return curl.get('34.67.238.129:6000/blockchains/50')
+    return curl.get(`${config.armadilloUrl}/blockchains/50`)
         .then(({ body }) => {
             return { ok: true, data: JSON.parse(body).data}
         })
