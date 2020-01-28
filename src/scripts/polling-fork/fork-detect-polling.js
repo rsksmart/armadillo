@@ -30,7 +30,7 @@ function sleep(ms) {
 }
 
 async function getCurrentMainchain() {
-    return curl.get(`${config.armadilloUrl}/blockchains/50`)
+    return curl.get(`${config.armadilloUrl}/blockchains/${config.chainDepth}`)
         .then(({ body }) => {
             return { ok: true, data: JSON.parse(body).data}
         })
