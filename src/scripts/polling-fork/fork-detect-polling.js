@@ -2,26 +2,28 @@ const curl = new (require('curl-request'))();
 const nodemailer = require('nodemailer');
 const config = require('./config.json');
 
+const INTERVAL = 60000;
+
 start();
 
 async function start(){
-    await sleep(15000);
-    
-    var data = await getCurrentMainchain();
-    
-    if (!data.ok){
-        console.log(`Failed to check for forks. Error: ${data.error}`)
-        return;
-    }
+    while (true) {
+        await sleep(INTERVAL);
 
-    if(data.data.forks != null && data.data.forks.length > 0 ){
-        if(data.data.forks.some(x => x.length > 3)){
-            console.log("New forks!!!");
-            await sendAlert(data.data);
+        var data = await getCurrentMainchain();
+
+        if (!data.ok){
+            console.log(`Failed to check for forks. Error: ${data.error}`)
+            return;
+        }
+
+        if(data.data.forks != null && data.data.forks.length > 0 ){
+            if(data.data.forks.some(x => x.length > 3)){
+                console.log("New forks!!!");
+                await sendAlert(data.data);
+            }
         }
     }
-
-    console.log("There are no forks!!");
 }
 
 function sleep(ms) {
