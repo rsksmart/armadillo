@@ -2,5 +2,6 @@
     "server": "a_server",
     "user": "a_user",
     "pass": "a_password",
-    "recipients": ["address1@example.com", "address2@example.com"]
+    "recipients": ["address1@example.com", "address2@example.com"],
+    "armadilloUrl": "armadillo.url"
 }
