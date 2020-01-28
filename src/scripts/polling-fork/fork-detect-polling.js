@@ -11,15 +11,13 @@ async function start(){
         var data = await getCurrentMainchain();
 
         if (!data.ok){
-            console.log(data.error)
             console.log(`Failed to check for forks. Error: ${data.error}`)
-            return;
-        }
-
-        if(data.data.forks != null && data.data.forks.length > 0 ){
-            if(data.data.forks.some(x => x.length > 3)){
-                console.log("New forks!!!");
-                await sendAlert(data.data);
+        } else {
+            if(data.data.forks != null && data.data.forks.length > 0 ){
+                if(data.data.forks.some(x => x.length > 3)){
+                    console.log("New forks!!!");
+                    await sendAlert(data.data);
+                }
             }
         }
 
