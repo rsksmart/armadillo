@@ -2,7 +2,7 @@ const curl = new (require('curl-request'))();
 const nodemailer = require('nodemailer');
 const config = require('./config.json');
 
-const INTERVAL = 60000;
+const INTERVAL = config.pollIntervalMs;
 
 start();
 
