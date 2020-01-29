@@ -65,3 +65,12 @@ async function sendAlert(data) {
 
     logger.info(`Sent message: ${info.messageId}`)
 }
+
+process.on('SIGTERM', () => {
+    logger.info('Received SIGTERM. Shutting down...');
+    process.exit(1);
+})
+process.on('SIGINT', () => {
+    logger.info('Received SIGINT. Shutting down...');
+    process.exit(1);
+})
