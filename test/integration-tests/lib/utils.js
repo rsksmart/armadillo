@@ -146,7 +146,7 @@ async function getForksFromHeight(number) {
 }
 
 async function getNextBlockInMockBTCApi() {
-    await sleep(apiPoolingTime+loadingTime);
+    await sleep(apiPoolingTime + loadingTime);
     let result = await fetch(BtcApiURL + "nextBlock");
     return result;
 }
@@ -398,16 +398,12 @@ function getRskBlockByNumber(blockNumber, context) {
 async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainInFork, inForkedBlock) {
     if (!inForkedBlock && (mainchainInFork === undefined || mainchainInFork)) {
         let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
-        // console.log(height);
-
         let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
         let mergeMiningHash = rskBlock.result.hashForMergedMining;
         expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
         expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
         let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
-        // console.log(armadilloBlock.rskInfo.forkDetectionData);
-        // console.log(prefixHashFromRskBlock);
-        if (armadilloBlock.rskInfo.height === 1 ){
+        if (armadilloBlock.rskInfo.height === 1) {
             expect(armadilloBlock.rskInfo.forkDetectionData).to.be.null;
         } else {
             expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
@@ -482,6 +478,41 @@ async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btc
     }
 }
 
+function reverseHash(hash) {
+    let toReverse = hash;
+    const hasPrefix = hash.indexOf("0x") !== -1;
+    if (hasPrefix) {
+        toReverse = hash.substring(2);
+    }
+    let toReverseArray = toReverse.split("");
+    toReverseArray = toReverseArray.reverse();
+    toReverse = toReverseArray.join("");
+    if (hasPrefix) {
+        return "0x" + toReverse;
+    } else {
+        return toReverse;
+    }
+}
+
+async function fakeMainchainBlock(rskBlockNumber) {
+    let blockInfoOriginal = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
+    let blockInfo = JSON.parse(JSON.stringify(blockInfoOriginal));
+    let prefixHash = reverseHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
+    let rskHash = reverseHash(blockInfo.rskInfo.hash);
+    blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
+    blockInfo.rskInfo.hash = rskHash;
+    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfo);
+    return blockInfoOriginal;
+}
+
+async function swapMainchainBlockWithSibling(rskBlockNumber) {
+    let blockInfoMainchain = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
+    let blockInfoSibling = await mongo_utils.findOneMainchainBlock(rskBlockNumber, false);
+    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfoSibling);
+    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, false, blockInfoMainchain);
+    return blockInfoSibling;
+}
+
 async function getBlockchainsAfterMovingXBlocks(
     btcApiRoute, initialHeight, blocksToMove,
     amountOfBlockchains, apiPoolingTime, loadingTime) {
@@ -498,14 +529,30 @@ async function getBlockchainsAfterMovingXBlocks(
     await sleep(loadingTime);
     return blockchainsResponse = await getBlockchains(amountOfBlockchains);
 }
-async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMainchain) {
-    const mainchainResponse = await getMainchainBlocks(nbrOfMainchainBlocksToFetch);
-    const blocks = mainchainResponse.data;
+
+async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMainchain, reOrgBlocks) {
+    const mainchainResponse = await getBlockchains(nbrOfMainchainBlocksToFetch);
+    const blocks = mainchainResponse.data.mainchain;
     expect(blocks.length).to.be.equal(lengthOfExpectedMainchain);
+    let countOfReOrgBlocks = 0
     for (let block in blocks) {
-        const controlBtcInfo = block === 0 || block === (blocks.length-1);
+        const controlBtcInfo = block === 0 || block === (blocks.length - 1);
+        if (reOrgBlocks && (Object.keys(reOrgBlocks).includes(blocks[block].rskInfo.height.toString()))) {
+            countOfReOrgBlocks++;
+            for (let reOrgBlockPos in Object.keys(reOrgBlocks)) {
+                let reorgCompareBlock = reOrgBlocks[Object.keys(reOrgBlocks)[reOrgBlockPos]];
+                if (reorgCompareBlock.rskInfo.height === blocks[block].rskInfo.height) {
+                    expect(reorgCompareBlock.rskInfo.hash).to.be.equal(blocks[block].rskInfo.hash);
+                    expect(reorgCompareBlock.rskInfo.forkDetectionData.prefixHash)
+                        .to.be.equal(blocks[block].rskInfo.forkDetectionData.prefixHash);
+                }
+            }
+        }
         await validateRskBlockNodeVsArmadilloMonitor(blocks[block]);
         await validateBtcBlockNodeVsArmadilloMonitor(blocks[block], rskBlockHeightsWithBtcBlock(), controlBtcInfo);
+    }
+    if (reOrgBlocks) {
+        expect(Object.keys(reOrgBlocks).length).to.be.equal(countOfReOrgBlocks);
     }
 }
 
@@ -571,5 +618,6 @@ module.exports = {
     apiPoolingTime,
     timeoutTests,
     loadingTime,
-    context
+    context,
+    fakeMainchainBlock
 }
