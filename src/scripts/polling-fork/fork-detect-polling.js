@@ -1,21 +1,27 @@
 const curl = new (require('curl-request'))();
 const nodemailer = require('nodemailer');
 const config = require('./config.json');
+const { getLogger, configure } = require('log4js');
 
 const INTERVAL = config.pollIntervalMs;
+
+configure('./log-config.json')
+const logger = getLogger('fork-detector');
 
 start();
 
 async function start(){
+    logger.info('Starting...')
+
     while (true) {
         var data = await getCurrentMainchain();
 
         if (!data.ok){
-            console.log(`Failed to check for forks. Error: ${data.error}`)
+            logger.error(`Failed to check for forks. Error: ${data.error}`)
         } else {
             if(data.data.forks != null && data.data.forks.length > 0 ){
                 if(data.data.forks.some(x => x.length > 3)){
-                    console.log("New forks!!!");
+                    logger.info("New forks!!!");
                     await sendAlert(data.data);
                 }
             }
@@ -57,5 +63,5 @@ async function sendAlert(data) {
         text: JSON.stringify(data.forks)
     });
 
-    console.log(`Sent message: ${info.messageId}`)
+    logger.info(`Sent message: ${info.messageId}`)
 }
