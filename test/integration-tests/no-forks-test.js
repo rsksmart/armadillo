@@ -85,7 +85,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
             await utils.validateRskBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block]);
             await utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
         }
-        mongo_utils
+
     }).timeout(timeoutTests);
     it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation", async () => {
         await mongo_utils.DeleteDB(db, mainchain);
