@@ -1,4 +1,5 @@
 let MongoClient = require('mongodb').MongoClient;
+const fs = require('fs');
 const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
@@ -8,12 +9,14 @@ const ArmadilloForks = "branches";
 let connectDB = async (_db) => {
     try {
         let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
-        return {db: await db.db(_db), connection: db};
+        return { db: await db.db(_db), connection: db };
     } catch (e) {
         console.error("couldn't connect to mongoDB");
         return null;
     }
 }
+
+
 
 let DeleteDB = async (_db) => {
     let db = await connectDB(_db);
@@ -41,6 +44,11 @@ let DeleteDB = async (_db) => {
     }
 }
 
+async function saveCollectionToFile(_collection, _fileName) {
+    let blocks = await findBlocks (ArmadilloDB, _collection);
+    fs.writeFileSync(_fileName,JSON.stringify(blocks,null,2));
+}
+
 let updateLastCheckedBtcBlock = async (btcBlock) => {
     try {
         let db = await connectDB(ArmadilloDB);
@@ -50,7 +58,7 @@ let updateLastCheckedBtcBlock = async (btcBlock) => {
         var query = {};
         var newvalue = { $set: btcBlock };
         try {
-            
+
             result = await dbo
                 .collection(ArmadilloStateTracker)
                 .updateOne(query, newvalue);
@@ -180,5 +188,6 @@ module.exports = {
     ArmadilloForks,
     updateLastCheckedBtcBlock,
     findOneMainchainBlock,
-    updateOneMainchainBlock
+    updateOneMainchainBlock,
+    saveCollectionToFile
 }
