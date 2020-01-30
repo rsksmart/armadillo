@@ -2,7 +2,7 @@
     "appenders": {
         "file": {
             "type": "dateFile",
-            "filename": "fork-detect-polling.log",
+            "filename": "fork-detector-notifier.log",
             "daysToKeep": 10
         },
         "console": {

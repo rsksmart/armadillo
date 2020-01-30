@@ -1,7 +1,9 @@
 
-# Armadillo pooling detector
-The intention of this script is to check if there are forks in armadillo mainchain, given that a single fork (forking with just one block) is pretty common in RSK network because miners may be stuck and mining a wrong height.
-For this reason, a fork must have more than 3 elements, so this basically means that a fork is growing, creating a chain instead of just a lost block.
+# Fork detector notifier
+
+The present script periodically checks the branches detected by the armadillo monitor in order to notify of any suspicious activity.
+
+Since one-block reorganizations are common in the RSK network, the length to trigger the notifications is set to 3 blocks minimum. Anything below that is ignored.
 
 ## Set up
 **``npm install``**
