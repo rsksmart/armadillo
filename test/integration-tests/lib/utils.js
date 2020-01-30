@@ -478,7 +478,7 @@ async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btc
     }
 }
 
-function reverseHash(hash) {
+function scrumbleHash(hash) {
     let toReverse = hash;
     const hasPrefix = hash.indexOf("0x") !== -1;
     if (hasPrefix) {
@@ -497,8 +497,8 @@ function reverseHash(hash) {
 async function fakeMainchainBlock(rskBlockNumber) {
     let blockInfoOriginal = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
     let blockInfo = JSON.parse(JSON.stringify(blockInfoOriginal));
-    let prefixHash = reverseHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
-    let rskHash = reverseHash(blockInfo.rskInfo.hash);
+    let prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
+    let rskHash = scrumbleHash(blockInfo.rskInfo.hash);
     blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
     blockInfo.rskInfo.hash = rskHash;
     await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfo);
