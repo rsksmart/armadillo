@@ -279,7 +279,10 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.sleep(apiPoolingTime + loadingTime);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         await utils.sleep(loadingTime);
-        const reorgBlockInfo = await utils.fakeMainchainBlock(rskHeightWithSibling, true);
+        // const reorgBlockInfo = await utils.fakeMainchainBlock(rskHeightWithSibling, true);
+        
+        const reorgBlockInfo = await utils.swapMainchainBlockWithSibling(rskHeightWithSibling);
+        console.log(reorgBlockInfo);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
         await utils.sleep(loadingTime + apiPoolingTime);
