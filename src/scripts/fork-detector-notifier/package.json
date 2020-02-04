@@ -2,14 +2,15 @@
   "name": "scripts",
   "version": "1.0.0",
   "description": "",
-  "main": "fork-detect-polling.js",
+  "main": "fork-detector-notifier.js",
   "scripts": {
-    "start": "node fork-detect-polling.js"
+    "start": "node fork-detector-notifier.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "curl-request": "^1.1.1",
+    "log4js": "^6.1.0",
     "nodemailer": "^6.4.2"
   }
 }
