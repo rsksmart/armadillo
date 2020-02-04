@@ -1,0 +1,9 @@
+{
+    "server": "a_server",
+    "user": "a_user",
+    "pass": "a_password",
+    "recipients": ["address1@example.com", "address2@example.com"],
+    "armadilloUrl": "armadillo.url",
+    "chainDepth": 50,
+    "pollIntervalMs": 60000
+}
