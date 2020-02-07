@@ -46,6 +46,11 @@ const HNoMatch8CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = firstBtcBlock
 const apiPoolingTime = utils.apiPoolingTime;
 const loadingTime = utils.loadingTime;
 
+const dataInputPath = "test/integration-tests/data/";
+const forksPresentFilePrefix = dataInputPath + "present-forks-";
+const mainchainPresentFilePrefix = dataInputPath + "present-mainchain-";
+const fileSuffix = ".json"
+
 const btcApiRoute = "raw";
 describe("RSK no match at same height with matching CPV", () => {
     it("should not create branch for BTC block matching RSK tag, end to end", async () => {
@@ -56,6 +61,17 @@ describe("RSK no match at same height with matching CPV", () => {
         const lastForksResponse = await utils.getForksFromHeight(0);
         expect(lastForksResponse.data).to.be.an('array').that.is.empty;
         await utils.validateMainchain(1000, 1);
+        const testId = "noForks";
+        mongo_utils.saveCollectionToFile(forks, forksPresentFilePrefix + testId + fileSuffix);
+    }).timeout(timeoutTests);
+    it("should not create branch for BTC block matching RSK tag, mongo input validation", async () => {
+        const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
+            btcApiRoute, heightOfConsecutiveRskTags, 0, 1000, apiPoolingTime, loadingTime);
+        await utils.sleep(apiPoolingTime + loadingTime);
+        const mongoForkBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloForks);
+        //Reset to original height
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        expect(mongoForkBlocks).to.be.an('array').that.is.empty;
     }).timeout(timeoutTests);
     it("should create branch for first BTC block with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
@@ -64,6 +80,15 @@ describe("RSK no match at same height with matching CPV", () => {
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         //    validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
         await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+        const testId = "only1rsktagfork";
+        mongo_utils.saveCollectionToFile(forks, forksPresentFilePrefix + testId + fileSuffix);
+        mongo_utils.saveCollectionToFile(mainchain, mainchainPresentFilePrefix + testId + fileSuffix);
+    }).timeout(timeoutTests);
+    it("should create branch for first BTC block with no matching RSK tag, mongo input validation", async () => {
+        const dbForks = await utils.getDBForksAfterMovingXBlocks(
+            btcApiRoute, HConsecutiveNoMatchRskTags, 0, apiPoolingTime, loadingTime);
+        await utils.setHeightInMockBTCApi(heightOfNoRskTags);
+        await utils.validateForksRskBlockMongoDB(dbForks, [1]);
     }).timeout(timeoutTests);
     it("should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end", async () => {
         const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
