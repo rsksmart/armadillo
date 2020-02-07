@@ -34,7 +34,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         await utils.validateMainchain(1000, 0);
-        
+
     }).timeout(timeoutTests);
     it("should not generate any mainchain if BTC doesn't present RSK tags, mongo input validation", async () => {
         await utils.MockBtcApiChangeRoute("raw");
@@ -225,7 +225,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.validateMainchain(100, 11);
     }).timeout(timeoutTests);
 
-    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint, end to end", async () => {
+    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, "
+    +"a reorganization of lenght 1 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -236,7 +237,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const reorgBlockInfo = await utils.fakeMainchainBlock(rskheightOfConsecutiveRskTags, true);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(loadingTime+apiPoolingTime);
+        await utils.sleep(loadingTime + apiPoolingTime);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         let reorgBlocks = {};
@@ -245,7 +246,8 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.validateMainchain(100, 41, reorgBlocks);
     }).timeout(timeoutTests);
 
-    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint and 2 previous rsk blocks, end to end", async () => {
+    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, "
+    +"a reorganization of lenght 3 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -256,18 +258,18 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         let reorgBlocks = {};
         let reorgBlockInfo = await utils.fakeMainchainBlock(rskheightOfConsecutiveRskTags, true);
         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
-        reorgBlockInfo = await utils.fakeMainchainBlock(rskheightOfConsecutiveRskTags-1, true);
+        reorgBlockInfo = await utils.fakeMainchainBlock(rskheightOfConsecutiveRskTags - 1, true);
         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
-        reorgBlockInfo = await utils.fakeMainchainBlock(rskheightOfConsecutiveRskTags-2, true);
+        reorgBlockInfo = await utils.fakeMainchainBlock(rskheightOfConsecutiveRskTags - 2, true);
         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(loadingTime+apiPoolingTime);
+        await utils.sleep(loadingTime + apiPoolingTime);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         await utils.validateMainchain(2, 41, reorgBlocks);
         await utils.validateMainchain(100, 41, reorgBlocks);
-    }).timeout(timeoutTests);
+        }).timeout(timeoutTests);
 
     it("should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint, it goes as a sibling, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
@@ -277,10 +279,12 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.sleep(apiPoolingTime + loadingTime);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         await utils.sleep(loadingTime);
-        const reorgBlockInfo = await utils.fakeMainchainBlock(rskHeightWithSibling, true);
+        // const reorgBlockInfo = await utils.fakeMainchainBlock(rskHeightWithSibling, true);
+        
+        const reorgBlockInfo = await utils.swapMainchainBlockWithSibling(rskHeightWithSibling);
         await utils.getNextBlockInMockBTCApi(apiPoolingTime);
         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await utils.sleep(loadingTime+apiPoolingTime);
+        await utils.sleep(loadingTime + apiPoolingTime);
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
         //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         let reorgBlocks = {};
