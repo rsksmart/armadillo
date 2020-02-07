@@ -11,7 +11,34 @@ const mongo_utils = require("./mongo-utils");
 const timeoutTests = 5 * 60 * 1000;//5 minutes
 const apiPoolingTime = 200;
 const loadingTime = 500;
-
+const config = {
+    "rskd": {
+        "url": "localhost",
+        "rpcport": 4444,
+        "user": "user",
+        "pass": "pass"
+    },
+    "bitcoind": {
+        "url": "localhost",
+        "rpcport": 32591,
+        "user": "admin",
+        "pass": "admin"
+    }
+}
+const host = config.rskd.url + ":" + config.rskd.rpcport;
+const context = {
+    headers: [
+        "Content-Type: application/json",
+        `Host: ${host}`,
+        "Accept: */*"
+    ],
+    httpversion: "	1.1"
+}
+const curlHttpVersions = {
+    "	1.0": Curl.http.VERSION_1_0,
+    "	1.1": Curl.http.VERSION_1_1,
+    "NONE": Curl.http.VERSION_NONE
+}
 const mapRskMatch = {
     "3": 450,
     "4": 470,
@@ -110,6 +137,37 @@ function rskBlockHeightsWithBtcBlock() {
     }
 }
 
+function sleep(millis) {
+    return new Promise(resolve => setTimeout(resolve, millis));
+}
+
+var addLeadingZeros = (totalLength, s) => {
+    let lenS = s.toString(16).length;
+    for (lenS; lenS < totalLength; lenS++) {
+        s = "0" + s.toString(16);
+    }
+    return s;
+}
+
+function scrumbleHash(hash) {
+    let toReverse = hash;
+    const hasPrefix = hash.indexOf("0x") !== -1;
+    if (hasPrefix) {
+        toReverse = hash.substring(2);
+    }
+    let toReverseArray = toReverse.split("");
+    toReverseArray = toReverseArray.reverse();
+    toReverse = toReverseArray.join("");
+    if (hasPrefix) {
+        return "0x" + toReverse;
+    } else {
+        return toReverse;
+    }
+}
+
+///////////////////////////////////////////
+//////// BTC API MOCKER Operations ////////
+///////////////////////////////////////////
 async function MockBtcApiChangeRoute(route) {
     let response = await fetch(`${BtcApiURL}route/${route}`);
     return response;
@@ -125,24 +183,6 @@ async function getBtcApiBlockNumber(number) {
         }
     };
     return btcInfo;
-}
-
-async function getMainchainBlocks(number) {
-    let response = await fetch(ArmadilloApiURL + "mainchain/getLastBlocks/" + number);
-    let result = await response.json();
-    return result;
-}
-
-async function getBlockchains(number) {
-    let response = await fetch(ArmadilloApiURL + "blockchains/" + number);
-    let result = await response.json();
-    return result;
-}
-
-async function getForksFromHeight(number) {
-    let response = await fetch(ArmadilloApiURL + "forks/getLastForks/" + number);
-    let result = await response.json();
-    return result;
 }
 
 async function getNextBlockInMockBTCApi() {
@@ -162,48 +202,98 @@ async function setHeightInMockBTCApi(_height) {
     await fetch(url);
 }
 
-const config = {
-    "rskd": {
-        "url": "localhost",
-        "rpcport": 4444,
-        "user": "user",
-        "pass": "pass"
-    },
-    "bitcoind": {
-        "url": "localhost",
-        "rpcport": 32591,
-        "user": "admin",
-        "pass": "admin"
+//////////////////////////////////////
+//////// Armadillo Operations ////////
+//////////////////////////////////////
+async function getMainchainBlocks(number) {
+    let response = await fetch(ArmadilloApiURL + "mainchain/getLastBlocks/" + number);
+    let result = await response.json();
+    return result;
+}
+
+async function getBlockchains(number) {
+    let response = await fetch(ArmadilloApiURL + "blockchains/" + number);
+    let result = await response.json();
+    return result;
+}
+
+async function getForksFromHeight(number) {
+    let response = await fetch(ArmadilloApiURL + "forks/getLastForks/" + number);
+    let result = await response.json();
+    return result;
+}
+
+function getForkDetectionData(rskTag) {
+    return {
+        prefixHash: rskTag.substring(2, 42),
+        CPV: rskTag.substring(42, 56),
+        NU: parseInt("0x" + rskTag.substring(56, 58)),
+        BN: parseInt("0x" + rskTag.substring(58))
+    };
+}
+
+async function fakeMainchainBlock(rskBlockNumber) {
+    let blockInfoOriginal = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
+    let blockInfo = JSON.parse(JSON.stringify(blockInfoOriginal));
+    let prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
+    let rskHash = scrumbleHash(blockInfo.rskInfo.hash);
+    blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
+    blockInfo.rskInfo.hash = rskHash;
+    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfo);
+    return blockInfoOriginal;
+}
+
+async function swapMainchainBlockWithSibling(rskBlockNumber) {
+    let blockInfoMainchain = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
+    let blockInfoSibling = await getSiblingFromRsk(rskBlockNumber);
+    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfoSibling);
+    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, false, blockInfoMainchain);
+    return blockInfoMainchain;
+}
+
+async function MoveXBlocks(
+    btcApiRoute, initialHeight, blocksToMove,
+    apiPoolingTime, loadingTime) {
+    let c = 1;
+    await MockBtcApiChangeRoute(btcApiRoute);
+    await setHeightInMockBTCApi(initialHeight);
+    await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+    await setBlockAsLastChecked(initialHeight - 1);
+    await sleep(apiPoolingTime + loadingTime);
+    const blocksToAdvance = blocksToMove;
+    for (let i = 0; i < blocksToAdvance; i++) {
+        await getNextBlockInMockBTCApi(apiPoolingTime);
+    }
+    await sleep(loadingTime);
+}
+
+async function getBlockchainsAfterMovingXBlocks(
+    btcApiRoute, initialHeight, blocksToMove,
+    amountOfBlockchains, apiPoolingTime, loadingTime) {
+    await MoveXBlocks(btcApiRoute, initialHeight, blocksToMove, apiPoolingTime, loadingTime);
+    return blockchainsResponse = await getBlockchains(amountOfBlockchains);
+}
+
+async function getDBForksAfterMovingXBlocks(btcApiRoute, initialHeight, blocksToMove,
+    apiPoolingTime, loadingTime) {
+    await MoveXBlocks(btcApiRoute, initialHeight, blocksToMove, apiPoolingTime, loadingTime);
+    return await mongo_utils.findBlocks(mongo_utils.ArmadilloDB,mongo_utils.ArmadilloForks);
+}
+
+
+async function setBlockAsLastChecked(blockNumber) {
+    try {
+        const btcBlock = await getBtcApiBlockNumber(blockNumber);
+        await mongo_utils.updateLastCheckedBtcBlock(btcBlock);
+    }
+    catch (e) {
+        return;
     }
 }
-const host = config.rskd.url + ":" + config.rskd.rpcport;
-const context = {
-    headers: [
-        "Content-Type: application/json",
-        `Host: ${host}`,
-        "Accept: */*"
-    ],
-    httpversion: "	1.1"
-}
 
-function sleep(millis) {
-    return new Promise(resolve => setTimeout(resolve, millis));
-}
-
-const curlHttpVersions = {
-    "	1.0": Curl.http.VERSION_1_0,
-    "	1.1": Curl.http.VERSION_1_1,
-    "NONE": Curl.http.VERSION_NONE
-}
-
-var addLeadingZeros = (totalLength, s) => {
-    let lenS = s.toString(16).length;
-    for (lenS; lenS < totalLength; lenS++) {
-        s = "0" + s.toString(16);
-    }
-    return s;
-}
-
+////////////////////////////////
+//////// RSK Operations ////////
+////////////////////////////////
 async function promiseRequest(options, body) {
     return new Promise((resolve, reject) => {
         const curl = new Curl();
@@ -337,8 +427,8 @@ function rskJsonRpcRequestMiningModule(method, params, poolContext) {
 function getRskWork(poolContext) {
     return rskdPromiseRequest("mnr_getWork", [], poolContext);
 }
-
 let lastWork = null;
+
 async function prepareRskWork(poolContext, expectNewWork = false) {
     let work = JSON.parse(await getRskWork(poolContext)).result;
     while (expectNewWork && lastWork && (work.blockHashForMergedMining == lastWork.blockHashForMergedMining)) {
@@ -354,15 +444,6 @@ async function buildAndMergeMineBlock(poolContext, expectNewWork = false) {
     const rskwork = await prepareRskWork(poolContext, expectNewWork);
     const block = mineValidBlock(gbt, rskwork);
     return block;
-}
-
-//TODO: Remove from utils: Copied
-function validateMergeMinedBlockResponse(response) {
-    expect(response).to.have.property('id');
-    expect(response).to.have.property('result');
-    expect(response.result).to.have.property('blockImportedResult');
-    expect(response.result).to.have.property('blockHash');
-    expect(response.result).to.have.property('blockIncludedHeight');
 }
 
 async function mineBlockResponse(poolContext) {
@@ -383,13 +464,6 @@ async function mineBlockResponse(poolContext) {
 async function getLastRSKHeight(context) {
     let response = JSON.parse(await rskdPromiseRequest("eth_blockNumber", [], context));
     return parseInt(response.result);
-}
-
-async function setRskTagInBtcMockData(btcBlocksJSON, btcBlockNumber, rskHeight, context) {
-    const rskResponse = JSON.parse(await rskdPromiseRequest("eth_getBlockByNumber", ["0x" + rskHeight.toString(16), true], context));
-    const rskTag = rskResponse.result.hashForMergedMining;
-    btcBlocksJSON.raw[btcBlockNumber].coinbase.transaction.outputs[0].rskTag = rskTag;
-    return btcBlocksJSON;
 }
 
 async function getRskBlockByNumber(blockNumber, context) {
@@ -416,15 +490,6 @@ function getRskBlockHashOfSibling(blockArray) {
     }
 }
 
-function getForkDetectionData(rskTag) {
-    return {
-        prefixHash: rskTag.substring(2, 42),
-        CPV: rskTag.substring(42, 56),
-        NU: parseInt("0x" + rskTag.substring(56, 58)),
-        BN: parseInt("0x" + rskTag.substring(58))
-    };
-}
-
 async function getSiblingFromRsk(rskBlockNumber) {
     let blocksAtHeight = await getRskBlocksByNumber(rskBlockNumber, context)
     console.log("array de blocks");
@@ -446,8 +511,25 @@ async function getSiblingFromRsk(rskBlockNumber) {
         }
     };
 }
+//TODO: Review use
+async function setRskTagInBtcMockData(btcBlocksJSON, btcBlockNumber, rskHeight, context) {
+    const rskResponse = JSON.parse(await rskdPromiseRequest("eth_getBlockByNumber", ["0x" + rskHeight.toString(16), true], context));
+    const rskTag = rskResponse.result.hashForMergedMining;
+    btcBlocksJSON.raw[btcBlockNumber].coinbase.transaction.outputs[0].rskTag = rskTag;
+    return btcBlocksJSON;
+}
+///////////////////////////////////////
+//////// Validation Operations ////////
+///////////////////////////////////////
 
-//TODO: Remove from utils: Copied
+function validateMergeMinedBlockResponse(response) {
+    expect(response).to.have.property('id');
+    expect(response).to.have.property('result');
+    expect(response.result).to.have.property('blockImportedResult');
+    expect(response.result).to.have.property('blockHash');
+    expect(response.result).to.have.property('blockIncludedHeight');
+}
+
 async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainInFork, inForkedBlock) {
     if (!inForkedBlock && (mainchainInFork === undefined || mainchainInFork)) {
         let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
@@ -478,7 +560,6 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainI
     }
 }
 
-//TODO: Remove from utils: Copied
 async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap, mainchainInFork, controlBtcInfo) {
     if (!mainchainInFork && controlBtcInfo) {
         const shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
@@ -497,25 +578,61 @@ async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap,
     }
 }
 
-//TODO: Remove from utils: Copied
 async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
     let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
     let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
-    let mergeMiningHash = rskBlock.result.hashForMergedMining;
     expect(armadilloBlock.rskInfo.hash).to.be.equal(rskBlock.result.hash);
     expect(armadilloBlock.rskInfo.prevHash).to.be.equal(rskBlock.result.parentHash);
-    let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
-    expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
-    let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
-    expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
-    let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
-    expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
-    let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
-    expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
-
+    if (armadilloBlock.rskInfo.height === 1) {
+        expect(armadilloBlock.rskInfo.forkDetectionData).to.be.null;
+    } else {
+        let mergeMiningHash = rskBlock.result.hashForMergedMining;
+        let prefixHashFromRskBlock = mergeMiningHash.substring(2, 42);
+        expect(armadilloBlock.rskInfo.forkDetectionData.prefixHash).to.be.equal(prefixHashFromRskBlock);
+        let CPVFromRskBlock = mergeMiningHash.substring(42, 56);
+        expect(armadilloBlock.rskInfo.forkDetectionData.CPV).to.be.equal(CPVFromRskBlock);
+        let nbrUnclesFromRskBlock = parseInt("0x" + mergeMiningHash.substring(56, 58));
+        expect(armadilloBlock.rskInfo.forkDetectionData.NU).to.be.equal(nbrUnclesFromRskBlock);
+        let heightFromHashForMergeMiningRskBlock = parseInt("0x" + mergeMiningHash.substring(58));
+        expect(armadilloBlock.rskInfo.forkDetectionData.BN).to.be.equal(heightFromHashForMergeMiningRskBlock);
+    }
 }
 
-//TODO: Remove from utils: Copied
+function validateForkItemRskBlockMongoDB(forkItem) {
+    expect(forkItem.rskInfo.hash).to.be.equal("");
+    expect(forkItem.rskInfo.prevHash).to.be.equal("");
+    if (forkItem.rskInfo.height >= 448) {
+        expect(forkItem.rskInfo.forkDetectionData).to.be.an("object").that.is.not.empty;
+        expect(forkItem.rskInfo.forkDetectionData.prefixHash).to.be.not.null.and.not.to.equal("");
+        expect(forkItem.rskInfo.forkDetectionData.prefixHash.length).to.be.equal(40);
+        expect(forkItem.rskInfo.forkDetectionData.CPV).to.be.not.null.and.not.to.equal("");
+        expect(forkItem.rskInfo.forkDetectionData.CPV.length).to.be.equal(14);
+        expect(forkItem.rskInfo.forkDetectionData.NU).to.be.not.null.and.to.be.a("number");
+        expect(forkItem.rskInfo.forkDetectionData.BN).to.be.equal(armadilloBlock.rskInfo.height);
+    }
+}
+async function validateRskMainchainBlocksInForkMongoDB(fork) {
+    expect(fork).not.to.be.null;
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.endBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.startBlock });
+}
+
+async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {
+    await validateRskMainchainBlocksInForkMongoDB(fork);
+    expect(fork.items.length).to.be.equal(expectedAmountOfForkItems);
+    for (forkItemPos in fork.items) {
+        validateForkItemRskBlockMongoDB(fork.items[forkItemPos]);
+    }
+}
+
+async function validateForksRskBlockMongoDB(forks, forkItemsExpected) {
+    expect(forks.length).to.be.equal(forkItemsExpected.length);
+    for (forkPos in forks) {
+        validateForkRskBlockMongoDB(forks[forkPos], forkItemsExpected[forkPos]);
+    }
+}
+
+
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
         let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
@@ -534,59 +651,6 @@ async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btc
     }
 }
 
-function scrumbleHash(hash) {
-    let toReverse = hash;
-    const hasPrefix = hash.indexOf("0x") !== -1;
-    if (hasPrefix) {
-        toReverse = hash.substring(2);
-    }
-    let toReverseArray = toReverse.split("");
-    toReverseArray = toReverseArray.reverse();
-    toReverse = toReverseArray.join("");
-    if (hasPrefix) {
-        return "0x" + toReverse;
-    } else {
-        return toReverse;
-    }
-}
-
-async function fakeMainchainBlock(rskBlockNumber) {
-    let blockInfoOriginal = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
-    let blockInfo = JSON.parse(JSON.stringify(blockInfoOriginal));
-    let prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
-    let rskHash = scrumbleHash(blockInfo.rskInfo.hash);
-    blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
-    blockInfo.rskInfo.hash = rskHash;
-    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfo);
-    return blockInfoOriginal;
-}
-
-async function swapMainchainBlockWithSibling(rskBlockNumber) {
-    let blockInfoMainchain = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
-    let blockInfoSibling = await getSiblingFromRsk(rskBlockNumber);
-    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfoSibling);
-    await mongo_utils.updateOneMainchainBlock(rskBlockNumber, false, blockInfoMainchain);
-    return blockInfoMainchain;
-}
-
-async function getBlockchainsAfterMovingXBlocks(
-    btcApiRoute, initialHeight, blocksToMove,
-    amountOfBlockchains, apiPoolingTime, loadingTime) {
-    let c = 1;
-    await MockBtcApiChangeRoute(btcApiRoute);
-    await setHeightInMockBTCApi(initialHeight);
-    await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
-    await setBlockAsLastChecked(initialHeight - 1);
-    await sleep(apiPoolingTime + loadingTime);
-    const blocksToAdvance = blocksToMove;
-    for (let i = 0; i < blocksToAdvance; i++) {
-        await getNextBlockInMockBTCApi(apiPoolingTime);
-    }
-    await sleep(loadingTime);
-    return blockchainsResponse = await getBlockchains(amountOfBlockchains);
-}
-
-//TODO: Remove from utils: Copied
 async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMainchain, reOrgBlocks) {
     const mainchainResponse = await getBlockchains(nbrOfMainchainBlocksToFetch);
     const blocks = mainchainResponse.data.mainchain;
@@ -613,31 +677,19 @@ async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMa
     }
 }
 
-async function setBlockAsLastChecked(blockNumber) {
-    try {
-        const btcBlock = await getBtcApiBlockNumber(blockNumber);
-        await mongo_utils.updateLastCheckedBtcBlock(btcBlock);
-    }
-    catch (e) {
-        return;
-    }
-}
-
-//TODO: Remove from utils: Copied
 async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
     const blockchainForks = blockchainsResponse.data.forks;
     expect(lengthOfForks).not.to.be.null;
     const numberOfForksExpected = lengthOfForks.length;
     expect(blockchainsResponse.data).to.be.an('object').that.is.not.empty;
-    const lastForks = lastForksResponse.data;
+    // const lastForks = lastForksResponse.data;
     expect(blockchainForks).to.be.an('array').that.is.not.empty;
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
-    expect(lastForks).to.be.an('array').that.is.not.empty;
-    expect(lastForks.length).to.be.equal(numberOfForksExpected);
+    // expect(lastForks).to.be.an('array').that.is.not.empty;
+    // expect(lastForks.length).to.be.equal(numberOfForksExpected);
     for (forkPos in blockchainForks) {
         const fork = blockchainForks[forkPos];
         expect(fork.length).to.be.equal(lengthOfForks[forkPos] + 2);
-
         for (pos in fork) {
             expect(fork[pos]).not.to.be.null;//
             fork[pos].src = "blockchains";
@@ -661,22 +713,24 @@ module.exports = {
     getMainchainBlocks,
     getNextBlockInMockBTCApi,
     setHeightInMockBTCApi,
-    validateRskBlockNodeVsArmadilloMonitor,
-    validateBtcBlockNodeVsArmadilloMonitor,
-    validateRskBlockNodeVsArmadilloMonitorMongoDB,
-    validateBtcBlockNodeVsArmadilloMonitorMongoDB,
     getBlockByHashInMockBTCApi,
     getForksFromHeight,
     getBlockchains,
     getBlockchainsAfterMovingXBlocks,
-    validateForksCreated,
+    getDBForksAfterMovingXBlocks,
     rskBlockHeightsWithBtcBlock,
-    validateMainchain,
     setBlockAsLastChecked,
     apiPoolingTime,
     timeoutTests,
     loadingTime,
     context,
     fakeMainchainBlock,
-    swapMainchainBlockWithSibling
+    swapMainchainBlockWithSibling,
+    validateForksCreated,
+    validateMainchain,    
+    validateRskBlockNodeVsArmadilloMonitor,
+    validateBtcBlockNodeVsArmadilloMonitor,
+    validateRskBlockNodeVsArmadilloMonitorMongoDB,
+    validateBtcBlockNodeVsArmadilloMonitorMongoDB,
+    validateForksRskBlockMongoDB
 }
