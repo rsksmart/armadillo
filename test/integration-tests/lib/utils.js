@@ -9,8 +9,8 @@ const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
 const mongo_utils = require("./mongo-utils");
 const timeoutTests = 5 * 60 * 1000;//5 minutes
-const apiPoolingTime = 1500;
-const loadingTime = 1000;
+const apiPoolingTime = 200;
+const loadingTime = 500;
 
 const mapRskMatch = {
     "3": 450,
@@ -356,6 +356,7 @@ async function buildAndMergeMineBlock(poolContext, expectNewWork = false) {
     return block;
 }
 
+//TODO: Remove from utils: Copied
 function validateMergeMinedBlockResponse(response) {
     expect(response).to.have.property('id');
     expect(response).to.have.property('result');
@@ -391,10 +392,62 @@ async function setRskTagInBtcMockData(btcBlocksJSON, btcBlockNumber, rskHeight, 
     return btcBlocksJSON;
 }
 
-function getRskBlockByNumber(blockNumber, context) {
-    return rskdPromiseRequest("eth_getBlockByNumber", [blockNumber, true], context);
+async function getRskBlockByNumber(blockNumber, context) {
+    return rskdPromiseRequest("eth_getBlockByNumber", [blockNumber, false], context);
 }
 
+async function getRskBlockByHash(blockNumber, context) {
+    let response = await rskdPromiseRequest("eth_getBlockByHash", [blockNumber, false], context);
+    let responseJson = JSON.parse(response);
+    return responseJson.result;
+}
+
+async function getRskBlocksByNumber(blockNumber, context) {
+    let response = await rskdPromiseRequest("eth_getBlocksByNumber", [blockNumber], context);
+    let responseJson = JSON.parse(response);
+    return responseJson.result;
+}
+
+function getRskBlockHashOfSibling(blockArray) {
+    for (let block in blockArray) {
+        if (blockArray[block].inMainChain === false) {
+            return blockArray[block].hash;
+        }
+    }
+}
+
+function getForkDetectionData(rskTag) {
+    return {
+        prefixHash: rskTag.substring(2, 42),
+        CPV: rskTag.substring(42, 56),
+        NU: parseInt("0x" + rskTag.substring(56, 58)),
+        BN: parseInt("0x" + rskTag.substring(58))
+    };
+}
+
+async function getSiblingFromRsk(rskBlockNumber) {
+    let blocksAtHeight = await getRskBlocksByNumber(rskBlockNumber, context)
+    console.log("array de blocks");
+    console.log(blocksAtHeight);
+    let siblingHash = getRskBlockHashOfSibling(blocksAtHeight);
+    console.log(siblingHash);
+    let block = await getRskBlockByHash(siblingHash, context);
+
+    console.log("BLOCK --------")
+    console.log(block);
+    return {
+        btcInfo: null,
+        rskInfo: {
+            height: block.number,
+            hash: block.hash,
+            forkDetectionData: getForkDetectionData(block.hashForMergedMining),
+            prevHash: block.parentHash,
+            mainchain: false
+        }
+    };
+}
+
+//TODO: Remove from utils: Copied
 async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainInFork, inForkedBlock) {
     if (!inForkedBlock && (mainchainInFork === undefined || mainchainInFork)) {
         let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
@@ -425,6 +478,7 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainI
     }
 }
 
+//TODO: Remove from utils: Copied
 async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap, mainchainInFork, controlBtcInfo) {
     if (!mainchainInFork && controlBtcInfo) {
         const shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
@@ -443,6 +497,7 @@ async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap,
     }
 }
 
+//TODO: Remove from utils: Copied
 async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
     let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
     let rskBlock = JSON.parse(await getRskBlockByNumber(height, context));
@@ -460,6 +515,7 @@ async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
 
 }
 
+//TODO: Remove from utils: Copied
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
         let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
@@ -507,10 +563,10 @@ async function fakeMainchainBlock(rskBlockNumber) {
 
 async function swapMainchainBlockWithSibling(rskBlockNumber) {
     let blockInfoMainchain = await mongo_utils.findOneMainchainBlock(rskBlockNumber, true);
-    let blockInfoSibling = await mongo_utils.findOneMainchainBlock(rskBlockNumber, false);
+    let blockInfoSibling = await getSiblingFromRsk(rskBlockNumber);
     await mongo_utils.updateOneMainchainBlock(rskBlockNumber, true, blockInfoSibling);
     await mongo_utils.updateOneMainchainBlock(rskBlockNumber, false, blockInfoMainchain);
-    return blockInfoSibling;
+    return blockInfoMainchain;
 }
 
 async function getBlockchainsAfterMovingXBlocks(
@@ -530,6 +586,7 @@ async function getBlockchainsAfterMovingXBlocks(
     return blockchainsResponse = await getBlockchains(amountOfBlockchains);
 }
 
+//TODO: Remove from utils: Copied
 async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExpectedMainchain, reOrgBlocks) {
     const mainchainResponse = await getBlockchains(nbrOfMainchainBlocksToFetch);
     const blocks = mainchainResponse.data.mainchain;
@@ -566,6 +623,7 @@ async function setBlockAsLastChecked(blockNumber) {
     }
 }
 
+//TODO: Remove from utils: Copied
 async function validateForksCreated(blockchainsResponse, lastForksResponse, _numberOfForksExpected, rskTagsMap, expectedMainchainBlocks, lengthOfForks) {
     const blockchainForks = blockchainsResponse.data.forks;
     expect(lengthOfForks).not.to.be.null;
@@ -619,5 +677,6 @@ module.exports = {
     timeoutTests,
     loadingTime,
     context,
-    fakeMainchainBlock
+    fakeMainchainBlock,
+    swapMainchainBlockWithSibling
 }
