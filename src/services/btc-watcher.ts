@@ -97,4 +97,10 @@ export class BtcWatcher extends EventEmitter {
         await this.btcService.save(block);
         this.prevBlockProcessed = true;
     }
+
+    public async blockProcessingFailed(block: BtcBlock) {
+        this.logger.info("Waiting a couple of seconds to discart a network failure, height BTC issue is:", block.btcInfo.height);
+        await sleep(5000);
+        this.prevBlockProcessed = true;
+    }
 }

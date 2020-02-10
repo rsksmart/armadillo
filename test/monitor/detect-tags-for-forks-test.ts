@@ -177,7 +177,7 @@ describe('Forks branch tests', () => {
       let branchExpected = new Branch(rangeForkInMainchain, [item2])
 
       let getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
-      getBlocksByNumber.returns([]);
+      getBlocksByNumber.returns([rskBestBlock]);
 
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBestBlock);
@@ -210,7 +210,7 @@ describe('Forks branch tests', () => {
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1]);
      
       let getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
-      getBlocksByNumber.returns([]);
+      getBlocksByNumber.returns([rskBlockFork1]);
       
       let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
       getBestBlock.returns(rskBlock111);
