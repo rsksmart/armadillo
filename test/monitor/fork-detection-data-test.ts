@@ -153,11 +153,6 @@ describe("Overlap CPV", () => {
     expect(posibleBranches[0].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData);
     expect(posibleBranches[0].getLastDetected().rskInfo.forkDetectionData).to.equal(forkData);
   });
-
-  it("TEst nuevo", async () => {
-    var data1 = new ForkDetectionData("0x" + PREFIX + "a1b2fe878ad3e3" + NU + BN)
-    const data = data1.getNumberOfOverlapInCPV("c746fe878ad3e3");
-  });
 });
 
 describe('Detection data equals', () => {

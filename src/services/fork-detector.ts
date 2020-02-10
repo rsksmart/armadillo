@@ -66,6 +66,7 @@ export class ForkDetector {
         // }
 
         let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
+
         let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
 
         if (rskBlockMatchInHeight) {
@@ -86,7 +87,12 @@ export class ForkDetector {
                 this.logger.info("FORK: found a block in the future");
                 blockInRskThatIsTheMaximumPosibleHeight = rskBestBlock;
             } else {
+                
                 blockInRskThatIsTheMaximumPosibleHeight = this.getBestBlock(rskBlocksAtNewRskTagHeight);
+
+                if(rskBlocksAtNewRskTagHeight.length === 0 || blockInRskThatIsTheMaximumPosibleHeight == null){
+                    return await this.btcWatcher.blockProcessingFailed(newBtcBlock);
+                }
             }
 
             await this.addOrCreateBranch(newBtcBlock, blockInRskThatIsTheMaximumPosibleHeight);
