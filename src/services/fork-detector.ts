@@ -66,6 +66,11 @@ export class ForkDetector {
         // }
 
         let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
+
+        if(rskBlocksAtNewRskTagHeight.length === 0){
+            return await  this.btcWatcher.blockProcessingFailed(newBtcBlock);
+        }
+
         let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
 
         if (rskBlockMatchInHeight) {
