@@ -327,7 +327,7 @@ function rskdPromiseRequest(method, params, poolContext) {
     }
     const postBody = JSON.stringify(body);
 
-    const headers = poolContext.headers.slice(0); // copy array
+    const headers = poolContext.headers.slice(0);
     headers.push("Content-Length: " + postBody.length);
     const options = {
         host: config.rskd.url,
@@ -686,11 +686,8 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, _num
     expect(lengthOfForks).not.to.be.null;
     const numberOfForksExpected = lengthOfForks.length;
     expect(blockchainsResponse.data).to.be.an('object').that.is.not.empty;
-    // const lastForks = lastForksResponse.data;
     expect(blockchainForks).to.be.an('array').that.is.not.empty;
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
-    // expect(lastForks).to.be.an('array').that.is.not.empty;
-    // expect(lastForks.length).to.be.equal(numberOfForksExpected);
     for (forkPos in blockchainForks) {
         const fork = blockchainForks[forkPos];
         expect(fork.length).to.be.equal(lengthOfForks[forkPos] + 2);
