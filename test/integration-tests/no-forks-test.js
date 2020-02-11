@@ -79,12 +79,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const mongoBlocks = await mongo_utils.findBlocks(db, mainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        expect(mongoBlocks).to.be.an('array').that.is.not.empty;
-        expect(mongoBlocks.length).to.be.equal(21);
-        for (let block in mongoBlocks) {
-            await utils.validateRskBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block]);
-            await utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
-        }
+        await utils.validateMainchainRskMongoDB(mongoBlocks, 21);
 
     }).timeout(timeoutTests);
     it("should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation", async () => {
@@ -133,12 +128,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const mongoBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        expect(mongoBlocks).to.be.an('array').that.is.not.empty;
-        expect(mongoBlocks.length).to.be.equal(41);
-        for (let block in mongoBlocks) {
-            utils.validateRskBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block]);
-            utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
-        }
+        await utils.validateMainchainRskMongoDB(mongoBlocks, 41);
     }).timeout(timeoutTests);
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo output validation", async () => {
         await mongo_utils.DeleteDB(db);
@@ -184,12 +174,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         const mongoBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
         //Reset to original height
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);
-        expect(mongoBlocks).to.be.an('array').that.is.not.empty;
-        expect(mongoBlocks.length).to.be.equal(81);
-        for (let block in mongoBlocks) {
-            utils.validateRskBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block]);
-            utils.validateBtcBlockNodeVsArmadilloMonitorMongoDB(mongoBlocks[block], rskBlockHeightsWithBtcBlock);
-        }
+        await utils.validateMainchainRskMongoDB(mongoBlocks, 81);
     }).timeout(timeoutTests);
 
     it("should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation", async () => {
@@ -225,8 +210,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.validateMainchain(100, 11);
     }).timeout(timeoutTests);
 
-    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, "
-    +"a reorganization of lenght 1 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end", async () => {
+    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, a reorganization of lenght 1 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
@@ -246,8 +230,7 @@ describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
         await utils.validateMainchain(100, 41, reorgBlocks);
     }).timeout(timeoutTests);
 
-    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, "
-    +"a reorganization of lenght 3 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end", async () => {
+    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, a reorganization of lenght 3 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
