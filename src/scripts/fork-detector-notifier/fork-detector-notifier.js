@@ -57,10 +57,10 @@ async function sendAlert(data) {
     let transport = nodemailer.createTransport(options);
 
     let info = await transport.sendMail({
-        from: 'notifications.mining@iovlabs.org',
+        from: config.sender,
         to: config.recipients,
         subject: '[Armadillo Notifications] Forks detected',
-        text: JSON.stringify(data.forks)
+        text: JSON.stringify(data.forks, 0, 2)
     });
 
     logger.info(`Sent message: ${info.messageId}`)
