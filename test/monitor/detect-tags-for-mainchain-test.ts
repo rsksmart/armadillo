@@ -77,27 +77,6 @@ describe('Mainchain test', () => {
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
 
-    it("Connect item in mainchain is not posibble because top hash item doesn't match with coming prevHash", async () => {
-      const partTag: string = PREFIX + CPV + NU;
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true,  new ForkDetectionData(partTag + "00000001"));
-      const rskBlock2 = new RskBlock(2, "hash2", "hash", true,  new ForkDetectionData(partTag + "00000002"));
-
-      sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock2]);
-      sinon.stub(rskService, <any>'getBlock').returns(rskBlock1);
-      sinon.stub(mainchainService, <any>'getBestBlock').returns(new BranchItem(btcBlockInMainchain.btcInfo, rskBlock1));
-      sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock2);
-      var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
-
-      var blockSuccessfullyProcessed = sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
-      var newBtcBLock = new BtcBlock(10, "btcHash", partTag + "00000002");
-      await forkDetector.onNewBlock(newBtcBLock);
-
-      //Validations
-      sleep(100);
-      expect(blockSuccessfullyProcessed.called).to.be.false;
-      expect(saveMainchain.called).to.be.false;
-    });
-
     it("Connect item in mainchain, now mainchain has 2 blocks", async () => {
       const partTag: string = PREFIX + CPV + NU;
       const rskBlock1 = new RskBlock(1, "hash1", "hash0", true,  new ForkDetectionData(partTag + "00000001"));
