@@ -277,7 +277,7 @@ async function getBlockchainsAfterMovingXBlocks(
 async function getDBForksAfterMovingXBlocks(btcApiRoute, initialHeight, blocksToMove,
     apiPoolingTime, loadingTime) {
     await MoveXBlocks(btcApiRoute, initialHeight, blocksToMove, apiPoolingTime, loadingTime);
-    return await mongo_utils.findBlocks(mongo_utils.ArmadilloDB,mongo_utils.ArmadilloForks);
+    return await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloForks);
 }
 
 
@@ -492,14 +492,8 @@ function getRskBlockHashOfSibling(blockArray) {
 
 async function getSiblingFromRsk(rskBlockNumber) {
     let blocksAtHeight = await getRskBlocksByNumber(rskBlockNumber, context)
-    console.log("array de blocks");
-    console.log(blocksAtHeight);
     let siblingHash = getRskBlockHashOfSibling(blocksAtHeight);
-    console.log(siblingHash);
     let block = await getRskBlockByHash(siblingHash, context);
-
-    console.log("BLOCK --------")
-    console.log(block);
     return {
         btcInfo: null,
         rskInfo: {
@@ -607,31 +601,41 @@ function validateForkItemRskBlockMongoDB(forkItem) {
         expect(forkItem.rskInfo.forkDetectionData.prefixHash.length).to.be.equal(40);
         expect(forkItem.rskInfo.forkDetectionData.CPV).to.be.not.null.and.not.to.equal("");
         expect(forkItem.rskInfo.forkDetectionData.CPV.length).to.be.equal(14);
-        expect(forkItem.rskInfo.forkDetectionData.NU).to.be.not.null.and.to.be.a("number");
-        expect(forkItem.rskInfo.forkDetectionData.BN).to.be.equal(armadilloBlock.rskInfo.height);
+        expect(forkItem.rskInfo.forkDetectionData.NU).to.be.not.null;
+        expect(forkItem.rskInfo.forkDetectionData.NU).to.be.a("number");
+        expect(forkItem.rskInfo.forkDetectionData.BN).to.be.equal(forkItem.rskInfo.height);
     }
 }
 async function validateRskMainchainBlocksInForkMongoDB(fork) {
     expect(fork).not.to.be.null;
-    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.endBlock });
-    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.startBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeForkCouldHaveStarted.endBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeForkCouldHaveStarted.startBlock });
 }
 
 async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {
     await validateRskMainchainBlocksInForkMongoDB(fork);
     expect(fork.items.length).to.be.equal(expectedAmountOfForkItems);
     for (forkItemPos in fork.items) {
-        validateForkItemRskBlockMongoDB(fork.items[forkItemPos]);
+        await validateForkItemRskBlockMongoDB(fork.items[forkItemPos]);
     }
 }
 
 async function validateForksRskBlockMongoDB(forks, forkItemsExpected) {
     expect(forks.length).to.be.equal(forkItemsExpected.length);
     for (forkPos in forks) {
-        validateForkRskBlockMongoDB(forks[forkPos], forkItemsExpected[forkPos]);
+        await validateForkRskBlockMongoDB(forks[forkPos], forkItemsExpected[forkPos]);
     }
 }
 
+async function validateMainchainRskMongoDB(mainchain, expectedLength) {
+
+    expect(mainchain).to.be.an('array').that.is.not.empty;
+    expect(mainchain.length).to.be.equal(expectedLength);
+    for (let block in mainchain) {
+        await validateRskBlockNodeVsArmadilloMonitorMongoDB(mainchain[block]);
+        await validateBtcBlockNodeVsArmadilloMonitorMongoDB(mainchain[block], rskBlockHeightsWithBtcBlock());
+    }
+}
 
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
@@ -727,10 +731,11 @@ module.exports = {
     fakeMainchainBlock,
     swapMainchainBlockWithSibling,
     validateForksCreated,
-    validateMainchain,    
+    validateMainchain,
     validateRskBlockNodeVsArmadilloMonitor,
     validateBtcBlockNodeVsArmadilloMonitor,
     validateRskBlockNodeVsArmadilloMonitorMongoDB,
     validateBtcBlockNodeVsArmadilloMonitorMongoDB,
-    validateForksRskBlockMongoDB
+    validateForksRskBlockMongoDB,
+    validateMainchainRskMongoDB
 }
