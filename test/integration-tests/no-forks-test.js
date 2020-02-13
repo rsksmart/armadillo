@@ -20,7 +20,7 @@ const consecutive2RskBlocks = "testInput_consecutive2RSKtags.json";
 const consecutive3RskBlocks = "testInput_consecutive3RSKtags.json";
 const jump3BtcBlocksToRskBlocks = "testInput_RskJumpOf3btcBlocks.json";
 const timeoutTests = utils.timeoutTests;
-describe("Tests for mainchain only BTC RSK interaction, no forks", () => {
+describe("RSK no forks tests", () => {
     it("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfNoRskTags);

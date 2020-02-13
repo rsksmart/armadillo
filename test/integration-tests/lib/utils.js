@@ -10,7 +10,7 @@ const fetch = require("node-fetch");
 const mongo_utils = require("./mongo-utils");
 const timeoutTests = 5 * 60 * 1000;//5 minutes
 const apiPoolingTime = 200;
-const loadingTime = 500;
+const loadingTime = 800;
 const config = {
     "rskd": {
         "url": "localhost",
@@ -39,6 +39,8 @@ const curlHttpVersions = {
     "	1.1": Curl.http.VERSION_1_1,
     "NONE": Curl.http.VERSION_NONE
 }
+//This arrays must match the same from btc-api-mocker
+//TODO: source both projects from the same dataset
 const mapRskMatch = {
     "3": 450,
     "4": 470,
@@ -64,11 +66,11 @@ const mapRskMatch = {
     "118": 7415,
     "119": 7435,
     "129": 7490,
-    "130": 7510,
-    "131": 7382,
-    "133": 7384,
-    "134": 7519,
-    "135": 7654
+    "131": 7372,
+    "133": 7374,
+    "135": 7489,
+    "137": 6470,
+    "140": 6530
 };
 
 const mapRskNoMatchMatchCPV = {
@@ -99,7 +101,6 @@ const mapRskNoMatchMatchCPV = {
     "70": 5093,
     "78": 5728,
     "84": 6744,
-    "84": 6744,
     "93": 7264,
     "94": 7284,
     "96": 7299,
@@ -107,8 +108,7 @@ const mapRskNoMatchMatchCPV = {
     "104": 7320,
     "110": 7365,
     "116": 7375,
-    "124": 7425,
-    "132": 7512
+    "124": 7425
 };
 
 const mapRskNoMatchNoMatchCPV2B = {
@@ -117,8 +117,7 @@ const mapRskNoMatchNoMatchCPV2B = {
     "73": 5102,
     "75": 5108,
     "117": 7395,
-    "127": 7440,
-    "132": 7512
+    "127": 7440
 };
 
 const mapRskNoMatchNoMatchCPV7B = {
@@ -163,6 +162,18 @@ function scrumbleHash(hash) {
     } else {
         return toReverse;
     }
+}
+
+function filterObject(object, start, end) {
+    let returnObject = {};
+    let keys = Object.keys(object);
+    for (k in keys) {
+        let key = parseInt(keys[k]);
+        if (key >= start && key <= end) {
+            returnObject[key] = object[key];
+        }
+    }
+    return returnObject;
 }
 
 ///////////////////////////////////////////
@@ -262,9 +273,9 @@ async function MoveXBlocks(
     await sleep(apiPoolingTime + loadingTime);
     const blocksToAdvance = blocksToMove;
     for (let i = 0; i < blocksToAdvance; i++) {
-        await getNextBlockInMockBTCApi(apiPoolingTime);
+        await getNextBlockInMockBTCApi(apiPoolingTime + loadingTime);
     }
-    await sleep(loadingTime);
+    await sleep(loadingTime*2);
 }
 
 async function getBlockchainsAfterMovingXBlocks(
@@ -627,19 +638,24 @@ async function validateForksRskBlockMongoDB(forks, forkItemsExpected) {
     }
 }
 
-async function validateMainchainRskMongoDB(mainchain, expectedLength) {
+async function validateMainchainRskMongoDB(mainchain, expectedLength, btcStart, btcEnd) {
 
     expect(mainchain).to.be.an('array').that.is.not.empty;
     expect(mainchain.length).to.be.equal(expectedLength);
+    let rskBlockHeightsWithBtc = rskBlockHeightsWithBtcBlock();
+    if (btcStart && btcEnd) {
+        rskBlockHeightsWithBtc = filterObject(rskBlockHeightsWithBtc, btcStart, btcEnd);
+    }
     for (let block in mainchain) {
         await validateRskBlockNodeVsArmadilloMonitorMongoDB(mainchain[block]);
-        await validateBtcBlockNodeVsArmadilloMonitorMongoDB(mainchain[block], rskBlockHeightsWithBtcBlock());
+        await validateBtcBlockNodeVsArmadilloMonitorMongoDB(mainchain[block], rskBlockHeightsWithBtc);
     }
 }
 
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
         let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
+        
         if (!shouldHaveBtcInfo) {
             expect(armadilloBlock.btcInfo).to.be.null;
         }
