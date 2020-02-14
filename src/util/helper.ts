@@ -1,3 +1,4 @@
+import retry from 'async-await-retry';
 
 export const checkTag = (value: string) => {
     value = String(value).toLowerCase();
@@ -32,8 +33,11 @@ export const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
 export const copy = (object: any) => {
     return JSON.parse(JSON.stringify(object));
+}
+
+export const retry3Times = async (func, params = null) => {
+    return retry(func, params, {retriesMax: 3, interval: 2000, exponential: false});
 }
   
