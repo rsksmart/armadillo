@@ -14,14 +14,17 @@ async function start(){
     logger.info('Starting...')
 
     while (true) {
-        var data = await getCurrentMainchain();
+        var response = await getCurrentMainchain();
 
-        if (!data.ok){
-            logger.error(`Failed to check for forks. Error: ${data.error}`)
+        if (!response.ok){
+            logger.error(`Failed to check for forks. Error: ${response.error}`)
         } else {
-            if (shouldNotify(data)) {
+            const forks = response.data.forks;
+
+            if (shouldNotify(forks)) {
                 logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
-                await sendAlert(data.data);
+
+                await sendAlert(forks);
             }
         }
 
@@ -29,9 +32,8 @@ async function start(){
     }
 }
 
-function shouldNotify(data) {
-    return  (data.data.forks != null && data.data.forks.length > 0) &&
-            (data.data.forks.some(x => x.length > 3));
+function shouldNotify(forks) {
+    return (forks != null && forks.length > 0) && (forks.some(x => x.length > 3));
 }
 
 function sleep(ms) {
@@ -48,7 +50,7 @@ async function getCurrentMainchain() {
         });
 }
 
-async function sendAlert(data) {
+async function sendAlert(forks) {
     const options = {
         host: config.server,
         auth: {
@@ -63,7 +65,7 @@ async function sendAlert(data) {
         from: config.sender,
         to: config.recipients,
         subject: '[Armadillo Notifications] Forks detected',
-        text: JSON.stringify(data.forks, 0, 2)
+        text: JSON.stringify(forks, 0, 2)
     });
 
     logger.info(`Sent message: ${info.messageId}`)
