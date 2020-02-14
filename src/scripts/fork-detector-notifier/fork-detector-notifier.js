@@ -8,6 +8,8 @@ const INTERVAL = config.pollIntervalMs;
 configure('./log-config.json')
 const logger = getLogger('fork-detector');
 
+let lastContent = '';
+
 start();
 
 async function start(){
@@ -24,7 +26,7 @@ async function start(){
             if (shouldNotify(forks)) {
                 logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
 
-                await sendAlert(forks);
+                await sendAlert(formatForks(forks));
             }
         }
 
@@ -33,7 +35,13 @@ async function start(){
 }
 
 function shouldNotify(forks) {
-    return (forks != null && forks.length > 0) && (forks.some(x => x.length > 3));
+    return  (forks != null && forks.length > 0) &&
+            (forks.some(x => x.length > 3)) &&
+            (lastContent != formatForks(forks))
+}
+
+function formatForks(forks) {
+    return JSON.stringify(forks, 0, 2)
 }
 
 function sleep(ms) {
@@ -50,7 +58,7 @@ async function getCurrentMainchain() {
         });
 }
 
-async function sendAlert(forks) {
+async function sendAlert(content) {
     const options = {
         host: config.server,
         auth: {
@@ -65,8 +73,10 @@ async function sendAlert(forks) {
         from: config.sender,
         to: config.recipients,
         subject: '[Armadillo Notifications] Forks detected',
-        text: JSON.stringify(forks, 0, 2)
+        text: content
     });
+
+    lastContent = content;
 
     logger.info(`Sent message: ${info.messageId}`)
 }
