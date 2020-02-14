@@ -19,16 +19,19 @@ async function start(){
         if (!data.ok){
             logger.error(`Failed to check for forks. Error: ${data.error}`)
         } else {
-            if(data.data.forks != null && data.data.forks.length > 0 ){
-                if(data.data.forks.some(x => x.length > 3)){
-                    logger.info("New forks!!!");
-                    await sendAlert(data.data);
-                }
+            if (shouldNotify(data)) {
+                logger.info("New forks!!!");
+                await sendAlert(data.data);
             }
         }
 
         await sleep(INTERVAL);
     }
+}
+
+function shouldNotify(data) {
+    return  (data.data.forks != null && data.data.forks.length > 0) &&
+            (data.data.forks.some(x => x.length > 3));
 }
 
 function sleep(ms) {
