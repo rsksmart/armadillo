@@ -5,6 +5,7 @@
     "sender": "sender@example.com",
     "recipients": ["address1@example.com", "address2@example.com"],
     "armadilloUrl": "armadillo.url",
-    "chainDepth": 50,
-    "pollIntervalMs": 60000
+    "chainDepth": 72,
+    "pollIntervalMs": 60000,
+    "minForkLength": 4
 }

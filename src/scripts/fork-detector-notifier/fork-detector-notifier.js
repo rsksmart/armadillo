@@ -4,6 +4,7 @@ const config = require('./config.json');
 const { getLogger, configure } = require('log4js');
 
 const INTERVAL = config.pollIntervalMs;
+const MIN_LENGTH = config.minForkLength;
 
 configure('./log-config.json')
 const logger = getLogger('fork-detector');
@@ -21,12 +22,13 @@ async function start(){
         if (!response.ok){
             logger.error(`Failed to check for forks. Error: ${response.error}`)
         } else {
-            const forks = response.data.forks;
+            const forks = response.data.forks || [];
+            const consideredForks = forks.filter(f => f.length >= MIN_LENGTH)
 
-            if (shouldNotify(forks)) {
+            if (shouldNotify(consideredForks)) {
                 logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
 
-                await sendAlert(formatForks(forks));
+                await sendAlert(formatForks(consideredForks));
             }
         }
 
