@@ -20,7 +20,7 @@ async function start(){
             logger.error(`Failed to check for forks. Error: ${data.error}`)
         } else {
             if (shouldNotify(data)) {
-                logger.info("New forks!!!");
+                logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
                 await sendAlert(data.data);
             }
         }
