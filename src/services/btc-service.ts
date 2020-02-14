@@ -1,7 +1,5 @@
 import { MongoStore } from '../storage/mongo-store';
-import { BtcBlock } from '../common/btc-block';
 import BaseService from './base-service';
-import { sleep } from '../util/helper';
 
 export class BtcService extends BaseService {
     constructor(store: MongoStore) {

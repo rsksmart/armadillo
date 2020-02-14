@@ -3,6 +3,8 @@ import { RskBlock } from "../common/rsk-block";
 import Nod3 from 'nod3';
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { RangeForkInMainchain } from "../common/branch";
+import { retry3Times } from "../util/helper";
+ import retry from 'async-await-retry';
 
 export class RskApiService {
     private config: RskApiConfig;
@@ -21,7 +23,7 @@ export class RskApiService {
         var blocks: RskBlock[] = [];
 
         for (const blockInfo of blocksInfo) {
-            var block = await this.nod3.eth.getBlock(blockInfo.hash);
+            var block = await retry3Times(this.nod3.eth.getBlock, [blockInfo.hash]);
             blocks.push(new RskBlock(block.number, block.hash, block.parentHash, blockInfo.inMainChain, new ForkDetectionData(block.hashForMergedMining)));
         }
 
@@ -29,17 +31,17 @@ export class RskApiService {
     }
 
     public async getBestBlock(): Promise<RskBlock> {
-        let number: number = await this.nod3.eth.blockNumber();
-        let block = await this.nod3.eth.getBlock(number);
+        let number: number = await retry3Times(this.nod3.eth.blockNumber);
+        let block = await retry3Times(this.nod3.eth.getBlock, [number]);
         return new RskBlock(block.number, block.hash, block.parentHash, true, new ForkDetectionData(block.hashForMergedMining));
     }
 
     public async getBestBlockHeight(): Promise<number> {
-        return await this.nod3.eth.blockNumber();
+        return await retry3Times(this.nod3.eth.blockNumber);
     }
 
     public async getBlock(height: number): Promise<RskBlock> {
-        let block = await this.nod3.eth.getBlock(height);
+        let block = await retry3Times(this.nod3.eth.getBlock, [height]);
         return new RskBlock(block.number, block.hash, block.parentHash, true, new ForkDetectionData(block.hashForMergedMining));
     }
 
