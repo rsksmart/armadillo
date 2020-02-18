@@ -22,14 +22,7 @@ export class BlockchainController {
     this.branchService = branchService;
   }
 
-  public async getLastBlocksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
-    let n: number = parseInt(req.params.n);
-
-    if (n > 5000) {
-      // 5000 is the maximum of data to return
-      n = 5000;
-    }
-
+  private async getBlockchain(n : number){
     var mainchain : BranchItem[] = await this.mainchainService.getLastBtcBlocksDetectedInChain(n);
 
     let heightToGetForksFrom = 0;
@@ -41,11 +34,43 @@ export class BlockchainController {
     let forksBranches = await this.branchService.getForksDetected(heightToGetForksFrom);
     var forks: BranchItem[][] = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
 
+    return new BlockchainHistory(mainchain, forks);
+  }
+
+  public async getLastBlocksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
+    let n: number = parseInt(req.params.n);
+
+    if (n > 5000) {
+      // 5000 is the maximum of data to return
+      n = 5000;
+    }
+
+    var data = await this.getBlockchain(n);
+
     return res.status(200).send(
       new MessageResponse(
-        `Get mainchain and forks in the last ${n} blocks`,
+        `Get mainchain and forks in the last ${n} BTC blocks`,
         true,
-        new BlockchainHistory(mainchain, forks)
+        data
+      )
+    );
+  }
+
+  public async getLastForksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
+    let n: number = parseInt(req.params.n);
+
+    if (n > 5000) {
+      // 5000 is the maximum of data to return
+      n = 5000;
+    }
+
+    var data = await this.getBlockchain(n);
+
+    return res.status(200).send(
+      new MessageResponse(
+        `Get forks in the last ${n} BTC blocks`,
+        true,
+        data.forks
       )
     );
   }

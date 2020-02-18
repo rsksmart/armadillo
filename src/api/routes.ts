@@ -15,7 +15,7 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         const blockchainsController: BlockchainController = new BlockchainController(mainchainService, branchService);
 
         //Forks routers
-        router.get('/forks/getLastForks/:n', branchController.getForksDetected.bind(branchController));
+        router.get('/forks/getLastForks/:n', blockchainsController.getLastForksInChain.bind(blockchainsController));
 
         //Mainchain routers
         router.get('/mainchain/getLastBlocks/:n', mainchainController.getLastBlocks.bind(mainchainController));
@@ -24,7 +24,7 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         router.get('/blockchains/:n', blockchainsController.getLastBlocksInChain.bind(blockchainsController));
 
         //For testing 
-        if (true) {
+        if (false) {
                 router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
                 router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
                 router.get('/forks/removeAll', branchController.removeAll.bind(branchController));
