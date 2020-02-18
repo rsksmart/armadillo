@@ -74,6 +74,6 @@ describe("Blockchain api tests", () => {
     let param = { "params": { "n": 6000 }};
 
     let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
-    expect("Get mainchain and forks in the last 5000 blocks").to.deep.equal(response.message);
+    expect("Get mainchain and forks in the last 5000 BTC blocks").to.deep.equal(response.message);
   });
 });

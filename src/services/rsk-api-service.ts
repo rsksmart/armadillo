@@ -19,7 +19,7 @@ export class RskApiService {
     }
 
     public async getBlocksByNumber(height: number): Promise<RskBlock[]> {
-        var blocksInfo: any[] = await this.nod3.rsk.getBlocksByNumber('0x' + height.toString(16), true);
+        var blocksInfo: any[] =await retry3Times(this.nod3.rsk.getBlocksByNumber, ['0x' + height.toString(16), true ]);
         var blocks: RskBlock[] = [];
 
         for (const blockInfo of blocksInfo) {
