@@ -71,12 +71,16 @@ async function sendAlert(content) {
 
     let transport = nodemailer.createTransport(options);
 
-    let info = await transport.sendMail({
-        from: config.sender,
-        to: config.recipients,
-        subject: '[Armadillo Notifications] Forks detected',
-        text: content
-    });
+    try {
+        let info = await transport.sendMail({
+            from: config.sender,
+            to: config.recipients,
+            subject: '[Armadillo Notifications] Forks detected',
+            text: content
+        });
+    } catch (e) {
+        logger.error(`Failed to send alerts: ${e}`)
+    }
 
     lastContent = content;
 
