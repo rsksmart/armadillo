@@ -87,9 +87,7 @@ export class ForkDetector {
                 this.logger.info("FORK: found a block in the future");
                 blockInRskThatIsTheMaximumPosibleHeight = rskBestBlock;
             } else {
-                
-                blockInRskThatIsTheMaximumPosibleHeight = this.getBestBlock(rskBlocksAtNewRskTagHeight);
-
+                blockInRskThatIsTheMaximumPosibleHeight = this.rskApiService.getBlock(newBtcBlock.rskTag.BN);
                 if(rskBlocksAtNewRskTagHeight.length === 0 || blockInRskThatIsTheMaximumPosibleHeight == null){
                     return await this.btcWatcher.blockProcessingFailed(newBtcBlock);
                 }
