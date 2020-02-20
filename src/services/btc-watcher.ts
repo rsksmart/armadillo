@@ -54,7 +54,7 @@ export class BtcWatcher extends EventEmitter {
         }
 
         if (!this.lastBLockDetected) {
-            this.logger.warn('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
+            this.logger.info('There is not block detected in DB, starting to detect from best block at height:', bestBtcBlock.btcInfo.height, "with hash:", bestBtcBlock.btcInfo.hash);
             await this.btcService.save(bestBtcBlock);
             this.lastBLockDetected = bestBtcBlock;
         }
