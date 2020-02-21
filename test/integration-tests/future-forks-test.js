@@ -2,6 +2,8 @@ const expect = require('chai').expect;
 const assert = require('chai').assert;
 const utils = require('./lib/utils');
 const mongo_utils = require('./lib/mongo-utils');
+const mainchain = mongo_utils.ArmadilloMainchain;
+const forks = mongo_utils.ArmadilloForks;
 const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const timeoutTests = utils.timeoutTests;
 const btcApiRoute = "raw";
@@ -13,8 +15,11 @@ const amountOfMainchainBlocksInFork = 2;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveBTCwithFutureRSKtags0bCPVdiff = firstBtcBlock + 129;
 const heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff = firstBtcBlock + 133;
-
 const heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff = firstBtcBlock + 135;
+const dataInputPath = "test/integration-tests/data/";
+const forksPresentFilePrefix = dataInputPath + "future-forks-";
+const mainchainPresentFilePrefix = dataInputPath + "future-mainchain-";
+const fileSuffix = ".json";
 describe("RSK Forks in the future tests", () => {
     describe("RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, end to end", () => {
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match", async () => {
@@ -25,6 +30,7 @@ describe("RSK Forks in the future tests", () => {
             //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
             await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
             await utils.validateMainchain(1000, 1);
+            
         }).timeout(timeoutTests);
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match", async () => {
             assert.equal(await utils.getLastRSKHeight(utils.context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
@@ -71,6 +77,27 @@ describe("RSK Forks in the future tests", () => {
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             await utils.validateForksRskBlockMongoDB(dbForks, [1]);
             await utils.validateMainchainRskMongoDB(mainchainBlocks, 1);
+        }).timeout(timeoutTests);
+    });
+
+    describe("RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, mongo output validation", () => {
+        it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match, mongo output validation", async () => {
+            const testId = "cpvmatch_length1forkconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match, mongo output validation", async () => {
+            const testId = "cpv5b_length1forkconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 0 bytes CPV match, mongo output validation", async () => {
+            const testId = "cpv0b_length1forkconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
     });
 
