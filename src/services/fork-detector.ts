@@ -66,7 +66,6 @@ export class ForkDetector {
         // }
 
         let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
-
         let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
 
         if (rskBlockMatchInHeight) {
@@ -267,10 +266,10 @@ export class ForkDetector {
 
             await this.branchService.addBranchItem(branches[0].getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
         } else {
-            let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
+            let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskBlock, rskBlocksSameHeight);
 
             this.logger.info('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
-            // console.log(mainchainRangeForkCouldHaveStarted);
+
             await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, [item]));
         }
     }

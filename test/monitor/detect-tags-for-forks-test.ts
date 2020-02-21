@@ -84,28 +84,27 @@ describe('Forks branch tests', () => {
 
   describe("Forks in present and in the past", () => {
     it("Fork: new branch, CPV match 0 bytes", async () => {
-      const rskTag = PREFIX + CPV1 + NU + "00000064"
-      const rskTagSameHeight = PREFIX + "dddddddddddddd" + NU + "00000064"
-      const block100 = new RskBlock(100, "hash4", "hash3", true, new ForkDetectionData(rskTagSameHeight));
-      let btcBlock100 = new BtcBlock(100, "btcHash", rskTag)
-      let btcBlockPrev = new BtcBlock(99, "btcHash", rskTag)
-      let block1 = new RskBlock(1, "btcHash", "btcPrevHash", true,  null)
+      const rskBLock1000 = new RskBlock(1000, "hash4", "hash3", true, new ForkDetectionData(PREFIX + "dddddddddddddd" + NU + "000003E8"));
+      const rskBlock576 = new RskBlock(576, "hash576", "hash575", true, new ForkDetectionData(PREFIX + "aaaaaaaaaaaaaa" + NU + "00000240"));
+      let btcBlock100 = new BtcBlock(100, "btcHash", PREFIX + "11223344556677" + NU + "000003E8");
+      let rskBlock1 = new RskBlock(1, "btcHash", "btcPrevHash", true,  null)
 
       var getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');
-      getBlocksByNumber.withArgs(100).returns([block100]);
+      getBlocksByNumber.withArgs(1000).returns([rskBLock1000]);
 
       var getBestBlock = sinon.stub(rskApiService, <any>"getBestBlock");
-      getBestBlock.returns(block100);
+      getBestBlock.returns(rskBLock1000);
 
       var getBlock = sinon.stub(rskApiService, <any>"getBlock");
-      getBlock.withArgs(1).returns(block1);
-      getBlock.withArgs(100).returns(block100);
+      getBlock.withArgs(1).returns(rskBlock1);
+      getBlock.withArgs(1000).returns(rskBLock1000);
+      getBlock.withArgs(576).returns(rskBlock576);
 
       var getForksDetected = sinon.stub(branchService, <any>'getForksDetected');
       getForksDetected.returns([]);
 
       var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
-      getLastBlockDetected.returns(btcBlockPrev);
+      getLastBlockDetected.returns(btcBlock100);
  
       sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
 
@@ -113,7 +112,7 @@ describe('Forks branch tests', () => {
         expect(blockToSave).to.deep.equal(btcBlock100);
       });
       
-      let rangeForkInMainchain = new RangeForkInMainchain(block1, block100);
+      let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock576);
       const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, RskBlock.fromForkDetectionData(btcBlock100.rskTag));
       const branchExpected = new Branch(rangeForkInMainchain, branchItemWhichForkNetwork);
 
@@ -123,7 +122,6 @@ describe('Forks branch tests', () => {
       });
 
       await forkDetector.onNewBlock(btcBlock100);
-      await sleep(100)
 
       //Validations
       expect(save.calledOnce).to.be.true;
@@ -152,8 +150,8 @@ describe('Forks branch tests', () => {
       let addBranchItem = sinon.stub(branchService, <any>'addBranchItem');
       addBranchItem.callsFake(function () { });
 
-      let getRskBlockAtCertainHeight = sinon.stub(rskApiService, <any>'getRskBlockAtCertainHeight')
-      getRskBlockAtCertainHeight.returns(rskBlock111);
+      let getRangeForkWhenItCouldHaveStarted = sinon.stub(rskApiService, <any>'getRangeForkWhenItCouldHaveStarted')
+      getRangeForkWhenItCouldHaveStarted.returns(rskBlock111);
 
       sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
 
@@ -189,8 +187,8 @@ describe('Forks branch tests', () => {
       let getForksDetected = sinon.stub(branchService, <any>'getForksDetected');
       getForksDetected.returns([]);
 
-      let getRskBlockAtCertainHeight = sinon.stub(rskApiService, <any>'getRskBlockAtCertainHeight')
-      getRskBlockAtCertainHeight.returns(rangeForkInMainchain);
+      let getRangeForkWhenItCouldHaveStarted = sinon.stub(rskApiService, <any>'getRangeForkWhenItCouldHaveStarted')
+      getRangeForkWhenItCouldHaveStarted.returns(rangeForkInMainchain);
 
       let saveBranch = sinon.stub(branchService, <any>'save')
       saveBranch.callsFake(function (branchToSave) {
@@ -223,8 +221,8 @@ describe('Forks branch tests', () => {
       getForksDetected.onCall(0).returns([]);
       getForksDetected.onCall(1).returns([branchFirstSaved]);
 
-      let getRskBlockAtCertainHeight = sinon.stub(rskApiService, <any>'getRskBlockAtCertainHeight')
-      getRskBlockAtCertainHeight.returns(rangeForkInMainchain);
+      let getRangeForkWhenItCouldHaveStarted = sinon.stub(rskApiService, <any>'getRangeForkWhenItCouldHaveStarted')
+      getRangeForkWhenItCouldHaveStarted.returns(rangeForkInMainchain);
 
       let saveBranch = sinon.stub(branchService, <any>'save')
       saveBranch.callsFake(function (branchToSave) {
@@ -266,8 +264,8 @@ describe('Forks branch tests', () => {
       getForksDetected.onCall(0).returns([]);
       getForksDetected.onCall(1).returns([branchFirstSaved]);
 
-      let getRskBlockAtCertainHeight = sinon.stub(rskApiService, <any>'getRskBlockAtCertainHeight')
-      getRskBlockAtCertainHeight.returns(rangeForkInMainchain);
+      let getRangeForkWhenItCouldHaveStarted = sinon.stub(rskApiService, <any>'getRangeForkWhenItCouldHaveStarted')
+      getRangeForkWhenItCouldHaveStarted.returns(rangeForkInMainchain);
 
       let saveBranch = sinon.stub(branchService, <any>'save')
       saveBranch.callsFake(function (branchToSave) {
