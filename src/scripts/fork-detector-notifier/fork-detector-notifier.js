@@ -78,13 +78,13 @@ async function sendAlert(content) {
             subject: '[Armadillo Notifications] Forks detected',
             text: content
         });
+
+        lastContent = content;
+
+        logger.info(`Sent message: ${info.messageId}`)
     } catch (e) {
         logger.error(`Failed to send alerts: ${e}`)
     }
-
-    lastContent = content;
-
-    logger.info(`Sent message: ${info.messageId}`)
 }
 
 process.on('SIGTERM', () => {
