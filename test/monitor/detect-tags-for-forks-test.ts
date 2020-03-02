@@ -7,7 +7,7 @@ import { ForkDetector } from "../../src/services/fork-detector";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { stubObject } from "ts-sinon";
 import sinon from "sinon";
-import { RskBlock } from "../../src/common/rsk-block";
+import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { RskApiService } from "../../src/services/rsk-api-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
 import { MongoStore } from "../../src/storage/mongo-store";
@@ -41,12 +41,12 @@ const btcBlock4 = new BtcBlock(100000, "btcHash104", RSKTAG4);
 const btcBlock5 = new BtcBlock(200000, "btcHash105", RSKTAG_in_future111);
 const btcBlock6 = new BtcBlock(200100, "btcHash105", RSKTAG_in_future112);
 
-const rskBlock1= new RskBlock(1, "rskHash1", "rskHash0", true, forkData1);
-const rskBlock111 = new RskBlock(111, "rskHash111", "rskHash110", true, new ForkDetectionData(RSKTAG_in_future111));
-const rskBlock112 = new RskBlock(112, "rskHash112", "rskHash111", true, new ForkDetectionData(RSKTAG_in_future112));
-const rskBlockFork1 = new RskBlock(1, "rskHash2", "rskHash1", true, forkData_FORKED1);
+const rskBlock1= new RskForkItemInfo(forkData1, forkData1.BN);
+const rskBlock111 = new RskBlockInfo(111, "rskHash111", "rskHash110", true, new ForkDetectionData(RSKTAG_in_future111));
+const rskBlock112 = new RskBlockInfo(112, "rskHash112", "rskHash111", true, new ForkDetectionData(RSKTAG_in_future112));
+const rskBlockFork1 = new RskBlockInfo(1, "rskHash2", "rskHash1", true, forkData_FORKED1);
 
-const branch = new Branch(null, [new BranchItem(null, rskBlock1, 0)])
+const branch = new Branch(null, [new BranchItem(null, rskBlock1)]);
 
 let btcWatcher;
 let rskApiConfig: RskApiConfig;
@@ -84,10 +84,10 @@ describe('Forks branch tests', () => {
 
   describe("Forks in present and in the past", () => {
     it("Fork: new branch, CPV match 0 bytes", async () => {
-      const rskBLock1000 = new RskBlock(1000, "hash4", "hash3", true, new ForkDetectionData(PREFIX + "dddddddddddddd" + NU + "000003E8"));
-      const rskBlock576 = new RskBlock(576, "hash576", "hash575", true, new ForkDetectionData(PREFIX + "aaaaaaaaaaaaaa" + NU + "00000240"));
+      const rskBLock1000 = new RskBlockInfo(1000, "hash4", "hash3", true, new ForkDetectionData(PREFIX + "dddddddddddddd" + NU + "000003E8"));
+      const rskBlock576 = new RskBlockInfo(576, "hash576", "hash575", true, new ForkDetectionData(PREFIX + "aaaaaaaaaaaaaa" + NU + "00000240"));
       let btcBlock100 = new BtcBlock(100, "btcHash", PREFIX + "11223344556677" + NU + "000003E8");
-      let rskBlock1 = new RskBlock(1, "btcHash", "btcPrevHash", true,  null)
+      let rskBlock1 = new RskBlockInfo(1, "btcHash", "btcPrevHash", true,  null)
 
       var getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');
       getBlocksByNumber.withArgs(1000).returns([rskBLock1000]);
@@ -113,7 +113,7 @@ describe('Forks branch tests', () => {
       });
       
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock576);
-      const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, RskBlock.fromForkDetectionData(btcBlock100.rskTag), rskBLock1000.height);
+      const branchItemWhichForkNetwork = new BranchItem(btcBlock100.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock100.rskTag, rskBLock1000.height));
       const branchExpected = new Branch(rangeForkInMainchain, branchItemWhichForkNetwork);
 
       let save = sinon.stub(branchService, <any>'save');
@@ -171,10 +171,10 @@ describe('Forks branch tests', () => {
     it("Created a new branch", async () => {
       let tagInTheFuture = PREFIX + CPV1 + NU + "0000006F"
       let btcBlock = new BtcBlock(200000, "btcHash200000", tagInTheFuture);
-      let rskBestBlock = new RskBlock(90, "rskHash90", "rskHash89", true, new ForkDetectionData(PREFIX + CPV1 + NU + "0000005A"));
-      let rskBlock1 = new RskBlock(1, "rskHash1", null, true, null);
+      let rskBestBlock = new RskBlockInfo(90, "rskHash90", "rskHash89", true, new ForkDetectionData(PREFIX + CPV1 + NU + "0000005A"));
+      let rskBlock1 = new RskBlockInfo(1, "rskHash1", null, true, null);
 
-      let item2 = new BranchItem(btcBlock.btcInfo, RskBlock.fromForkDetectionData(new ForkDetectionData(tagInTheFuture)), rskBestBlock.height);
+      let item2 = new BranchItem(btcBlock.btcInfo, RskForkItemInfo.fromForkDetectionData(new ForkDetectionData(tagInTheFuture), rskBestBlock.height));
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBestBlock);
       let branchExpected = new Branch(rangeForkInMainchain, [item2])
 
@@ -207,8 +207,8 @@ describe('Forks branch tests', () => {
     it("Created a new branch with two items", async () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
 
-      let item1 = new BranchItem(btcBlock5.btcInfo, RskBlock.fromForkDetectionData(btcBlock5.rskTag), rskBlock111.height);
-      let item2 = new BranchItem(btcBlock6.btcInfo, RskBlock.fromForkDetectionData(btcBlock6.rskTag), rskBlock111.height);
+      let item1 = new BranchItem(btcBlock5.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock5.rskTag, rskBlock111.height));
+      let item2 = new BranchItem(btcBlock6.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock6.rskTag, rskBlock111.height));
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1]);
      
       let getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');
@@ -231,7 +231,7 @@ describe('Forks branch tests', () => {
 
       let addBranchItem = sinon.stub(branchService, <any>'addBranchItem');
       addBranchItem.callsFake(function (prefixHash, branchPassToMethod) {
-        expect(prefixHash).to.deep.equal(branchFirstSaved.getFirstDetected().rskInfo.forkDetectionData.prefixHash);
+        expect(prefixHash).to.deep.equal(branchFirstSaved.getFirstDetected().rskForkInfo.forkDetectionData.prefixHash);
         expect(branchPassToMethod).to.deep.equal(item2);
       });
       
@@ -248,7 +248,7 @@ describe('Forks branch tests', () => {
 
     it("Tag repeted arrive, should not create a new branch, because it is already a fork, tag exists in branch", async () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
-      let item1 = new BranchItem(btcBlock5.btcInfo, RskBlock.fromForkDetectionData(btcBlock5.rskTag), rskBlock111.height);
+      let item1 = new BranchItem(btcBlock5.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock5.rskTag, rskBlock111.height));
       let branchFirstSaved = new Branch(rangeForkInMainchain, [item1]);
 
       let getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');

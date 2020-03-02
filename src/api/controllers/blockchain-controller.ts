@@ -4,10 +4,10 @@ import { Branch, Item } from '../../common/branch';
 import { MessageResponse } from '../common/message-response';
 
 export class BlockchainHistory {
-  public forks: Item[][];
+  public forks: Branch[];
   public mainchain: Item[];
 
-  constructor(mainchain: Item[], forks: Item[][]) {
+  constructor(mainchain: Item[], forks: Branch[]) {
     this.forks = forks;
     this.mainchain = mainchain;
   }
@@ -32,9 +32,8 @@ export class BlockchainController {
     }
 
     let forksBranches = await this.branchService.getForksDetected(heightToGetForksFrom);
-    var forks: Item[][] = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
 
-    return new BlockchainHistory(mainchain, forks);
+    return new BlockchainHistory(mainchain, forksBranches);
   }
 
   public async getLastBlocksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {

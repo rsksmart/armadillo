@@ -7,7 +7,7 @@ import { ForkDetector } from "../../src/services/fork-detector";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { stubObject } from "ts-sinon";
 import sinon from "sinon";
-import { RskBlock } from "../../src/common/rsk-block";
+import { RskBlockInfo } from "../../src/common/rsk-block";
 import { RskApiService } from "../../src/services/rsk-api-service";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
@@ -61,7 +61,7 @@ describe('Mainchain test', () => {
 
   describe('New btc block has a tag which is in RSK network mainchain', () => {
     it("First item in mainnet", async () => {
-      const rskBlock = new RskBlock(1, "hash", "prevHash", true, forkData);
+      const rskBlock = new RskBlockInfo(1, "hash", "prevHash", true, forkData);
 
       sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock]);
       sinon.stub(mainchainService, <any>'getBestBlock').returns(null);
@@ -79,8 +79,8 @@ describe('Mainchain test', () => {
 
     it("Connect item in mainchain, now mainchain has 2 blocks", async () => {
       const partTag: string = PREFIX + CPV + NU;
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true,  new ForkDetectionData(partTag + "00000001"));
-      const rskBlock2 = new RskBlock(2, "hash2", "hash1", true,  new ForkDetectionData(partTag + "00000002"));
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true,  new ForkDetectionData(partTag + "00000001"));
+      const rskBlock2 = new RskBlockInfo(2, "hash2", "hash1", true,  new ForkDetectionData(partTag + "00000002"));
       const mainchainBest = new Item(btcBlockInMainchain.btcInfo, rskBlock1);
 
       sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock2]);
@@ -102,10 +102,10 @@ describe('Mainchain test', () => {
     it("Rebuid 2 blocks between top mainchain and the new block found", async () => {
       const rskTag = PREFIX + CPV + NU + "00000004"
       const forkData1 = new ForkDetectionData(rskTag);
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskBlock2 = new RskBlock(2, "hash2", "hash1", true, forkData);
-      const rskBlock3 = new RskBlock(3, "hash3", "hash2", true, forkData);
-      const rskBlock4 = new RskBlock(4, "hash4", "hash3", true, forkData1);
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const rskBlock2 = new RskBlockInfo(2, "hash2", "hash1", true, forkData);
+      const rskBlock3 = new RskBlockInfo(3, "hash3", "hash2", true, forkData);
+      const rskBlock4 = new RskBlockInfo(4, "hash4", "hash3", true, forkData1);
       const btcBlock = new BtcBlock(2, "btcHash", rskTag)
 
       const getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
@@ -133,7 +133,7 @@ describe('Mainchain test', () => {
     });
 
     it("Repeated rsk tag arrives, discart new btc block", async () => {
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
       const item = new Item(new BtcHeaderInfo(1, "hash"), rskBlock1)
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
@@ -165,8 +165,8 @@ describe('Mainchain test', () => {
     });
 
     it("Rsk tag arrives with lower height (solution in mainchain)", async () => {
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskBlock9 = new RskBlock(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const rskBlock9 = new RskBlockInfo(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
       let item1 = new Item(null, rskBlock1)
       let item1WithBtcInfo = new Item(btcBlock.btcInfo, rskBlock1)
       const item9 = new Item(new BtcHeaderInfo(9, "hash"), rskBlock9);
@@ -197,8 +197,8 @@ describe('Mainchain test', () => {
     });
 
     it("Rsk tag arrives with lower height, and is pointing to an uncle", async () => {
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskBlock9 = new RskBlock(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const rskBlock9 = new RskBlockInfo(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
       const item9 = new Item(new BtcHeaderInfo(9, "hash"), rskBlock9);
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
@@ -232,8 +232,8 @@ describe('Mainchain test', () => {
   describe('New btc block with RSK tag is pointing to an RSK uncle', () => {
     it("Buinding mainchain with best block instead using the uncle at that height, also save uncle", async () => {
       const btcBlock = new BtcBlock(200, "btcHash", PREFIX + CPV + NU + "00000003");
-      const rskNoBest = new RskBlock(3, "hash3_NoBest", "hash2", false, new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
-      const rskBest = new RskBlock(2, "hash2", "hash1", true,  new ForkDetectionData(PREFIX + CPV + NU + "00000002"));
+      const rskNoBest = new RskBlockInfo(3, "hash3_NoBest", "hash2", false, new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
+      const rskBest = new RskBlockInfo(2, "hash2", "hash1", true,  new ForkDetectionData(PREFIX + CPV + NU + "00000002"));
     
       const rskNoBestItem = new Item(btcBlock.btcInfo, rskNoBest);
       const rskBestItem = new Item(null, rskBest);
@@ -267,11 +267,11 @@ describe('Mainchain test', () => {
 
   describe('New RSK tag, there are a reorganization', () => {
     it("Reorg 2 blocks in chain", async () => {
-      const rsk4InMainchain = new RskBlock(4, "hash4", "hash3", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004"));
-      const rsk5InMainchain = new RskBlock(5, "hash5", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
-      const rsk6InMainchain = new RskBlock(6, "hash6", "hash5", false, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
-      const rsk6NewBest = new RskBlock(6, "hash6NewBest", "hash5NewBest", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
-      const rsk5NewBest = new RskBlock(5, "hash5NewBest", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
+      const rsk4InMainchain = new RskBlockInfo(4, "hash4", "hash3", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004"));
+      const rsk5InMainchain = new RskBlockInfo(5, "hash5", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
+      const rsk6InMainchain = new RskBlockInfo(6, "hash6", "hash5", false, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
+      const rsk6NewBest = new RskBlockInfo(6, "hash6NewBest", "hash5NewBest", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
+      const rsk5NewBest = new RskBlockInfo(5, "hash5NewBest", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
       const rsk6ItemBNewBest = new Item(null, rsk6NewBest);
       const rsk5ItemNewBest = new Item(null, rsk5NewBest);
       const rsk5ItemInMainchain = new Item(null, rsk5InMainchain);

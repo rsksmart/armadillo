@@ -7,7 +7,7 @@ import { ForkDetector } from "../../src/services/fork-detector";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { stubObject } from "ts-sinon";
 import sinon from "sinon";
-import { RskBlock } from "../../src/common/rsk-block";
+import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { RskApiService } from "../../src/services/rsk-api-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
 
@@ -19,7 +19,6 @@ const BN = "000004c9"; // 1225
 const RSKTAG_0X = "0x" + PREFIX + CPV + NU + BN;
 const RSKTAG = PREFIX + CPV + NU + BN;
 const RSKTAG1 = PREFIX + CPV1 + NU + BN;
-const mainchainBlock = new BranchItem(null, null, 0);
 let btcStub;
 let rskApiConfig;
 let mainchainService;
@@ -118,18 +117,19 @@ describe("Overlap CPV", () => {
 
   it("getBranchesThatOverlap return 1", async () => {
     const forkData = new ForkDetectionData(new ForkDetectionData(RSKTAG));
-    const rskBlock = new RskBlock(1, "hash", "prevHash", true, forkData);
+    const rskForkItem = new RskForkItemInfo(forkData, forkData.BN);
+    const rskBlock = new RskBlockInfo(1, "hash", "prevHash", true, forkData);
     const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
 
     let rangeForkInMainchain = new RangeForkInMainchain(rskBlock, rskBlock);
 
-    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock, 0))]);
+    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskForkItem))]);
     let posibleBranches: Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
     sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock);
 
     //Validations
     expect(posibleBranches.length).to.equal(1);
-    expect(posibleBranches[0].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getFirstDetected().rskForkInfo.forkDetectionData).to.equal(forkData);
     expect(posibleBranches[0].getFirstDetected().btcInfo).to.equal(btcInfo);
     expect(posibleBranches[0].getLastDetected().btcInfo).to.equal(btcInfo);
     expect(posibleBranches[0].getLastDetected().btcInfo).to.equal(btcInfo);
@@ -138,20 +138,21 @@ describe("Overlap CPV", () => {
   it("getBranchesThatOverlap return 2 elements", async () => {
 
     const forkData = new ForkDetectionData(RSKTAG);
-    const rskBlock = new RskBlock(1, "hash", "prevHash", true, forkData);
+    const rskBlock = new RskForkItemInfo(forkData, forkData.BN);
     const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
     const forkData1 = new ForkDetectionData(RSKTAG1);
-    const rskBlock1 = new RskBlock(1, "hash", "prevHash", true, forkData1);
+    const rskBlock2 = new RskForkItemInfo(forkData1, forkData.BN);
+    const rskBlock1 = new RskBlockInfo(1, "hash", "prevHash", true, forkData);
 
     let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
-    let list = [new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock, 0)), new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock1, 0))]
+    let list = [new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock)), new Branch(rangeForkInMainchain, new BranchItem(btcInfo, rskBlock2))]
 
     sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns(list);
     let posibleBranches: Branch[] = await forkDetector.getBranchesThatOverlap(forkData);
     expect(posibleBranches.length).to.equal(1);
-    expect(posibleBranches[0].getFirstDetected().rskInfo.forkDetectionData).to.equal(forkData);
-    expect(posibleBranches[0].getLastDetected().rskInfo.forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getFirstDetected().rskForkInfo.forkDetectionData).to.equal(forkData);
+    expect(posibleBranches[0].getLastDetected().rskForkInfo.forkDetectionData).to.equal(forkData);
   });
 });
 

@@ -3,7 +3,7 @@ import { BtcHeaderInfo } from "../../src/common/btc-block";
 import { expect } from "chai";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { MongoStore } from "../../src/storage/mongo-store";
-import { RskBlock } from "../../src/common/rsk-block";
+import { RskBlockInfo } from "../../src/common/rsk-block";
 import { BranchService } from "../../src/services/branch-service";
 import { BranchItem, Branch, RangeForkInMainchain } from "../../src/common/branch";
 import BranchController from "../../src/api/controllers/branch-controller";
