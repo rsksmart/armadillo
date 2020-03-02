@@ -1,5 +1,5 @@
 import {BtcBlock } from "../common/btc-block";
-import { BranchItem } from "../common/branch";
+import { BranchItem, Item } from "../common/branch";
 
 export class Printify {
 
@@ -17,7 +17,7 @@ export class Printify {
         return " - " + JSON.stringify(info);
     }
 
-    public static getPrintifyInfoBranchItem(item: BranchItem) {
+    public static getPrintifyInfoBranchItem(item: Item) {
         var info = {};
 
         if (item != null && item.btcInfo) {
