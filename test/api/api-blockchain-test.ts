@@ -4,7 +4,7 @@ import { BtcHeaderInfo } from "../../src/common/btc-block";
 import { expect } from "chai";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { MongoStore } from "../../src/storage/mongo-store";
-import { RskBlock } from "../../src/common/rsk-block";
+import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { BranchService } from "../../src/services/branch-service";
 import { BranchItem, Branch, RangeForkInMainchain, Item } from "../../src/common/branch";
 import { MainchainService } from "../../src/services/mainchain-service";
@@ -41,20 +41,21 @@ describe("Blockchain api tests", () => {
   });
 
   it("getLastBlochains method", async () => {
-    const branchItem1 = new BranchItem(btcInfo, new RskBlock(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")), 0);
-    const branchItem3 = new BranchItem(btcInfo, new RskBlock(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")), 0);
-    const branchItem4 = new BranchItem(btcInfo, new RskBlock(4, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004")), 0);
-    const branchItem5 = new BranchItem(btcInfo, new RskBlock(5, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005")), 0);
+    const itemInMainchain = new RskBlockInfo(0, "", "", true, null);
+    const branchItem1 = new BranchItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000001"), 0));
+    const branchItem3 = new BranchItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000003"), 0));
+    const branchItem4 = new BranchItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000004"), 0));
+    const branchItem5 = new BranchItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000005"), 0));
 
-    const item1 = new Item(btcInfo, new RskBlock(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
-    const item2 = new Item(btcInfo, new RskBlock(2, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
-    const item3 = new Item(btcInfo, new RskBlock(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
-    const item4 = new Item(btcInfo, new RskBlock(4, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
-    const item5 = new Item(btcInfo, new RskBlock(5, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
-    const item6 = new Item(btcInfo, new RskBlock(6, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
-    const item7 = new Item(btcInfo, new RskBlock(7, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
+    const item1 = new Item(btcInfo, new RskBlockInfo(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
+    const item2 = new Item(btcInfo, new RskBlockInfo(2, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
+    const item3 = new Item(btcInfo, new RskBlockInfo(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
+    const item4 = new Item(btcInfo, new RskBlockInfo(4, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
+    const item5 = new Item(btcInfo, new RskBlockInfo(5, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
+    const item6 = new Item(btcInfo, new RskBlockInfo(6, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
+    const item7 = new Item(btcInfo, new RskBlockInfo(7, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
 
-    let rangeForkInMainchain = new RangeForkInMainchain(branchItem1.rskInfo, branchItem1.rskInfo);
+    let rangeForkInMainchain = new RangeForkInMainchain(itemInMainchain, itemInMainchain);
     let branch = new Branch(rangeForkInMainchain, [branchItem3,branchItem4,branchItem5]);
 
     var b = copy(branch);
@@ -69,7 +70,7 @@ describe("Blockchain api tests", () => {
 
     let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
     expect(mainchainList).to.deep.equal(response.data.mainchain);
-    expect(response.data.forks[0]).to.deep.equal(Branch.fromObjectToListBranchItems(branch));
+    expect(response.data.forks).to.deep.equal([branch]);
   });
 
   it("getLastBlochains method, max to search 5000", async () => {

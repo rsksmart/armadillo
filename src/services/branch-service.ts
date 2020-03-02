@@ -3,7 +3,6 @@ import { Branch, BranchItem } from "../common/branch";
 import BaseService from "./base-service";
 
 export class BranchService extends BaseService {
-  
     constructor(store: MongoStore) {
         super(store);
     }
