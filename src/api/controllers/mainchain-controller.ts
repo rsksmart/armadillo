@@ -1,5 +1,5 @@
 import { MainchainService } from '../../services/mainchain-service';
-import { BranchItem } from '../../common/branch';
+import { BranchItem, Item } from '../../common/branch';
 import { MessageResponse } from '../common/message-response';
 
 /* eslint-disable class-methods-use-this */
@@ -12,12 +12,12 @@ export class MainchainController {
     this.service.createIndex({ "rskInfo.height": 1 , "rskInfo.mainchain": 1 }, { unique: true });
   }
 
-  public async getLastBlocks(req: any, res: any): Promise<MessageResponse<BranchItem[]>> {
+  public async getLastBlocks(req: any, res: any): Promise<MessageResponse<Item[]>> {
     const n: number = parseInt(req.params.n);
-    var blocks: BranchItem[] = await this.service. getLastItems(n);
+    var blocks: Item[] = await this.service. getLastItems(n);
     
     return res.status(200).send(
-      new MessageResponse<BranchItem[]>(
+      new MessageResponse<Item[]>(
         `Get last ${blocks.length}/${req.params.n} blocks in mainchain`,
         true,
         blocks
@@ -36,10 +36,10 @@ export class MainchainController {
     ));
   }
 
-  public async getAll(req: any, res: any): Promise<MessageResponse<any>> {
-    var items : BranchItem[] = await this.service.getAll();
+  public async getAll(req: any, res: any): Promise<MessageResponse<Item[]>> {
+    var items : Item[] = await this.service.getAll();
 
-    return res.status(200).send(new MessageResponse<BranchItem[]>(
+    return res.status(200).send(new MessageResponse<Item[]>(
       `Get all mainnet items`,
       true,
       items

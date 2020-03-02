@@ -56,8 +56,8 @@ export class Branch {
         branch.items.map(x => items.push(BranchItem.fromObject(x)));
 
         return items.concat([
-                new BranchItem(null, branch.mainchainRangeForkCouldHaveStarted.endBlock),
-                new BranchItem(null, branch.mainchainRangeForkCouldHaveStarted.startBlock)]
+                new BranchItem(null, branch.mainchainRangeForkCouldHaveStarted.endBlock, null),
+                new BranchItem(null, branch.mainchainRangeForkCouldHaveStarted.startBlock, null)]
                 );
     }
 
@@ -73,8 +73,10 @@ export class Branch {
     //This getter return all the forks items + mainchain range
     public getCompleteBranch(): BranchItem[] {
         var completeBranch : BranchItem[];
-        completeBranch = this.items.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.endBlock));
-        completeBranch.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.startBlock));
+
+        // this methods doesn't have sense
+        completeBranch = this.items.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.endBlock, 0));
+        completeBranch.concat(new BranchItem(null, this.mainchainRangeForkCouldHaveStarted.startBlock, 0));
         return completeBranch;
     }
 
@@ -95,16 +97,31 @@ export class Branch {
     }
 }
 
-export class BranchItem {
+export class  Item {
     public btcInfo?: BtcHeaderInfo;
     public rskInfo: RskBlock;
 
     constructor(btcInfo: BtcHeaderInfo, rskBlock: RskBlock) {
         this.btcInfo = btcInfo;
-        this.rskInfo = rskBlock
+        this.rskInfo = rskBlock;
+    }
+
+    static fromObject(branchItem: any): Item {
+        return new Item(BtcHeaderInfo.fromObject(branchItem.btcInfo), RskBlock.fromObject(branchItem.rskInfo));
+    }
+}
+
+export class BranchItem extends Item {
+    public rskBestBlockHeight: number;
+    public time: string;
+
+    constructor(btcInfo: BtcHeaderInfo, rskBlock: RskBlock, rskBestBlockHeight: number) {
+        super(btcInfo, rskBlock);
+        this.rskBestBlockHeight = rskBestBlockHeight;
+        this.time = Date();
     }
 
     static fromObject(branchItem: any): BranchItem {
-        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), RskBlock.fromObject(branchItem.rskInfo));
+        return new BranchItem(BtcHeaderInfo.fromObject(branchItem.btcInfo), RskBlock.fromObject(branchItem.rskInfo), branchItem.rskBestBlockHeight);
     }
 }
