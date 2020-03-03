@@ -1,17 +1,17 @@
 import { RskBlockInfo, RskForkItemInfo } from "../common/rsk-block";
 import { BtcBlock } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
-import { Branch, BranchItem, Item } from "../common/branch";
+import { Fork, ForkItem, Item } from "../common/forks";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { getLogger, Logger } from "log4js";
 import { MainchainService } from "./mainchain-service";
-import { BranchService } from "./branch-service";
+import { ForkService } from "./fork-service";
 import { RskApiService } from "./rsk-api-service";
 import { Printify } from "../util/printify";
 
 export class ForkDetector {
     private logger: Logger;
-    private branchService: BranchService;
+    private forkService: ForkService;
     private rskApiService: RskApiService;
     private btcWatcher: BtcWatcher;
     private maxBlocksBackwardsToSearch: number = 448;
@@ -22,8 +22,8 @@ export class ForkDetector {
     //TODO: move this into config file
     private minimunOverlapCPV: number = 3;
 
-    constructor(branchService: BranchService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService) {
-        this.branchService = branchService;
+    constructor(forkService: ForkService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService) {
+        this.forkService = forkService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
         this.mainchainService = mainchainService
@@ -77,7 +77,7 @@ export class ForkDetector {
             }
         } else {
             
-            await this.addOrCreateBranch(newBtcBlock);
+            await this.addOrCreateFork(newBtcBlock);
         }
 
         return await this.blockSuccessfullyProcessed(newBtcBlock);
@@ -102,7 +102,7 @@ export class ForkDetector {
         // Verify armadillo top of Mainchain is still being the best block, just to be sure there was't any reorganization.
         // In case there are update armadillo mainchain:
         if (!await this.blockStillBeingMainchain(rskBestBlockInMainchain.rskInfo)) {
-            this.logger.info("There was a reorganization for rsk block", Printify.getPrintifyInfoBranchItem(rskBestBlockInMainchain))
+            this.logger.info("There was a reorganization for rsk block", Printify.getPrintifyInfoForkItem(rskBestBlockInMainchain))
             await this.rebuildMainchainFromBlock(rskBestBlockInMainchain);
 
             // There was a reorganization, mainchain has changed!
@@ -188,20 +188,20 @@ export class ForkDetector {
         return blocks.find(b => b.mainchain);
     }
 
-    private async getBranchesThatOverlap(rskTag: ForkDetectionData): Promise<Branch[]> {
-        let branchesThatOverlap: Branch[] = []
-        let lastTopsDetected: Branch[] = await this.getPossibleForks(rskTag.BN);
+    private async getForksThatOverlap(rskTag: ForkDetectionData): Promise<Fork[]> {
+        let forksThatOverlap: Fork[] = []
+        let lastTopsDetected: Fork[] = await this.getPossibleForks(rskTag.BN);
 
-        for (const branch of lastTopsDetected) {
-            if (branch.getLastDetected().rskForkInfo.forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
-                branchesThatOverlap.push(branch);
+        for (const fork of lastTopsDetected) {
+            if (fork.getLastDetected().rskForkInfo.forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
+                forksThatOverlap.push(fork);
             }
         }
 
-        return branchesThatOverlap;
+        return forksThatOverlap;
     }
 
-    private getHeightforPossibleBranches(numberBlock: number): number {
+    private getHeightforPossibleForks(numberBlock: number): number {
         if (numberBlock > this.maxBlocksBackwardsToSearch) {
             return numberBlock - this.maxBlocksBackwardsToSearch;
         } else {
@@ -209,24 +209,24 @@ export class ForkDetector {
         }
     }
 
-    private async getPossibleForks(blockNumber: number): Promise<Branch[]> {
-        //No necesitamos los branches si no los ultimos "nodos" que se agregaron de cada branch
-        let minimunHeightToSearch = this.getHeightforPossibleBranches(blockNumber);
+    private async getPossibleForks(blockNumber: number): Promise<Fork[]> {
+        //No necesitamos los forks si no los ultimos "nodos" que se agregaron de cada forks
+        let minimunHeightToSearch = this.getHeightforPossibleForks(blockNumber);
 
-        //connect to the database to get possible branches forks , 
+        //connect to the database to get possible forks, 
         //No deberiamos traer todo, solo hasta un maximo hacia atras
-        return this.branchService.getForksDetected(minimunHeightToSearch);
+        return this.forkService.getForksDetected(minimunHeightToSearch);
     }
 
-    private tagIsInBranch(branches: Branch[], item: BranchItem): boolean {
-        return branches[0].getForkItems().some(x => x.rskForkInfo.forkDetectionData.equals(item.rskForkInfo.forkDetectionData));
+    private tagIsInAFork(forks:Fork[], item: ForkItem): boolean {
+        return forks[0].getForkItems().some(x => x.rskForkInfo.forkDetectionData.equals(item.rskForkInfo.forkDetectionData));
     }
 
-    private newItemCanBeAddedInBranch(branches: Branch[], item: BranchItem) {
-        return branches[0].getLastDetected().rskForkInfo.forkDetectionData.BN < item.rskForkInfo.forkDetectionData.BN;
+    private newItemCanBeAddedInFork(forks: Fork[], item: ForkItem) {
+        return forks[0].getLastDetected().rskForkInfo.forkDetectionData.BN < item.rskForkInfo.forkDetectionData.BN;
     }
 
-    private async addOrCreateBranch(btcBlock: BtcBlock) {
+    private async addOrCreateFork(btcBlock: BtcBlock) {
         let rskBestBlock: RskBlockInfo = await this.rskApiService.getBestBlock();
         let rskBlocksSameHeight;
 
@@ -247,33 +247,33 @@ export class ForkDetector {
 
         var rskForkItem : RskForkItemInfo = RskForkItemInfo.fromForkDetectionData(btcBlock.rskTag,rskBestBlock.height);
         //Possible mainchain block from where it started to fork
-        let item: BranchItem = new BranchItem(btcBlock.btcInfo, rskForkItem);
+        let item: ForkItem = new ForkItem(btcBlock.btcInfo, rskForkItem);
 
-        let branches: Branch[] = await this.getBranchesThatOverlap(rskForkItem.forkDetectionData);
+        let forks: Fork[] = await this.getForksThatOverlap(rskForkItem.forkDetectionData);
 
-        if (branches.length > 1) {
-            this.logger.info("FORK: More branches that we expect, found:", branches.length, "branches", "with CPV:", rskForkItem.forkDetectionData.CPV);
+        if (forks.length > 1) {
+            this.logger.info("FORK: More forks that we expect, found:", forks.length, "", "with CPV:", rskForkItem.forkDetectionData.CPV);
         }
 
         //If rskTag is repeted
-        if (branches.length > 0 && this.tagIsInBranch(branches, item)) {
+        if (forks.length > 0 && this.tagIsInAFork(forks, item)) {
             this.logger.info("FORK: Tag repeated")
             return;
         }
 
-        // TODO: For now, we get the first branch, there is a minimun change to get more than 1 item that match, but what happens if we find more?
-        if (branches.length > 0 && this.newItemCanBeAddedInBranch(branches, item)) {
+        // TODO: For now, we get the first fork, there is a minimun change to get more than 1 item that match, but what happens if we find more?
+        if (forks.length > 0 && this.newItemCanBeAddedInFork(forks, item)) {
 
             this.logger.info('FORK: RSKTAG', rskForkItem.forkDetectionData.toString(), 'was found in BTC block with hash:', btcBlock.btcInfo.hash,
-                'this new item was added in a existing branch');
+                'this new item was added in a existing fork');
 
-            await this.branchService.addBranchItem(branches[0].getFirstDetected().rskForkInfo.forkDetectionData.prefixHash, item);
+            await this.forkService.addForkItem(forks[0].getFirstDetected().rskForkInfo.forkDetectionData.prefixHash, item);
         } else {
             let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskForkItem.forkDetectionData, rskBlocksSameHeight);
 
-            this.logger.info('FORK: Creating branch for RSKTAG', rskForkItem.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
+            this.logger.info('FORK: Creating fork for RSKTAG', rskForkItem.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
 
-            await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, [item]));
+            await this.forkService.save(new Fork(mainchainRangeForkCouldHaveStarted, [item]));
         }
     }
 
@@ -297,21 +297,21 @@ export class ForkDetector {
         let itemShouldBeAnUncleAtLeast: RskBlockInfo = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, itemIsNotMoreInMainchain.rskInfo.forkDetectionData);
 
         if (itemShouldBeAnUncleAtLeast == null) {
-            this.logger.info("Mainchain Reorganization: mainchain with a btc tag previously found was discarted because it doesn't belong any more to the mainchain", Printify.getPrintifyInfoBranchItem(itemIsNotMoreInMainchain))
+            this.logger.info("Mainchain Reorganization: mainchain with a btc tag previously found was discarted because it doesn't belong any more to the mainchain", Printify.getPrintifyInfoForkItem(itemIsNotMoreInMainchain))
         } else {
             // Up to here we know that the old tag is not longer in mainchain, but is an uncle.
             // let add it as an uncle in this height
             var newItem = new Item(null, itemShouldBeAnUncleAtLeast);
-            this.logger.info("Mainchian Reorganization: Saving best block as an uncle", Printify.getPrintifyInfoBranchItem(newItem));
+            this.logger.info("Mainchian Reorganization: Saving best block as an uncle", Printify.getPrintifyInfoForkItem(newItem));
             itemIsNotMoreInMainchain.rskInfo.mainchain = false;
             await this.mainchainService.save([newItem]);
         }
 
         var bestblockAtHeight: RskBlockInfo = await this.rskApiService.getBlock(itemIsNotMoreInMainchain.rskInfo.height);
-        var branchItemToReplace = new Item(null, bestblockAtHeight);
-        this.logger.info("Mainchian Reorganization: Removing block that was best block", Printify.getPrintifyInfoBranchItem(itemIsNotMoreInMainchain), "for new block", Printify.getPrintifyInfoBranchItem(branchItemToReplace))
+        var forkItemToReplace = new Item(null, bestblockAtHeight);
+        this.logger.info("Mainchian Reorganization: Removing block that was best block", Printify.getPrintifyInfoForkItem(itemIsNotMoreInMainchain), "for new block", Printify.getPrintifyInfoForkItem(forkItemToReplace))
 
-        await this.mainchainService.changeBlockInMainchain(itemIsNotMoreInMainchain.rskInfo.height, branchItemToReplace);
+        await this.mainchainService.changeBlockInMainchain(itemIsNotMoreInMainchain.rskInfo.height, forkItemToReplace);
 
         //Now let's check if the reorganization took more blocks backwards.
         var prevBLockInMainchain = await this.mainchainService.getBlock(itemIsNotMoreInMainchain.rskInfo.height - 1)

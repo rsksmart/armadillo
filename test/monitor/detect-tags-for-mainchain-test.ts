@@ -1,7 +1,7 @@
 import "mocha";
 import { BtcHeaderInfo, BtcBlock } from "../../src/common/btc-block";
 import { BtcWatcher } from "../../src/services/btc-watcher";
-import { Item } from "../../src/common/branch";
+import { Item } from "../../src/common/forks";
 import { expect } from "chai";
 import { ForkDetector } from "../../src/services/fork-detector";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
