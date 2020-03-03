@@ -1,5 +1,5 @@
 import { MainchainService } from '../../services/mainchain-service';
-import { BranchItem, Item } from '../../common/branch';
+import { ForkItem, Item } from '../../common/forks';
 import { MessageResponse } from '../common/message-response';
 
 /* eslint-disable class-methods-use-this */
