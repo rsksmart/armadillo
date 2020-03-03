@@ -8,25 +8,22 @@
         }
     },
     "rskApi-prod": {
-        "completeUrl": "https://public-node.rsk.co/1.1.0",
+        "completeUrl": "https://public-node.rsk.co/1.2.1",
         "lastBtcBlockDetectedCheckpoint": 0
     },
     "rskApi-local": {
         "completeUrl": "http://localhost:4444"
     },
     "rskApi": {
-        "completeUrl": "http://localhost:4444"
+        "completeUrl": "https://public-node.rsk.co/1.2.1",
+        "lastBtcBlockDetectedCheckpoint": 613800
     },
-    "btcApi-prod": {
+    "btcApi": {
         "host": "34.67.238.129",
         "port": 5000
     },
-    "btcApi-local": {
-        "host": "localhost",
-        "port": 5000
-    },
-    "btcApi": {
-        "host": "localhost",
+    "btcApi-local-productive": {
+        "host": "34.67.238.129",
         "port": 5000
     },
     "store": {
@@ -34,11 +31,10 @@
         "host": "localhost",
         "databaseName": "armadillo",
         "collections": {
-            "branches": "branches",
+            "forks": "branches",
             "mainchain": "mainchain",
             "btc": "btc"
         }
-       
     },
     "forkApi": {
         "port": "6000"

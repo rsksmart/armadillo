@@ -1,13 +1,13 @@
 import { MainchainService } from '../../services/mainchain-service';
-import { BranchService } from '../../services/branch-service';
-import { Branch, BranchItem } from '../../common/branch';
+import { ForkService } from '../../services/fork-service';
+import { Fork, Item } from '../../common/forks';
 import { MessageResponse } from '../common/message-response';
 
 export class BlockchainHistory {
-  public forks: BranchItem[][];
-  public mainchain: BranchItem[];
+  public forks: Fork[];
+  public mainchain: Item[];
 
-  constructor(mainchain: BranchItem[], forks: BranchItem[][]) {
+  constructor(mainchain: Item[], forks: Fork[]) {
     this.forks = forks;
     this.mainchain = mainchain;
   }
@@ -15,15 +15,15 @@ export class BlockchainHistory {
 
 export class BlockchainController {
   private mainchainService: MainchainService;
-  private branchService: BranchService;
+  private forkService: ForkService;
 
-  constructor(mainchainService: MainchainService, branchService: BranchService) {
+  constructor(mainchainService: MainchainService, forkService: ForkService) {
     this.mainchainService = mainchainService;
-    this.branchService = branchService;
+    this.forkService = forkService;
   }
 
   private async getBlockchain(n : number){
-    var mainchain : BranchItem[] = await this.mainchainService.getLastBtcBlocksDetectedInChain(n);
+    var mainchain : Item[] = await this.mainchainService.getLastBtcBlocksDetectedInChain(n);
 
     let heightToGetForksFrom = 0;
 
@@ -31,8 +31,7 @@ export class BlockchainController {
       heightToGetForksFrom = mainchain[0].rskInfo.height - (n - 1);
     }
 
-    let forksBranches = await this.branchService.getForksDetected(heightToGetForksFrom);
-    var forks: BranchItem[][] = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
+    let forks = await this.forkService.getForksDetected(heightToGetForksFrom);
 
     return new BlockchainHistory(mainchain, forks);
   }
