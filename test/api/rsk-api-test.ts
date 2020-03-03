@@ -5,7 +5,7 @@ import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import sinon from "sinon";
 import { expect } from "chai";
-import { RangeForkInMainchain } from "../../src/common/branch";
+import { RangeForkInMainchain } from "../../src/common/forks";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00";

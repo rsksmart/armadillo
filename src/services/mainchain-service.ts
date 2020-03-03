@@ -1,5 +1,5 @@
 import { MongoStore } from "../storage/mongo-store";
-import { Item } from "../common/branch";
+import { Item } from "../common/forks";
 import BaseService from "./base-service";
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { UpdateWriteOpResult } from "mongodb";
