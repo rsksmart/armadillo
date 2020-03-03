@@ -20,10 +20,9 @@ export class RskApiService {
     public async getBlocksByNumber(height: number): Promise<RskBlockInfo[]> {
         var blocksInfo: any[] = await retry3Times(this.nod3.rsk.getBlocksByNumber, ['0x' + height.toString(16), true]);
         var blocks: RskBlockInfo[] = [];
-
         for (const blockInfo of blocksInfo) {
             var block = await retry3Times(this.nod3.eth.getBlock, [blockInfo.hash]);
-            blocks.push(new RskBlockInfo(block.number, block.hash, block.parentHash, blockInfo.inMainChain, new ForkDetectionData(block.hashForMergedMining)));
+            blocks.push(new RskBlockInfo(block.number, block.hash, block.parentHash, blockInfo.inMainChain, blockInfo.miner, new ForkDetectionData(block.hashForMergedMining)));
         }
 
         return blocks;
@@ -32,7 +31,7 @@ export class RskApiService {
     public async getBestBlock(): Promise<RskBlockInfo> {
         let number: number = await retry3Times(this.nod3.eth.blockNumber);
         let block = await retry3Times(this.nod3.eth.getBlock, [number]);
-        return new RskBlockInfo(block.number, block.hash, block.parentHash, true, new ForkDetectionData(block.hashForMergedMining));
+        return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
     }
 
     public async getBestBlockHeight(): Promise<number> {
@@ -41,7 +40,7 @@ export class RskApiService {
 
     public async getBlock(height: number): Promise<RskBlockInfo> {
         let block = await retry3Times(this.nod3.eth.getBlock, [height]);
-        return new RskBlockInfo(block.number, block.hash, block.parentHash, true, new ForkDetectionData(block.hashForMergedMining));
+        return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
     }
 
     //This method returns the nearest block in rsk blockchain where we thought the fork could have started
