@@ -45,17 +45,17 @@ export class RskApiService {
     }
 
     //This method returns the nearest block in rsk blockchain where we thought the fork could have started
-    public async getRangeForkWhenItCouldHaveStarted(forkDetectionData: ForkDetectionData, maxRskHeighCouldMatch: RskBlockInfo): Promise<RangeForkInMainchain> {
-        let startBlock: RskBlockInfo = await this.defineForkStart(forkDetectionData, maxRskHeighCouldMatch);
-        let endBlock: RskBlockInfo = await this.defineForkEnd(forkDetectionData, maxRskHeighCouldMatch);
+    public async getRangeForkWhenItCouldHaveStarted(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: RskBlockInfo): Promise<RangeForkInMainchain> {
+        let startBlock: RskBlockInfo = await this.defineForkStart(forkDetectionData, maxRskHeightCouldMatch);
+        let endBlock: RskBlockInfo = await this.defineForkEnd(forkDetectionData, maxRskHeightCouldMatch);
 
         return new RangeForkInMainchain(startBlock, endBlock);
     }
 
-    private async defineForkStart(forkDetectionData: ForkDetectionData, maxRskHeighCouldMatch: RskBlockInfo): Promise<RskBlockInfo> {
-        let bytesOverlaps: number = forkDetectionData.getNumberOfOverlapInCPV(maxRskHeighCouldMatch.forkDetectionData.CPV);
+    private async defineForkStart(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: RskBlockInfo): Promise<RskBlockInfo> {
+        let bytesOverlaps: number = forkDetectionData.getNumberOfOverlapInCPV(maxRskHeightCouldMatch.forkDetectionData.CPV);
         let jumpsBackwards = (7 - bytesOverlaps) * 64;
-        let whenWasTheLastCPVChange = Math.floor((maxRskHeighCouldMatch.height - 1) / 64) * 64;
+        let whenWasTheLastCPVChange = Math.floor((maxRskHeightCouldMatch.height - 1) / 64) * 64;
         let heightBackwards =  whenWasTheLastCPVChange - jumpsBackwards;
         let startBlock: RskBlockInfo;
         
@@ -70,27 +70,27 @@ export class RskApiService {
             return startBlock;
         }
 
-        if (heightBackwards > maxRskHeighCouldMatch.height) {
-            return await this.getBlock(maxRskHeighCouldMatch.height);
+        if (heightBackwards > maxRskHeightCouldMatch.height) {
+            return await this.getBlock(maxRskHeightCouldMatch.height);
         }
         
         return await this.getBlock(heightBackwards);
     }
 
-    private async defineForkEnd(forkDetectionData: ForkDetectionData, maxRskHeighCouldMatch: RskBlockInfo): Promise<RskBlockInfo> {
-        let bytesOverlaps: number = forkDetectionData.getNumberOfOverlapInCPV(maxRskHeighCouldMatch.forkDetectionData.CPV);
+    private async defineForkEnd(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: RskBlockInfo): Promise<RskBlockInfo> {
+        let bytesOverlaps: number = forkDetectionData.getNumberOfOverlapInCPV(maxRskHeightCouldMatch.forkDetectionData.CPV);
         let jumpsBackwards = (7 - bytesOverlaps) * 64;
-        let whenWasTheLastCPVChange = Math.floor((maxRskHeighCouldMatch.height - 1) / 64) * 64;
+        let whenWasTheLastCPVChange = Math.floor((maxRskHeightCouldMatch.height - 1) / 64) * 64;
         let heightWhereForkShouldEnd = whenWasTheLastCPVChange - jumpsBackwards + 64
         
         if (bytesOverlaps == 0) {
 
-            if(this.isFarInTheFuture(forkDetectionData, maxRskHeighCouldMatch)){
-                return maxRskHeighCouldMatch;
+            if(this.isFarInTheFuture(forkDetectionData, maxRskHeightCouldMatch)){
+                return maxRskHeightCouldMatch;
             }
 
             //Esto esta mal:
-            if(this.isInTheFuture(forkDetectionData, maxRskHeighCouldMatch)){
+            if(this.isInTheFuture(forkDetectionData, maxRskHeightCouldMatch)){
                 return await this.getBlock(heightWhereForkShouldEnd);
             }
 
@@ -98,22 +98,22 @@ export class RskApiService {
             return await this.getBlock(heightWhereForkShouldEnd);
         }
 
-        if (maxRskHeighCouldMatch.height > heightWhereForkShouldEnd) {
+        if (maxRskHeightCouldMatch.height > heightWhereForkShouldEnd) {
             return await this.getBlock(heightWhereForkShouldEnd);
         }
 
-        return maxRskHeighCouldMatch;
+        return maxRskHeightCouldMatch;
     }
 
-    private isInTheFuture(forkDetectionData: ForkDetectionData, maxRskHeighCouldMatch: RskBlockInfo) {
-        return forkDetectionData.BN > maxRskHeighCouldMatch.height;
+    private isInTheFuture(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: RskBlockInfo) {
+        return forkDetectionData.BN > maxRskHeightCouldMatch.height;
     }
 
-    private isFarInTheFuture(forkDetectionData: ForkDetectionData, maxRskHeighCouldMatch: RskBlockInfo) {
-        return this.isInTheFuture(forkDetectionData, maxRskHeighCouldMatch) && this.heightDismatchForTheDistance(forkDetectionData, maxRskHeighCouldMatch);
+    private isFarInTheFuture(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: RskBlockInfo) {
+        return this.isInTheFuture(forkDetectionData, maxRskHeightCouldMatch) && this.heightDismatchForTheDistance(forkDetectionData, maxRskHeightCouldMatch);
     }
 
-    private heightDismatchForTheDistance(forkDetectionData: ForkDetectionData, maxRskHeighCouldMatch: RskBlockInfo) {
-        return (forkDetectionData.BN - maxRskHeighCouldMatch.height) > 448;
+    private heightDismatchForTheDistance(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: RskBlockInfo) {
+        return (forkDetectionData.BN - maxRskHeightCouldMatch.height) > 448;
     }
 }
