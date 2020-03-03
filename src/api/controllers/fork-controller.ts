@@ -1,13 +1,12 @@
-import { BranchService } from '../../services/branch-service';
-import { Branch } from '../../common/branch';
+import { ForkService as ForkService } from '../../services/fork-service';
 import { MessageResponse } from '../common/message-response';
 
 /* eslint-disable class-methods-use-this */
 
-export default class BranchController {
-  private service: BranchService;
+export default class ForkController {
+  private service: ForkService;
 
-  constructor(service: BranchService) {
+  constructor(service: ForkService) {
     this.service = service;
   }
 

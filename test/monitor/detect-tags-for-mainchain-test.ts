@@ -1,13 +1,13 @@
 import "mocha";
 import { BtcHeaderInfo, BtcBlock } from "../../src/common/btc-block";
 import { BtcWatcher } from "../../src/services/btc-watcher";
-import { BranchItem } from "../../src/common/branch";
+import { Item } from "../../src/common/forks";
 import { expect } from "chai";
 import { ForkDetector } from "../../src/services/fork-detector";
 import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { stubObject } from "ts-sinon";
 import sinon from "sinon";
-import { RskBlock } from "../../src/common/rsk-block";
+import { RskBlockInfo } from "../../src/common/rsk-block";
 import { RskApiService } from "../../src/services/rsk-api-service";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
@@ -61,7 +61,7 @@ describe('Mainchain test', () => {
 
   describe('New btc block has a tag which is in RSK network mainchain', () => {
     it("First item in mainnet", async () => {
-      const rskBlock = new RskBlock(1, "hash", "prevHash", true, forkData);
+      const rskBlock = new RskBlockInfo(1, "hash", "prevHash", true, forkData);
 
       sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock]);
       sinon.stub(mainchainService, <any>'getBestBlock').returns(null);
@@ -79,9 +79,9 @@ describe('Mainchain test', () => {
 
     it("Connect item in mainchain, now mainchain has 2 blocks", async () => {
       const partTag: string = PREFIX + CPV + NU;
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true,  new ForkDetectionData(partTag + "00000001"));
-      const rskBlock2 = new RskBlock(2, "hash2", "hash1", true,  new ForkDetectionData(partTag + "00000002"));
-      const mainchainBest = new BranchItem(btcBlockInMainchain.btcInfo, rskBlock1);
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true,  new ForkDetectionData(partTag + "00000001"));
+      const rskBlock2 = new RskBlockInfo(2, "hash2", "hash1", true,  new ForkDetectionData(partTag + "00000002"));
+      const mainchainBest = new Item(btcBlockInMainchain.btcInfo, rskBlock1);
 
       sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock2]);
       sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock2);
@@ -102,10 +102,10 @@ describe('Mainchain test', () => {
     it("Rebuid 2 blocks between top mainchain and the new block found", async () => {
       const rskTag = PREFIX + CPV + NU + "00000004"
       const forkData1 = new ForkDetectionData(rskTag);
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskBlock2 = new RskBlock(2, "hash2", "hash1", true, forkData);
-      const rskBlock3 = new RskBlock(3, "hash3", "hash2", true, forkData);
-      const rskBlock4 = new RskBlock(4, "hash4", "hash3", true, forkData1);
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const rskBlock2 = new RskBlockInfo(2, "hash2", "hash1", true, forkData);
+      const rskBlock3 = new RskBlockInfo(3, "hash3", "hash2", true, forkData);
+      const rskBlock4 = new RskBlockInfo(4, "hash4", "hash3", true, forkData1);
       const btcBlock = new BtcBlock(2, "btcHash", rskTag)
 
       const getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
@@ -117,7 +117,7 @@ describe('Mainchain test', () => {
       getBlock.withArgs(3).returns(rskBlock3);
       getBlock.withArgs(4).returns(rskBlock4);
 
-      sinon.stub(mainchainService, <any>'getBestBlock').returns(new BranchItem(new BtcHeaderInfo(1, "hash"), rskBlock1));
+      sinon.stub(mainchainService, <any>'getBestBlock').returns(new Item(new BtcHeaderInfo(1, "hash"), rskBlock1));
 
       var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(() => {});
 
@@ -133,19 +133,19 @@ describe('Mainchain test', () => {
     });
 
     it("Repeated rsk tag arrives, discart new btc block", async () => {
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const branch = new BranchItem(new BtcHeaderInfo(1, "hash"), rskBlock1)
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const item = new Item(new BtcHeaderInfo(1, "hash"), rskBlock1)
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
       
       var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
       getBestBlockMainchainService.onCall(0).callsFake(null);
-      getBestBlockMainchainService.onCall(1).returns(branch);
+      getBestBlockMainchainService.onCall(1).returns(item);
 
       sinon.stub(rskService, <any>'getBlock').returns(rskBlock1)
 
-      var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(branch);
-      var updateBtcInfoBranchItem = sinon.stub(mainchainService, <any>'updateBtcInfoBranchItem').callsFake(() => {});
+      var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(item);
+      var updateBtcInfoItem = sinon.stub(mainchainService, <any>'updateBtcInfoItem').callsFake(() => {});
       
       sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock1);
 
@@ -159,27 +159,27 @@ describe('Mainchain test', () => {
       //Validations
       await sleep(500);
       expect(saveMainchain.calledOnce).to.be.true;
-      expect(updateBtcInfoBranchItem.called).to.be.false;
+      expect(updateBtcInfoItem.called).to.be.false;
       expect(getBlockByForkDataDetection.called).to.be.true;
       expect(blockSuccessfullyProcessed.calledTwice).to.be.true;
     });
 
     it("Rsk tag arrives with lower height (solution in mainchain)", async () => {
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskBlock9 = new RskBlock(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
-      let branch1 = new BranchItem(null, rskBlock1)
-      let branch1WithBtcInfo = new BranchItem(btcBlock.btcInfo, rskBlock1)
-      const branch9 = new BranchItem(new BtcHeaderInfo(9, "hash"), rskBlock9);
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const rskBlock9 = new RskBlockInfo(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
+      let item1 = new Item(null, rskBlock1)
+      let item1WithBtcInfo = new Item(btcBlock.btcInfo, rskBlock1)
+      const item9 = new Item(new BtcHeaderInfo(9, "hash"), rskBlock9);
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
 
       sinon.stub(rskService, <any>'getBlock').returns(rskBlock1);
       
       var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
-      getBestBlockMainchainService.returns(branch9);
+      getBestBlockMainchainService.returns(item9);
 
-      var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(branch1);
-      var updateBtcInfoBranchItem = sinon.stub(mainchainService, <any>'updateBtcInfoBranchItem').withArgs(branch1WithBtcInfo).callsFake(() => {});
+      var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(item1);
+      var updateBtcInfoItem = sinon.stub(mainchainService, <any>'updateBtcInfoItem').withArgs(item1WithBtcInfo).callsFake(() => {});
 
       sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock1);
 
@@ -191,27 +191,27 @@ describe('Mainchain test', () => {
 
       //Validations
       expect(saveMainchain.called).to.be.false;
-      expect(updateBtcInfoBranchItem.called).to.be.true;
+      expect(updateBtcInfoItem.called).to.be.true;
       expect(getBlockByForkDataDetection.called).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
 
     it("Rsk tag arrives with lower height, and is pointing to an uncle", async () => {
-      const rskBlock1 = new RskBlock(1, "hash1", "hash0", true, forkData);
-      const rskBlock9 = new RskBlock(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
-      const branch9 = new BranchItem(new BtcHeaderInfo(9, "hash"), rskBlock9);
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, forkData);
+      const rskBlock9 = new RskBlockInfo(9, "hash1", "hash0", true, new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
+      const item9 = new Item(new BtcHeaderInfo(9, "hash"), rskBlock9);
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
 
       sinon.stub(rskService, <any>'getBlock').returns(rskBlock1);
       
       var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
-      getBestBlockMainchainService.returns(branch9);
+      getBestBlockMainchainService.returns(item9);
 
        // this line implies that in mainchain there is no block that match with that tag
       var getBlockByForkDataDetection = sinon.stub(mainchainService, <any>'getBlockByForkDataDetection').returns(null);
       
-      var updateBtcInfoBranchItem = sinon.stub(mainchainService, <any>'updateBtcInfoBranchItem').callsFake(() => {});
+      var updateBtcInfoItem = sinon.stub(mainchainService, <any>'updateBtcInfoItem').callsFake(() => {});
 
       sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock1);
 
@@ -223,7 +223,7 @@ describe('Mainchain test', () => {
 
       //Validations
       expect(saveMainchain.called).to.be.true;
-      expect(updateBtcInfoBranchItem.called).to.be.false;
+      expect(updateBtcInfoItem.called).to.be.false;
       expect(getBlockByForkDataDetection.called).to.be.true;
       expect(blockSuccessfullyProcessed.called).to.be.true;
     });
@@ -232,24 +232,24 @@ describe('Mainchain test', () => {
   describe('New btc block with RSK tag is pointing to an RSK uncle', () => {
     it("Buinding mainchain with best block instead using the uncle at that height, also save uncle", async () => {
       const btcBlock = new BtcBlock(200, "btcHash", PREFIX + CPV + NU + "00000003");
-      const rskNoBest = new RskBlock(3, "hash3_NoBest", "hash2", false, new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
-      const rskBest = new RskBlock(2, "hash2", "hash1", true,  new ForkDetectionData(PREFIX + CPV + NU + "00000002"));
+      const rskNoBest = new RskBlockInfo(3, "hash3_NoBest", "hash2", false, new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
+      const rskBest = new RskBlockInfo(2, "hash2", "hash1", true,  new ForkDetectionData(PREFIX + CPV + NU + "00000002"));
     
-      const rskNoBestBranchItem = new BranchItem(btcBlock.btcInfo, rskNoBest);
-       const rskBestBranchItem = new BranchItem(null, rskBest);
+      const rskNoBestItem = new Item(btcBlock.btcInfo, rskNoBest);
+      const rskBestItem = new Item(null, rskBest);
       
       sinon.stub(rskService, <any>'getBlock').withArgs(2).returns(rskBest);
       const getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumber.withArgs(3).returns([rskNoBest, rskBest]);
 
-      sinon.stub(mainchainService, <any>'getBestBlock').returns(new BranchItem(null, rskBest));
+      sinon.stub(mainchainService, <any>'getBestBlock').returns(new Item(null, rskBest));
 
       const saveMainchain = sinon.stub(mainchainService, <any>'save');
-      saveMainchain.withArgs([rskNoBestBranchItem]).callsFake((branchItems) => {
-        expect([rskNoBestBranchItem]).to.deep.equal(branchItems);
+      saveMainchain.withArgs([rskNoBestItem]).callsFake((items) => {
+        expect([rskNoBestItem]).to.deep.equal(items);
       });
-      saveMainchain.withArgs([rskBestBranchItem]).callsFake((branchItems) => {
-        expect([rskBestBranchItem]).to.deep.equal(branchItems);
+      saveMainchain.withArgs([rskBestItem]).callsFake((items) => {
+        expect([rskBestItem]).to.deep.equal(items);
       });
 
       sinon.stub(rskService, <any>'getBestBlock').returns(rskNoBest);
@@ -267,15 +267,15 @@ describe('Mainchain test', () => {
 
   describe('New RSK tag, there are a reorganization', () => {
     it("Reorg 2 blocks in chain", async () => {
-      const rsk4InMainchain = new RskBlock(4, "hash4", "hash3", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004"));
-      const rsk5InMainchain = new RskBlock(5, "hash5", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
-      const rsk6InMainchain = new RskBlock(6, "hash6", "hash5", false, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
-      const rsk6NewBest = new RskBlock(6, "hash6NewBest", "hash5NewBest", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
-      const rsk5NewBest = new RskBlock(5, "hash5NewBest", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
-      const rsk6BranchNewBest = new BranchItem(null, rsk6NewBest);
-      const rsk5BranchNewBest = new BranchItem(null, rsk5NewBest);
-      const rsk5BranchInMainchain = new BranchItem(null, rsk5InMainchain);
-      const rsk4BranchInMainchain = new BranchItem(null, rsk4InMainchain);
+      const rsk4InMainchain = new RskBlockInfo(4, "hash4", "hash3", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004"));
+      const rsk5InMainchain = new RskBlockInfo(5, "hash5", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
+      const rsk6InMainchain = new RskBlockInfo(6, "hash6", "hash5", false, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
+      const rsk6NewBest = new RskBlockInfo(6, "hash6NewBest", "hash5NewBest", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006"));
+      const rsk5NewBest = new RskBlockInfo(5, "hash5NewBest", "hash4", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005"));
+      const rsk6ItemBNewBest = new Item(null, rsk6NewBest);
+      const rsk5ItemNewBest = new Item(null, rsk5NewBest);
+      const rsk5ItemInMainchain = new Item(null, rsk5InMainchain);
+      const rsk4ItemInMainchain = new Item(null, rsk4InMainchain);
 
       const getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumber.withArgs(6).returns([rsk6NewBest, rsk6InMainchain]);
@@ -285,25 +285,24 @@ describe('Mainchain test', () => {
       getBlock.withArgs(6).returns(rsk6NewBest);
       getBlock.withArgs(5).returns(rsk5NewBest);
       getBlock.withArgs(4).returns(rsk4InMainchain);
-      // sinon.stub(mainchainService, <any>'getBestBlock').returns(new BranchItem(null, rsk3));
 
       let changeBlockInMainchain = sinon.stub(mainchainService, <any>'changeBlockInMainchain')
-      changeBlockInMainchain.withArgs(6, rsk6BranchNewBest).callsFake(null);
-      changeBlockInMainchain.withArgs(5, rsk5BranchNewBest).callsFake(null);
+      changeBlockInMainchain.withArgs(6, rsk6ItemBNewBest).callsFake(null);
+      changeBlockInMainchain.withArgs(5, rsk5ItemNewBest).callsFake(null);
 
       var getBlockMainchain = sinon.stub(mainchainService, <any>'getBlock')
-      getBlockMainchain.withArgs(5).returns(rsk5BranchInMainchain);
-      getBlockMainchain.withArgs(4).returns(rsk4BranchInMainchain);
+      getBlockMainchain.withArgs(5).returns(rsk5ItemInMainchain);
+      getBlockMainchain.withArgs(4).returns(rsk4ItemInMainchain);
      
       const saveMainchain = sinon.stub(mainchainService, <any>'save');
-      saveMainchain.withArgs([rsk6BranchNewBest]).callsFake((branchItems) => {
-        expect([rsk6BranchNewBest]).to.deep.equal(branchItems);
+      saveMainchain.withArgs([rsk6ItemBNewBest]).callsFake((items) => {
+        expect([rsk6ItemBNewBest]).to.deep.equal(items);
       });
-      saveMainchain.withArgs([rsk5BranchNewBest]).callsFake((branchItems) => {
-        expect([rsk5BranchNewBest]).to.deep.equal(branchItems);
+      saveMainchain.withArgs([rsk5ItemNewBest]).callsFake((items) => {
+        expect([rsk5ItemNewBest]).to.deep.equal(items);
       });
 
-      await forkDetector.rebuildMainchainFromBlock(rsk6BranchNewBest);
+      await forkDetector.rebuildMainchainFromBlock(rsk6ItemBNewBest);
 
       //Validations
       expect(saveMainchain.calledTwice).to.be.true;
