@@ -2,7 +2,7 @@ import { RskApiConfig } from "../config/rsk-api-config";
 import { RskBlockInfo, RskForkItemInfo } from "../common/rsk-block";
 import Nod3 from 'nod3';
 import { ForkDetectionData } from "../common/fork-detection-data";
-import { RangeForkInMainchain } from "../common/branch";
+import { RangeForkInMainchain } from "../common/forks";
 import { retry3Times } from "../util/helper";
 
 export class RskApiService {

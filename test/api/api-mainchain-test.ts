@@ -6,7 +6,7 @@ import { MongoStore } from "../../src/storage/mongo-store";
 import { MainchainService } from "../../src/services/mainchain-service";
 import { RskBlockInfo } from "../../src/common/rsk-block";
 import { MainchainController } from "../../src/api/controllers/mainchain-controller";
-import { Item } from "../../src/common/branch";
+import { Item } from "../../src/common/forks";
 import { ApiConfig } from "../../src/config/api-config";
 import { MessageResponse } from "../../src/api/common/message-response";
 import { copy } from "../../src/util/helper";
