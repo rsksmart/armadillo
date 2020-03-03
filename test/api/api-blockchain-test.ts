@@ -40,18 +40,18 @@ describe("Blockchain api tests", () => {
   });
 
   it("getLastBlochains method", async () => {
-    const itemInMainchain = new RskBlockInfo(0, "", "", true, null);
+    const itemInMainchain = new RskBlockInfo(0, "", "", true, "", null);
     const forkItem3 = new ForkItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000003"), 0));
     const forkItem4 = new ForkItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000004"), 0));
     const forkItem5 = new ForkItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000005"), 0));
 
-    const item1 = new Item(btcInfo, new RskBlockInfo(1, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
-    const item2 = new Item(btcInfo, new RskBlockInfo(2, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
-    const item3 = new Item(btcInfo, new RskBlockInfo(3, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
-    const item4 = new Item(btcInfo, new RskBlockInfo(4, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
-    const item5 = new Item(btcInfo, new RskBlockInfo(5, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
-    const item6 = new Item(btcInfo, new RskBlockInfo(6, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
-    const item7 = new Item(btcInfo, new RskBlockInfo(7, "hash", "prevHash", true, new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
+    const item1 = new Item(btcInfo, new RskBlockInfo(1, "hash", "prevHash", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000001")));
+    const item2 = new Item(btcInfo, new RskBlockInfo(2, "hash", "prevHash", true, "",  new ForkDetectionData(PREFIX + CPV + NU + "00000002")));
+    const item3 = new Item(btcInfo, new RskBlockInfo(3, "hash", "prevHash", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000003")));
+    const item4 = new Item(btcInfo, new RskBlockInfo(4, "hash", "prevHash", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000004")));
+    const item5 = new Item(btcInfo, new RskBlockInfo(5, "hash", "prevHash", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000005")));
+    const item6 = new Item(btcInfo, new RskBlockInfo(6, "hash", "prevHash", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000006")));
+    const item7 = new Item(btcInfo, new RskBlockInfo(7, "hash", "prevHash", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000007")));
 
     let rangeForkInMainchain = new RangeForkInMainchain(itemInMainchain, itemInMainchain);
     let fork = new Fork(rangeForkInMainchain, [forkItem3,forkItem4,forkItem5]);
