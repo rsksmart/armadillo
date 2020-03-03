@@ -55,18 +55,17 @@ export class ForkDetector {
 
         //TODO Check if tag has rsk height pointing to a heihgt that Armadillo mainchain can manage 
         // if (newBtcBlock.rskTag.BN < this.blockForkWhenArmadilloStated) {
-        //     this.logger.warn("BTC block has a tag with invalid height");
+        //     this.logger.info("BTC block has a tag with invalid height");
         //     return await this.blockSuccessfullyProcessed(newBtcBlock);
         // }
 
         //TODO Check if tag has rsk height pointing to a heihgt that Armadillo mainchain started
         // if () {
-        //     this.logger.warn("BTC block has a tag pointing to a rsk height that is not contenplaiting in armadillo mainchain");
+        //     this.logger.info("BTC block has a tag pointing to a rsk height that is not contenplaiting in armadillo mainchain");
         //     return await this.blockSuccessfullyProcessed(newBtcBlock);
         // }
 
         let rskBlocksAtNewRskTagHeight: RskBlock[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
-
         let rskBlockMatchInHeight: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
 
         if (rskBlockMatchInHeight) {
@@ -87,9 +86,7 @@ export class ForkDetector {
                 this.logger.info("FORK: found a block in the future");
                 blockInRskThatIsTheMaximumPosibleHeight = rskBestBlock;
             } else {
-                
-                blockInRskThatIsTheMaximumPosibleHeight = this.getBestBlock(rskBlocksAtNewRskTagHeight);
-
+                blockInRskThatIsTheMaximumPosibleHeight = this.rskApiService.getBlock(newBtcBlock.rskTag.BN);
                 if(rskBlocksAtNewRskTagHeight.length === 0 || blockInRskThatIsTheMaximumPosibleHeight == null){
                     return await this.btcWatcher.blockProcessingFailed(newBtcBlock);
                 }
@@ -136,16 +133,16 @@ export class ForkDetector {
             var blockThatMatchInMainnet: BranchItem = await this.mainchainService.getBlockByForkDataDetection(newBtcBlock.rskTag);
            
             if (blockThatMatchInMainnet) {
-                this.logger.warn("Mainchain: rsk tag is pointing to an existing armadillo mainchain height. A miner could be stuck");
+                this.logger.info("Mainchain: rsk tag is pointing to an existing armadillo mainchain height. A miner could be stuck");
 
                 if (!blockThatMatchInMainnet.btcInfo) {
                     blockThatMatchInMainnet.btcInfo = newBtcBlock.btcInfo
                     await this.mainchainService.updateBtcInfoBranchItem(blockThatMatchInMainnet);
                 } else {
-                    this.logger.warn("Mainchain: rsk tag is pointing to an existing armadillo mainchain height. Btc data is already at that height");
+                    this.logger.info("Mainchain: rsk tag is pointing to an existing armadillo mainchain height. BTC data is already at that height");
                 }
             } else {
-                this.logger.warn("Mainchain: New rsk tag is pointing to an old armadillo mainchain height, and is a uncle");
+                this.logger.info("Mainchain: New rsk tag is pointing to an old armadillo mainchain height, and is a uncle");
 
                 // New btc block could be an uncle
                 var blockThatMatch: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtRskTagHeight, newBtcBlock.rskTag);
@@ -252,7 +249,7 @@ export class ForkDetector {
         let branches: Branch[] = await this.getBranchesThatOverlap(rskBlock.forkDetectionData);
 
         if (branches.length > 1) {
-            this.logger.warn("FORK: More branches that we expect, found:", branches.length, "branches", "with CPV:", rskBlock.forkDetectionData.CPV);
+            this.logger.info("FORK: More branches that we expect, found:", branches.length, "branches", "with CPV:", rskBlock.forkDetectionData.CPV);
         }
 
         //If rskTag is repeted
@@ -269,10 +266,10 @@ export class ForkDetector {
 
             await this.branchService.addBranchItem(branches[0].getFirstDetected().rskInfo.forkDetectionData.prefixHash, item);
         } else {
-            let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRskBlockAtCertainHeight(rskBlock, rskBlocksSameHeight);
+            let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskBlock, rskBlocksSameHeight);
 
             this.logger.info('FORK: Creating branch for RSKTAG', rskBlock.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
-            // console.log(mainchainRangeForkCouldHaveStarted);
+
             await this.branchService.save(new Branch(mainchainRangeForkCouldHaveStarted, [item]));
         }
     }
@@ -297,7 +294,7 @@ export class ForkDetector {
         let itemShouldBeAnUncleAtLeast: RskBlock = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, itemIsNotMoreInMainchain.rskInfo.forkDetectionData);
 
         if (itemShouldBeAnUncleAtLeast == null) {
-            this.logger.warn("Mainchain Reorganization: mainchain with a btc tag previously found was discarted because it doesn't belong any more to the mainchain", Printify.getPrintifyInfoBranchItem(itemIsNotMoreInMainchain))
+            this.logger.info("Mainchain Reorganization: mainchain with a btc tag previously found was discarted because it doesn't belong any more to the mainchain", Printify.getPrintifyInfoBranchItem(itemIsNotMoreInMainchain))
         } else {
             // Up to here we know that the old tag is not longer in mainchain, but is an uncle.
             // let add it as an uncle in this height
