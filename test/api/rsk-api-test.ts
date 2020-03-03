@@ -9,7 +9,7 @@ import { RangeForkInMainchain } from "../../src/common/forks";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00";
-const blockAtHeight1 = new RskBlockInfo(1, "", "", true, null);
+const blockAtHeight1 = new RskBlockInfo(1, "", "", true, "", null);
 let rskApiConfig: RskApiConfig;
 let rskApiService: RskApiService;
 
@@ -22,7 +22,7 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
 
   describe("Far future case:", () => {
     it("Far Future case. CPV match 0 bytes. fork range should go from 1 to best block", async () => {
-      const bestBlock = new RskBlockInfo(500, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000001F4"));
+      const bestBlock = new RskBlockInfo(500, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000001F4"));
 
       sinon.stub(rskApiService, <any>'getBlock').withArgs(1).returns(blockAtHeight1);
       sinon.stub(rskApiService, <any>'getBestBlock').returns(bestBlock);
@@ -37,8 +37,8 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
 
   describe("Near future case:", () => {
     it("CPV match 7 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block960 = new RskBlockInfo(960, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block960 = new RskBlockInfo(960, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock')
       getBlockStub.withArgs(960).returns(block960);
@@ -54,9 +54,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 6 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block896 = new RskBlockInfo(896, "", "", true, null);
-      let block960 = new RskBlockInfo(960, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block896 = new RskBlockInfo(896, "", "", true, "", null);
+      let block960 = new RskBlockInfo(960, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(896).returns(block896);
@@ -72,9 +72,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 5 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block832 = new RskBlockInfo(832, "", "", true, null);
-      let block896 = new RskBlockInfo(896, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block832 = new RskBlockInfo(832, "", "", true, "", null);
+      let block896 = new RskBlockInfo(896, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(896).returns(block896);
@@ -90,9 +90,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 4 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block832 = new RskBlockInfo(832, "", "", true, null);
-      let block768 = new RskBlockInfo(768, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block832 = new RskBlockInfo(832, "", "", true, "", null);
+      let block768 = new RskBlockInfo(768, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(768).returns(block768);
@@ -108,9 +108,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 3 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block704 = new RskBlockInfo(704, "", "", true, null);
-      let block768 = new RskBlockInfo(768, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block704 = new RskBlockInfo(704, "", "", true, "", null);
+      let block768 = new RskBlockInfo(768, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(768).returns(block768);
@@ -126,9 +126,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 2 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block704 = new RskBlockInfo(704, "", "", true, null);
-      let block640 = new RskBlockInfo(640, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block704 = new RskBlockInfo(704, "", "", true, "", null);
+      let block640 = new RskBlockInfo(640, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(640).returns(block640);
@@ -145,9 +145,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
 
 
     it("CPV match 1 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block576 = new RskBlockInfo(576, "", "", true, null);
-      let block640 = new RskBlockInfo(640, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block576 = new RskBlockInfo(576, "", "", true, "", null);
+      let block640 = new RskBlockInfo(640, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(640).returns(block640);
@@ -163,8 +163,8 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 0 bytes.", async () => {
-      const bestBlock = new RskBlockInfo(1000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
-      let block576 = new RskBlockInfo(576, "", "", true, null);
+      const bestBlock = new RskBlockInfo(1000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "000003E8"));
+      let block576 = new RskBlockInfo(576, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(1).returns(blockAtHeight1);
@@ -182,9 +182,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
 
   describe("Past cases (far/near it's pritty the same):", () => {
     it("CPV match 7 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block5056 = new RskBlockInfo(5056, "", "", true, null);
-      let block4992 = new RskBlockInfo(4992, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block5056 = new RskBlockInfo(5056, "", "", true, "", null);
+      let block4992 = new RskBlockInfo(4992, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4992).returns(block4992);
@@ -200,9 +200,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 6 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4928 = new RskBlockInfo(4928, "", "", true, null);
-      let block4992 = new RskBlockInfo(4992, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4928 = new RskBlockInfo(4928, "", "", true, "", null);
+      let block4992 = new RskBlockInfo(4992, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4992).returns(block4992);
@@ -218,9 +218,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 5 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4928 = new RskBlockInfo(4928, "", "", true, null);
-      let block4864 = new RskBlockInfo(4864, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4928 = new RskBlockInfo(4928, "", "", true, "", null);
+      let block4864 = new RskBlockInfo(4864, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4864).returns(block4864);
@@ -236,9 +236,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 4 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4800 = new RskBlockInfo(4800, "", "", true, null);
-      let block4864 = new RskBlockInfo(4864, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4800 = new RskBlockInfo(4800, "", "", true, "", null);
+      let block4864 = new RskBlockInfo(4864, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4864).returns(block4864);
@@ -254,9 +254,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 3 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4800 = new RskBlockInfo(4800, "", "", true, null);
-      let block4736 = new RskBlockInfo(4736, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4800 = new RskBlockInfo(4800, "", "", true, "", null);
+      let block4736 = new RskBlockInfo(4736, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4736).returns(block4736);
@@ -272,9 +272,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 2 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4736 = new RskBlockInfo(4736, "", "", true, null);
-      let block4672 = new RskBlockInfo(4672, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4736 = new RskBlockInfo(4736, "", "", true, "", null);
+      let block4672 = new RskBlockInfo(4672, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4736).returns(block4736);
@@ -290,9 +290,9 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 1 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4608 = new RskBlockInfo(4608, "", "", true, null);
-      let block4672 = new RskBlockInfo(4672, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4608 = new RskBlockInfo(4608, "", "", true, "", null);
+      let block4672 = new RskBlockInfo(4672, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4608).returns(block4608);
@@ -308,8 +308,8 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
     });
 
     it("CPV match 0 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(5000, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
-      let block4608 = new RskBlockInfo(4608, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00002710"));
+      let block4608 = new RskBlockInfo(4608, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(1).returns(blockAtHeight1);
@@ -327,8 +327,8 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
 
   describe("Present case, cpv is near to change :", () => {
     it("CPV match 7 bytes.", async () => {
-      const blockSameHeight = new RskBlockInfo(4992, "", "", true, new ForkDetectionData(PREFIX + "77665544332211" + NU + "00001380"));
-      let block4928 = new RskBlockInfo(4928, "", "", true, null);
+      const blockSameHeight = new RskBlockInfo(4992, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00001380"));
+      let block4928 = new RskBlockInfo(4928, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
       getBlockStub.withArgs(4928).returns(block4928);

@@ -14,7 +14,7 @@ const btcInfo = new BtcHeaderInfo(0, "");
 //Before you run this test you have to run a mongo instance
 describe("Fork class test", () => {
   it("Test all methods", async () => {
-    let itemInMainnet = new RskBlockInfo(1, "", "", true, new ForkDetectionData(PREFIX + CPV + NU + "00000001"));
+    let itemInMainnet = new RskBlockInfo(1, "", "", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000001"));
     let forkItem2 = new ForkItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000002"), 0));
     let forkItem3 = new ForkItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000003"), 0));
     let forkItem4 = new ForkItem(btcInfo, new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000004"), 0));
