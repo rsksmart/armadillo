@@ -6,17 +6,19 @@ export class RskBlockInfo {
     public hash: string;
     public prevHash: string;
     public mainchain: boolean;
+    public miner: string;
 
-    constructor(_height: number, _hash: string, _prevHash: string, mainchain: boolean, _forkDetectionData: ForkDetectionData) {
+    constructor(_height: number, _hash: string, _prevHash: string, mainchain: boolean, miner: string, _forkDetectionData: ForkDetectionData) {
         this.height = _height;
         this.hash = _hash;
         this.forkDetectionData = _forkDetectionData;
         this.prevHash = _prevHash;
         this.mainchain = mainchain;
+        this.miner = miner;
     }
 
     public static fromObject(block: any): RskBlockInfo {
-        return new RskBlockInfo(block.height, block.hash, block.prevHash, block.mainchain, new ForkDetectionData(block.forkDetectionData));
+        return new RskBlockInfo(block.height, block.hash, block.prevHash, block.mainchain, block.miner, new ForkDetectionData(block.forkDetectionData));
     }
 }
 

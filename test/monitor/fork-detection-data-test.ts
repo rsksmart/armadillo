@@ -54,7 +54,7 @@ describe("Overlap CPV", () => {
 
   beforeEach(function () {
     btcStub = stubObject<BtcWatcher>(BtcWatcher.prototype);
-    rskApiConfig =  new RskApiConfig("localhost:4444",0);
+    rskApiConfig = new RskApiConfig("localhost:4444", 0);
     rskService = new RskApiService(rskApiConfig);
     forkDetector = new ForkDetector(null, mainchainService, btcStub, rskService);
   });
@@ -94,7 +94,7 @@ describe("Overlap CPV", () => {
     let forkData = new ForkDetectionData(RSKTAG);
 
     //match with "89", "9d", "8b"
-    let cpv1 = "11111111d89d8b"; 
+    let cpv1 = "11111111d89d8b";
     let overlapped = forkData.overlapCPV(cpv1, 3);
     expect(overlapped).to.equal(true);
 
@@ -118,7 +118,7 @@ describe("Overlap CPV", () => {
   it("getForksThatOverlap return 1", async () => {
     const forkData = new ForkDetectionData(new ForkDetectionData(RSKTAG));
     const rskForkItem = new RskForkItemInfo(forkData, forkData.BN);
-    const rskBlock = new RskBlockInfo(1, "hash", "prevHash", true, forkData);
+    const rskBlock = new RskBlockInfo(1, "hash", "prevHash", true, "", forkData);
     const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
 
     let rangeForkInMainchain = new RangeForkInMainchain(rskBlock, rskBlock);
@@ -142,7 +142,7 @@ describe("Overlap CPV", () => {
     const btcInfo = stubObject<BtcHeaderInfo>(BtcHeaderInfo.prototype);
     const forkData1 = new ForkDetectionData(RSKTAG1);
     const rskBlock2 = new RskForkItemInfo(forkData1, forkData.BN);
-    const rskBlock1 = new RskBlockInfo(1, "hash", "prevHash", true, forkData);
+    const rskBlock1 = new RskBlockInfo(1, "hash", "prevHash", true, "", forkData);
 
     let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
