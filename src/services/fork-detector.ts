@@ -237,14 +237,14 @@ export class ForkDetector {
             this.logger.info("FORK: found a block in the future");
             rskBlocksSameHeight = rskBestBlock;
         } else {
-            rskBlocksSameHeight = this.rskApiService.getBlock(btcBlock.rskTag.BN);
+            rskBlocksSameHeight = await this.rskApiService.getBlock(btcBlock.rskTag.BN);
 
             //We shouldn't remove this if, should not come a null checking this heigh
             if(!rskBlocksSameHeight){
                 return await this.btcWatcher.blockProcessingFailed(btcBlock);
             }
         }
-
+        
         var rskForkItem : RskForkItemInfo = RskForkItemInfo.fromForkDetectionData(btcBlock.rskTag,rskBestBlock.height);
         //Possible mainchain block from where it started to fork
         let item: ForkItem = new ForkItem(btcBlock.btcInfo, rskForkItem);
