@@ -34,12 +34,12 @@ const RSKTAG5_FORK1 = PREFIX + CPV_FORK + NU + "00000001";
 const forkData1 = new ForkDetectionData(RSKTAG1);
 const forkData_FORKED1 = new ForkDetectionData(RSKTAG5_FORK1);
 
-const btcBlock1 = new BtcBlock(100, "btcHash100", RSKTAG1);
-const btcBlock2 = new BtcBlock(1000, "btcHash101", RSKTAG2);
-const btcBlock3 = new BtcBlock(10000, "btcHash102", RSKTAG3);
-const btcBlock4 = new BtcBlock(100000, "btcHash104", RSKTAG4);
-const btcBlock5 = new BtcBlock(200000, "btcHash105", RSKTAG_in_future111);
-const btcBlock6 = new BtcBlock(200100, "btcHash105", RSKTAG_in_future112);
+const btcBlock1 = new BtcBlock(100, "btcHash100", RSKTAG1, "");
+const btcBlock2 = new BtcBlock(1000, "btcHash101", RSKTAG2, "");
+const btcBlock3 = new BtcBlock(10000, "btcHash102", RSKTAG3, "");
+const btcBlock4 = new BtcBlock(100000, "btcHash104", RSKTAG4, "");
+const btcBlock5 = new BtcBlock(200000, "btcHash105", RSKTAG_in_future111, "");
+const btcBlock6 = new BtcBlock(200100, "btcHash105", RSKTAG_in_future112, "");
 
 const rskBlock1= new RskForkItemInfo(forkData1, forkData1.BN);
 const rskBlock111 = new RskBlockInfo(111, "rskHash111", "rskHash110", true, "", new ForkDetectionData(RSKTAG_in_future111));
@@ -86,7 +86,7 @@ describe('Forks tests', () => {
     it("Fork: new fork, CPV match 0 bytes", async () => {
       const rskBLock1000 = new RskBlockInfo(1000, "hash4", "hash3", true, "", new ForkDetectionData(PREFIX + "dddddddddddddd" + NU + "000003E8"));
       const rskBlock576 = new RskBlockInfo(576, "hash576", "hash575", true, "", new ForkDetectionData(PREFIX + "aaaaaaaaaaaaaa" + NU + "00000240"));
-      let btcBlock100 = new BtcBlock(100, "btcHash", PREFIX + "11223344556677" + NU + "000003E8");
+      let btcBlock100 = new BtcBlock(100, "btcHash", PREFIX + "11223344556677" + NU + "000003E8", "");
       let rskBlock1 = new RskBlockInfo(1, "btcHash", "btcPrevHash", true, "",  null)
 
       var getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');
@@ -170,7 +170,7 @@ describe('Forks tests', () => {
   describe("Fork in future", () => {
     it("Created a new fork", async () => {
       let tagInTheFuture = PREFIX + CPV1 + NU + "0000006F"
-      let btcBlock = new BtcBlock(200000, "btcHash200000", tagInTheFuture);
+      let btcBlock = new BtcBlock(200000, "btcHash200000", tagInTheFuture, "");
       let rskBestBlock = new RskBlockInfo(90, "rskHash90", "rskHash89", true, "", new ForkDetectionData(PREFIX + CPV1 + NU + "0000005A"));
       let rskBlock1 = new RskBlockInfo(1, "rskHash1", null, true, "", null);
 

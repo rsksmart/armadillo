@@ -9,7 +9,7 @@ import { ForkItem, Fork, RangeForkInMainchain } from "../../src/common/forks";
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
 const NU = "00"; // 0
-const btcInfo = new BtcHeaderInfo(0, "");
+const btcInfo = new BtcHeaderInfo(0, "", "");
 
 //Before you run this test you have to run a mongo instance
 describe("Fork class test", () => {
