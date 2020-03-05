@@ -28,8 +28,8 @@ describe("Btc service tests", () => {
   });
 
   it("getLastBlockDetected method, return 1 element but save 2 times", async () => {
-    let btcBlock = new BtcBlock(100, "btcHash", RSKTAG)
-    let btcBlockNext = new BtcBlock(101, "btcHash", RSKTAG)
+    let btcBlock = new BtcBlock(100, "btcHash", RSKTAG, "");
+    let btcBlockNext = new BtcBlock(101, "btcHash", RSKTAG, "");
 
     await btcService.save(btcBlock);
     var block = await btcService.getLastBlockDetected();
@@ -40,11 +40,11 @@ describe("Btc service tests", () => {
   });
 
   it("save multiple times, and then get last item saved", async () => {
-    let btcBlock1 = new BtcBlock(1, "btcHash", RSKTAG);
-    let btcBlock2 = new BtcBlock(2, "btcHash", RSKTAG);
-    let btcBlock3 = new BtcBlock(3, "btcHash", RSKTAG);
-    let btcBlock4 = new BtcBlock(4, "btcHash", "");
-    let btcBlock5 = new BtcBlock(5, "btcHash", "");
+    let btcBlock1 = new BtcBlock(1, "btcHash", RSKTAG, "");
+    let btcBlock2 = new BtcBlock(2, "btcHash", RSKTAG, "");
+    let btcBlock3 = new BtcBlock(3, "btcHash", RSKTAG, "");
+    let btcBlock4 = new BtcBlock(4, "btcHash", "", "");
+    let btcBlock5 = new BtcBlock(5, "btcHash", "", "");
 
     await btcService.save(btcBlock1);
     await btcService.save(btcBlock2);
