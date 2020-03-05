@@ -676,8 +676,8 @@ function validateForkItemRskBlockMongoDB(forkItem) {
 }
 async function validateRskMainchainBlocksInForkMongoDB(fork) {
     expect(fork).not.to.be.null;
-    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeForkCouldHaveStarted.endBlock });
-    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeForkCouldHaveStarted.startBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeWhereForkCouldHaveStarted.endBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeWhereForkCouldHaveStarted.startBlock });
 }
 
 async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {

@@ -21,10 +21,10 @@ export class Fork {
     private firstDetected: ForkDetectionData;
     private lastDetectedHeight: number;
     private items: ForkItem[];
-    private mainchainRangeForkCouldHaveStarted: RangeForkInMainchain;
+    private mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
 
-    constructor(mainchainRangeForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
-        this.mainchainRangeForkCouldHaveStarted = mainchainRangeForkCouldHaveStarted;
+    constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
+        this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
 
         if (forkItems instanceof ForkItem) {
             this.items = [];
@@ -47,7 +47,7 @@ export class Fork {
 
         fork.items.map(x => items.push(ForkItem.fromObject(x)));
 
-        return new Fork(RangeForkInMainchain.fromObject(fork.mainchainRangeForkCouldHaveStarted), items);
+        return new Fork(RangeForkInMainchain.fromObject(fork.mainchainRangeWhereForkCouldHaveStarted), items);
     }
 
     public addNewForkItem(fork: ForkItem) {
