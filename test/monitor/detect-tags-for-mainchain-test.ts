@@ -22,9 +22,9 @@ const NU = "00";
 const BN = "00000001";
 const RSKTAG = PREFIX + CPV + NU + BN;
 const forkData = new ForkDetectionData(RSKTAG);
-const btcBlock = new BtcBlock(2, "btcHash", RSKTAG)
+const btcBlock = new BtcBlock(2, "btcHash", RSKTAG, "")
 const RSKTAGinMainchain = PREFIX + CPV + NU + "00000001";
-const btcBlockInMainchain = new BtcBlock(1, "btcHash", RSKTAGinMainchain)
+const btcBlockInMainchain = new BtcBlock(1, "btcHash", RSKTAGinMainchain, "")
 let btcWatcher: BtcWatcher;
 let rskApiConfig: RskApiConfig;
 let mongoStore: MongoStore;
@@ -33,7 +33,7 @@ let mainchainService: MainchainService;
 let rskService: RskApiService;
 let forkDetector: ForkDetector;
 let btcService: BtcService;
-let btcBlockPrev = new BtcBlock(1, "btcHash", "")
+let btcBlockPrev = new BtcBlock(1, "btcHash", "", "")
 
 //Building mainchain when a new btc block arrives
 describe('Mainchain test', () => {
@@ -91,7 +91,7 @@ describe('Mainchain test', () => {
       var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
 
       let blockSuccessfullyProcessed = sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
-      var newBtcBLock = new BtcBlock(10, "btcHash", partTag + "00000002");
+      var newBtcBLock = new BtcBlock(10, "btcHash", partTag + "00000002", "");
       await forkDetector.onNewBlock(newBtcBLock);
 
       //Validations
@@ -106,7 +106,7 @@ describe('Mainchain test', () => {
       const rskBlock2 = new RskBlockInfo(2, "hash2", "hash1", true, "",  forkData);
       const rskBlock3 = new RskBlockInfo(3, "hash3", "hash2", true, "",  forkData);
       const rskBlock4 = new RskBlockInfo(4, "hash4", "hash3", true, "",  forkData1);
-      const btcBlock = new BtcBlock(2, "btcHash", rskTag)
+      const btcBlock = new BtcBlock(2, "btcHash", rskTag, "")
 
       const getBlocksByNumber = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumber.withArgs(4).returns([rskBlock4]);
@@ -117,7 +117,7 @@ describe('Mainchain test', () => {
       getBlock.withArgs(3).returns(rskBlock3);
       getBlock.withArgs(4).returns(rskBlock4);
 
-      sinon.stub(mainchainService, <any>'getBestBlock').returns(new Item(new BtcHeaderInfo(1, "hash"), rskBlock1));
+      sinon.stub(mainchainService, <any>'getBestBlock').returns(new Item(new BtcHeaderInfo(1, "hash", ""), rskBlock1));
 
       var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(() => {});
 
@@ -134,7 +134,7 @@ describe('Mainchain test', () => {
 
     it("Repeated rsk tag arrives, discart new btc block", async () => {
       const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true,"",  forkData);
-      const item = new Item(new BtcHeaderInfo(1, "hash"), rskBlock1)
+      const item = new Item(new BtcHeaderInfo(1, "hash", ""), rskBlock1)
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
       
@@ -169,7 +169,7 @@ describe('Mainchain test', () => {
       const rskBlock9 = new RskBlockInfo(9, "hash1", "hash0", true, "",  new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
       let item1 = new Item(null, rskBlock1)
       let item1WithBtcInfo = new Item(btcBlock.btcInfo, rskBlock1)
-      const item9 = new Item(new BtcHeaderInfo(9, "hash"), rskBlock9);
+      const item9 = new Item(new BtcHeaderInfo(9, "hash", ""), rskBlock9);
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
 
@@ -199,7 +199,7 @@ describe('Mainchain test', () => {
     it("Rsk tag arrives with lower height, and is pointing to an uncle", async () => {
       const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, "", forkData);
       const rskBlock9 = new RskBlockInfo(9, "hash1", "hash0", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000009"));
-      const item9 = new Item(new BtcHeaderInfo(9, "hash"), rskBlock9);
+      const item9 = new Item(new BtcHeaderInfo(9, "hash", ""), rskBlock9);
       var getBlocksByNumberRrskService = sinon.stub(rskService, <any>'getBlocksByNumber');
       getBlocksByNumberRrskService.returns([rskBlock1]);
 
@@ -231,7 +231,7 @@ describe('Mainchain test', () => {
 
   describe('New btc block with RSK tag is pointing to an RSK uncle', () => {
     it("Buinding mainchain with best block instead using the uncle at that height, also save uncle", async () => {
-      const btcBlock = new BtcBlock(200, "btcHash", PREFIX + CPV + NU + "00000003");
+      const btcBlock = new BtcBlock(200, "btcHash", PREFIX + CPV + NU + "00000003", "");
       const rskNoBest = new RskBlockInfo(3, "hash3_NoBest", "hash2", false, "", new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
       const rskBest = new RskBlockInfo(2, "hash2", "hash1", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000002"));
     

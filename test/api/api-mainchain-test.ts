@@ -16,7 +16,7 @@ const CPV = "d89d8bf4d2e434";
 const NU = "00";
 const BN = "000004c9"; 
 const RSKTAG = PREFIX + CPV + NU + BN;
-const btcInfo = new BtcHeaderInfo(0, "");
+const btcInfo = new BtcHeaderInfo(0, "", "");
 const mainConfig = ApiConfig.getMainConfig('./config.json');
 const mongoStore = new MongoStore(mainConfig.store.mainchain);
 const mainchainService = new MainchainService(mongoStore);
@@ -154,7 +154,7 @@ describe("Mainchain api tests", () => {
 
   it("getLastBtcBlocksDetectedInChain method", async () => {
     // Add some items into armadillo chain and then check if the given chain is correct
-    let item1WithBTC = new Item(new BtcHeaderInfo(1000, ""), new RskBlockInfo(100, "hash", "prevHash", true, "", new ForkDetectionData(RSKTAG)));
+    let item1WithBTC = new Item(new BtcHeaderInfo(1000, "", ""), new RskBlockInfo(100, "hash", "prevHash", true, "", new ForkDetectionData(RSKTAG)));
 
     await mainchainService.save([copy(item1WithBTC)]);
 
@@ -168,7 +168,7 @@ describe("Mainchain api tests", () => {
     for(var i = 101; i <= 120; i++){
       itemsToSave.push(new Item(null, new RskBlockInfo(i, "hash" + i, "prevHash" + (i-1), true, "", new ForkDetectionData(RSKTAG))));
     }
-    let item2WithBTC = new Item(new BtcHeaderInfo(1120, ""), new RskBlockInfo(121, "hash121", "prevHash120", true, "", new ForkDetectionData(RSKTAG)));
+    let item2WithBTC = new Item(new BtcHeaderInfo(1120, "", ""), new RskBlockInfo(121, "hash121", "prevHash120", true, "", new ForkDetectionData(RSKTAG)));
     itemsToSave.push(item2WithBTC);
 
     await mainchainService.save(copy(itemsToSave));
@@ -182,7 +182,7 @@ describe("Mainchain api tests", () => {
     for(var i = 122; i <= 130; i++){
       itemsToSave.push(new Item(null, new RskBlockInfo(i, "hash" + i, "prevHash" + (i-1), true, "", new ForkDetectionData(RSKTAG))));
     }
-    let item3WithBTC = new Item(new BtcHeaderInfo(1122, ""), new RskBlockInfo(131, "hash121", "prevHash120", true, "", new ForkDetectionData(RSKTAG)));
+    let item3WithBTC = new Item(new BtcHeaderInfo(1122, "", ""), new RskBlockInfo(131, "hash121", "prevHash120", true, "", new ForkDetectionData(RSKTAG)));
     itemsToSave.push(item3WithBTC);
 
     await mainchainService.save(copy(itemsToSave));
@@ -197,7 +197,7 @@ describe("Mainchain api tests", () => {
     for(var i = 132; i <= 140; i++){
       itemsToSave.push(new Item(null, new RskBlockInfo(i, "hash" + i, "prevHash" + (i-1), true, "", new ForkDetectionData(RSKTAG))));
     }
-    let item4WithBTC = new Item(new BtcHeaderInfo(1125, ""), new RskBlockInfo(140, "hash140", "prevHash139", false, "", new ForkDetectionData(RSKTAG)));
+    let item4WithBTC = new Item(new BtcHeaderInfo(1125, "", ""), new RskBlockInfo(140, "hash140", "prevHash139", false, "", new ForkDetectionData(RSKTAG)));
     itemsToSave.push(item4WithBTC);
     let itemsToSaveBetween3and4 = itemsToSave;
     await mainchainService.save(copy(itemsToSave));
