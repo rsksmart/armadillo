@@ -1,5 +1,5 @@
 import { ForkService as ForkService } from '../../services/fork-service';
-import { MessageResponse } from '../common/message-response';
+import { MessageResponse } from '../common/models';
 
 /* eslint-disable class-methods-use-this */
 

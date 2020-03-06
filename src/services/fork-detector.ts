@@ -269,11 +269,11 @@ export class ForkDetector {
 
             await this.forkService.addForkItem(forks[0].getFirstDetected().rskForkInfo.forkDetectionData.prefixHash, item);
         } else {
-            let mainchainRangeForkCouldHaveStarted = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskForkItem.forkDetectionData, rskBlocksSameHeight);
+            let mainchainRangeWhereForkCouldHaveStarted = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskForkItem.forkDetectionData, rskBlocksSameHeight);
 
             this.logger.info('FORK: Creating fork for RSKTAG', rskForkItem.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
 
-            await this.forkService.save(new Fork(mainchainRangeForkCouldHaveStarted, [item]));
+            await this.forkService.save(new Fork(mainchainRangeWhereForkCouldHaveStarted, [item]));
         }
     }
 

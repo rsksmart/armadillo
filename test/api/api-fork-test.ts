@@ -5,10 +5,9 @@ import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import { MongoStore } from "../../src/storage/mongo-store";
 import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { ForkService } from "../../src/services/fork-service";
-import { ForkItem, Fork, RangeForkInMainchain } from "../../src/common/forks";
 import ForkController from "../../src/api/controllers/fork-controller";
 import { ApiConfig } from "../../src/config/api-config";
-import { MessageResponse } from "../../src/api/common/message-response";
+import { MessageResponse } from "../../src/api/common/models";
 import { copy } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
