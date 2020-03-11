@@ -1,17 +1,7 @@
 import { MainchainService } from '../../services/mainchain-service';
 import { ForkService } from '../../services/fork-service';
-import { Fork, Item } from '../../common/forks';
-import { MessageResponse } from '../common/message-response';
-
-export class BlockchainHistory {
-  public forks: Fork[];
-  public mainchain: Item[];
-
-  constructor(mainchain: Item[], forks: Fork[]) {
-    this.forks = forks;
-    this.mainchain = mainchain;
-  }
-}
+import { MessageResponse, BlockchainHistory } from '../common/models';
+import { Item } from '../../common/forks';
 
 export class BlockchainController {
   private mainchainService: MainchainService;

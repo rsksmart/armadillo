@@ -3,8 +3,8 @@ import { BtcHeaderInfo } from "./btc-block";
 import { RskBlockInfo, RskForkItemInfo } from "./rsk-block";
 
 export class RangeForkInMainchain {
-    public startBlock: RskBlockInfo;
-    public endBlock: RskBlockInfo;
+    public readonly startBlock: RskBlockInfo;
+    public readonly endBlock: RskBlockInfo;
 
     constructor(_startBlock: RskBlockInfo, _endBlock: RskBlockInfo) {
         this.startBlock = _startBlock;
@@ -18,10 +18,10 @@ export class RangeForkInMainchain {
 
 export class Fork {
     //firstDetected contains the forkDetectionData of the first element in items
-    private firstDetected: ForkDetectionData;
+    public readonly firstDetected: ForkDetectionData;
+    public readonly items: ForkItem[];
+    public readonly mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
     private lastDetectedHeight: number;
-    private items: ForkItem[];
-    private mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
 
     constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
         this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
@@ -44,9 +44,7 @@ export class Fork {
 
     static fromObject(fork: any): Fork {
         let items: ForkItem[] = [];
-
         fork.items.map(x => items.push(ForkItem.fromObject(x)));
-
         return new Fork(RangeForkInMainchain.fromObject(fork.mainchainRangeWhereForkCouldHaveStarted), items);
     }
 

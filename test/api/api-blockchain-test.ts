@@ -7,9 +7,9 @@ import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { ForkService } from "../../src/services/fork-service";
 import { ForkItem, Fork, RangeForkInMainchain, Item } from "../../src/common/forks";
 import { MainchainService } from "../../src/services/mainchain-service";
-import { BlockchainController, BlockchainHistory } from "../../src/api/controllers/blockchain-controller";
+import { BlockchainController } from "../../src/api/controllers/blockchain-controller";
 import { ApiConfig } from "../../src/config/api-config";
-import { MessageResponse } from "../../src/api/common/message-response";
+import { MessageResponse, BlockchainHistory } from "../../src/api/common/models";
 import { copy } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
