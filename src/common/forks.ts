@@ -18,10 +18,10 @@ export class RangeForkInMainchain {
 
 export class Fork {
     //firstDetected contains the forkDetectionData of the first element in items
-    private firstDetected: ForkDetectionData;
+    public readonly firstDetected: ForkDetectionData;
+    public readonly items: ForkItem[];
+    public readonly mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
     private lastDetectedHeight: number;
-    private items: ForkItem[];
-    private mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
 
     constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
         this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
