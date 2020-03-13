@@ -3,7 +3,7 @@ import * as bodyParser from "body-parser";
 import  { routersConfig} from "./api/routes";
 import { MongoStore } from "./storage/mongo-store";
 import { ApiConfig } from "./config/api-config";
-import { MessageResponse } from "./api/common/message-response";
+import { MessageResponse } from "./api/common/models";
 
 const DEFAULT_CONFIG_PATH = "./config.json";
 const apiConfig = ApiConfig.getMainConfig(DEFAULT_CONFIG_PATH);
