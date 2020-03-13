@@ -20,17 +20,17 @@ async function start() {
     logger.info('Starting...');
 
     while (true) {
-        var blockchainHistory: BlockchainHistory = await getCurrentMainchain();
-        let forks: Fork[] = blockchainHistory.forks.filter(f => f.items.length >= MIN_LENGTH);
+        var forks: Fork[] = await getCurrentMainchain();
+        let forksFilted: Fork[] = forks.filter(f => f.items.length >= MIN_LENGTH);
 
-        if (shouldNotify(forks)) {
+        if (shouldNotify(forksFilted)) {
             logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
 
-            for (var i = 0; i < forks.length; i++) {
-                sendAlert(forks[i]);
+            for (var i = 0; i < forksFilted.length; i++) {
+               await sendAlert(forksFilted[i]);
             }
 
-            let consideredForksString: string = formatForks(forks);
+            let consideredForksString: string = formatForks(forksFilted);
             lastContent = consideredForksString;
         } else {
             logger.info("NO Forks detected");
@@ -54,13 +54,16 @@ function sleep(ms): Promise<any> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function getCurrentMainchain(): Promise<BlockchainHistory> {
+async function getCurrentMainchain(): Promise<Fork[]> {
     var response = await curl.get(`${config.armadilloUrl}/forks/getLastForks/${config.chainDepth}`)
         .catch((e) => {
             logger.error(`Fail to check for forks: ERROR: ${e}`);
         });
+    console.log(response)
+    console.log(JSON.parse(response.body).data)
+    console.log(`${config.armadilloUrl}/forks/getLastForks/${config.chainDepth}`)
 
-    return BlockchainHistory.fromObject(JSON.parse(response.body).data);
+    return JSON.parse(response.body).data.map(x => Fork.fromObject(x));
 }
 
 async function forkBody(fork: Fork): Promise<string> {
