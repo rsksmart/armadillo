@@ -3,8 +3,8 @@ import { BtcHeaderInfo } from "./btc-block";
 import { RskBlockInfo, RskForkItemInfo } from "./rsk-block";
 
 export class RangeForkInMainchain {
-    public startBlock: RskBlockInfo;
-    public endBlock: RskBlockInfo;
+    public readonly startBlock: RskBlockInfo;
+    public readonly endBlock: RskBlockInfo;
 
     constructor(_startBlock: RskBlockInfo, _endBlock: RskBlockInfo) {
         this.startBlock = _startBlock;
@@ -18,10 +18,10 @@ export class RangeForkInMainchain {
 
 export class Fork {
     //firstDetected contains the forkDetectionData of the first element in items
-    private firstDetected: ForkDetectionData;
-    private lastDetectedHeight: number;
-    private items: ForkItem[];
-    private mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
+    public readonly firstDetected: ForkDetectionData;
+    public readonly items: ForkItem[];
+    public readonly mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
+    private btcHeightLastTagFound: number;
 
     constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
         this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
@@ -35,7 +35,7 @@ export class Fork {
                 let forks = forkItems.sort((x, y) => x.rskForkInfo.forkDetectionData.BN > y.rskForkInfo.forkDetectionData.BN ? 0 : 1);
                 this.items = forks;
                 this.firstDetected = forks[forks.length - 1].rskForkInfo.forkDetectionData;
-                this.lastDetectedHeight = forkItems[0].rskForkInfo.forkDetectionData.BN;
+                this.btcHeightLastTagFound = forkItems[0].btcInfo.height;
             } else {
                 throw "forkItems should have at least one item"
             }
@@ -44,14 +44,12 @@ export class Fork {
 
     static fromObject(fork: any): Fork {
         let items: ForkItem[] = [];
-
         fork.items.map(x => items.push(ForkItem.fromObject(x)));
-
         return new Fork(RangeForkInMainchain.fromObject(fork.mainchainRangeWhereForkCouldHaveStarted), items);
     }
 
     public addNewForkItem(fork: ForkItem) {
-        this.lastDetectedHeight = fork.rskForkInfo.forkDetectionData.BN;
+        this.btcHeightLastTagFound = fork.btcInfo.height;
         this.items.unshift(fork);
     }
 
@@ -71,8 +69,8 @@ export class Fork {
         return this.items[0];
     }
 
-    public getLastDetectedHeight() {
-        return this.lastDetectedHeight;
+    public getHeightForLastTagFoundInBTC() {
+        return this.btcHeightLastTagFound;
     }
 }
 
