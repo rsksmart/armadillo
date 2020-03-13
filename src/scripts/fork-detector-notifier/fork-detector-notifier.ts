@@ -79,7 +79,7 @@ async function forkBody(fork: Fork): Promise<string> {
     info.btcListHeights = getBtcListHeight(fork);
     info.forkLengthRskBlocks = getForkLengthInRskBlocks(fork);
     info.btcGuessedMinedInfo = getBtcGuessMinedInfo(fork);
-    info.fork = JSON.stringify(fork);
+    info.fork = fork;
 
     return body(info);
 }
@@ -133,6 +133,8 @@ function body(data: ForkBodyEmail): string {
 
     return `
     - Range distance where fork could have started: (${data.rangeWhereForkCouldHaveStarted.startBlock.height}, ${data.rangeWhereForkCouldHaveStarted.endBlock.height})
+        - Diference between end and start: ${data.rangeWhereForkCouldHaveStarted.endBlock.height - data.rangeWhereForkCouldHaveStarted.startBlock.height}
+        - Distance to last jump: ${data.distanceCPVtoPrevJump}
         
     - Fork started in: ${data.forkTime}
         - Distance first item in fork detected to the RSK best block: ${data.distanceFirstItemToBestBlock}
@@ -150,7 +152,7 @@ function body(data: ForkBodyEmail): string {
         ${data.btcGuessedMinedInfo.map(x => x.poolName).join(" | ")}
 
     - Fork data complete:
-        ${data.fork}
+        ${JSON.stringify(data.fork)}
     `
 }
 
@@ -172,8 +174,8 @@ function forkTitle(fork: Fork): string {
 }
 
 function getCPVdistanceToPreviousJump(fork: Fork): number {
-    var realForkHeight = fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
-    var cpvWhereForkJump = Math.floor((fork.getFirstDetected().rskForkInfo.forkDetectionData.BN - 1) / 64) * 64;
+    var realForkHeight = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+    var cpvWhereForkJump = Math.floor((fork.getLastDetected().rskForkInfo.forkDetectionData.BN - 1) / 64) * 64;
     return realForkHeight - cpvWhereForkJump;
 }
 

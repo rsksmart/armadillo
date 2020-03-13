@@ -48,8 +48,11 @@ export class BlockchainController {
     }
 
     var mainchain : Item = await this.mainchainService.getFirstBtcBlockDetectedInChainGoingBackwards(n);
-
-    let forks = await this.forkService.getForksDetected(mainchain.btcInfo.height);
+    let forks = [];
+   
+    if(mainchain != null){
+      forks = await this.forkService.getForksDetected(mainchain.btcInfo.height);
+    }
 
     return res.status(200).send(
       new MessageResponse(

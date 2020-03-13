@@ -1,4 +1,4 @@
-import { RangeForkInMainchain } from "../../../common/forks";
+import { RangeForkInMainchain, Fork } from "../../../common/forks";
 
 export class ForkInformationEmail {
     public forkBTCitemsLength: number;
@@ -12,7 +12,7 @@ export class ForkInformationEmail {
     public btcListHeights: number[];
     public forkLengthRskBlocks: number;
     public btcGuessedMinedInfo: GuessMinedBlockInfo[];
-    public fork: string
+    public fork: Fork
 }
 
 export class GuessMinedBlockInfo {
