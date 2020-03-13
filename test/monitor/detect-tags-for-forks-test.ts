@@ -46,7 +46,7 @@ const rskBlock111 = new RskBlockInfo(111, "rskHash111", "rskHash110", true, "", 
 const rskBlock112 = new RskBlockInfo(112, "rskHash112", "rskHash111", true, "", new ForkDetectionData(RSKTAG_in_future112));
 const rskBlockFork1 = new RskBlockInfo(1, "rskHash2", "rskHash1", true, "", forkData_FORKED1);
 
-const fork = new Fork(null, [new ForkItem(null, rskBlock1)]);
+const fork = new Fork(null, [new ForkItem(btcBlock1.btcInfo, rskBlock1)]);
 
 let btcWatcher;
 let rskApiConfig: RskApiConfig;

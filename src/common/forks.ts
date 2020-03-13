@@ -21,7 +21,7 @@ export class Fork {
     public readonly firstDetected: ForkDetectionData;
     public readonly items: ForkItem[];
     public readonly mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
-    private lastDetectedHeight: number;
+    private btcHeightLastTagFound: number;
 
     constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
         this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
@@ -35,7 +35,7 @@ export class Fork {
                 let forks = forkItems.sort((x, y) => x.rskForkInfo.forkDetectionData.BN > y.rskForkInfo.forkDetectionData.BN ? 0 : 1);
                 this.items = forks;
                 this.firstDetected = forks[forks.length - 1].rskForkInfo.forkDetectionData;
-                this.lastDetectedHeight = forkItems[0].rskForkInfo.forkDetectionData.BN;
+                this.btcHeightLastTagFound = forkItems[0].btcInfo.height;
             } else {
                 throw "forkItems should have at least one item"
             }
@@ -49,7 +49,7 @@ export class Fork {
     }
 
     public addNewForkItem(fork: ForkItem) {
-        this.lastDetectedHeight = fork.rskForkInfo.forkDetectionData.BN;
+        this.btcHeightLastTagFound = fork.btcInfo.height;
         this.items.unshift(fork);
     }
 
@@ -69,8 +69,8 @@ export class Fork {
         return this.items[0];
     }
 
-    public getLastDetectedHeight() {
-        return this.lastDetectedHeight;
+    public getHeightForLastTagFoundInBTC() {
+        return this.btcHeightLastTagFound;
     }
 }
 

@@ -55,7 +55,7 @@ function sleep(ms): Promise<any> {
 }
 
 async function getCurrentMainchain(): Promise<BlockchainHistory> {
-    var response = await curl.get(`${config.armadilloUrl}/blockchains/${config.chainDepth}`)
+    var response = await curl.get(`${config.armadilloUrl}/forks/getLastForks/${config.chainDepth}`)
         .catch((e) => {
             logger.error(`Fail to check for forks: ERROR: ${e}`);
         });
@@ -90,7 +90,7 @@ function getBtcGuessMinedInfo(fork: Fork): GuessMinedBlockInfo[] {
 
         if (!minersJustChecked.some(x => x == name)) {
             let infoMiner = new GuessMinedBlockInfo();
-            infoMiner.numberOfBlocksMined = fork.items.map(x => x.btcInfo.guessedMiner == name).length;
+            infoMiner.numberOfBlocksMined = fork.items.filter(x => x.btcInfo.guessedMiner == name).length;
             infoMiner.poolName = name;
             infoMiner.totalPorcentageOfBlocksMined = infoMiner.numberOfBlocksMined / fork.items.length * 100;
             btcInfoList.push(infoMiner);
@@ -112,7 +112,7 @@ function getChainDistance(fork: Fork): string {
 }
 
 function getForkLengthInRskBlocks(fork: Fork): number {
-    return fork.getFirstDetected().rskForkInfo.forkDetectionData.BN - fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+    return Math.abs(fork.getFirstDetected().rskForkInfo.forkDetectionData.BN - fork.getLastDetected().rskForkInfo.forkDetectionData.BN);
 }
 
 function getBtcListHeight(fork: Fork): number[] {
@@ -138,10 +138,13 @@ function body(data: ForkBodyEmail): string {
     - Fork length in RSK blocks (from the first block up to last block detected): ${data.forkLengthRskBlocks}
 
     - Number of BTC blocks found in fork: ${data.forkBTCitemsLength}
-        - list of BTC blocks height: ${data.btcListHeights}
+        - list of BTC blocks height: ${data.btcListHeights.join(", ")}
 
     - List of miners which mined BTC blocks in fork:
         ${minerListGuess}
+
+    - Big picture of pools that mined each BTC block:
+        ${data.btcGuessedMinedInfo.map(x => x.poolName).join(" | ")}
 
     - Fork data complete:
         ${data.fork}
@@ -155,7 +158,7 @@ function getGuessMinedBlocksList(list: GuessMinedBlockInfo[]): string {
         minerListInfo.push(`${list[i].poolName} had mined ${list[i].totalPorcentageOfBlocksMined}% of total fork's blocks (# blocks: ${list[i].numberOfBlocksMined})`);
     }
 
-    return minerListInfo.join('/n');
+    return minerListInfo.join('\n');
 }
 
 
@@ -192,11 +195,11 @@ async function getInformationCPVDidNotMatch(fork: Fork): Promise<any> {
 
 function getWhenForkIsHappening(fork: Fork): string {
     let forkTime = "PRESENT";
-    
+
     if (fork.getFirstDetected().rskForkInfo.forkDetectionData.BN > fork.getFirstDetected().rskForkInfo.rskBestBlockHeight) {
         forkTime = "FUTURE";
     }
- 
+
     if (fork.getFirstDetected().rskForkInfo.forkDetectionData.BN < fork.getFirstDetected().rskForkInfo.rskBestBlockHeight) {
         forkTime = "PAST";
     }

@@ -17,7 +17,7 @@ export class ForkService extends BaseService {
 
     public async getForksDetected(heightToSearch: number = 0): Promise<Fork[]> {
         let forks: any[] = await this.store.getCollection().find({
-            "lastDetectedHeight": {
+            "btcHeightLastTagFound": {
                 $gte: heightToSearch,
             }
         }).toArray();
