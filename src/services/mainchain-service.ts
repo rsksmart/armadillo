@@ -40,14 +40,24 @@ export class MainchainService  extends BaseService {
         return robjectsToReturn.map(x => Item.fromObject(x));
     }
 
-    public async getLastBtcBlocksDetectedInChain(numberOfBtcBlocks): Promise<Item[]> {
-        let blocks : any[] = await this.store.getCollection().find({"btcInfo":{$ne:null}}).sort({ "rskInfo.height": -1 }).limit(numberOfBtcBlocks).toArray();
+    public async getLastBtcBlocksDetectedInChainCompleteWithRSK(numberOfBtcBlocks): Promise<Item[]> {
+        let blocks : any[] = await this.store.getCollection().find({"btcInfo":{$ne:null}}).sort({ "btcInfo.height": -1 }).limit(numberOfBtcBlocks).toArray();
 
         if(blocks.length > 1){
             blocks = await this.geRskBlocksBetweenHeight(blocks[blocks.length -1].rskInfo.height, blocks[0].rskInfo.height);
         }
         
         return blocks.map(x => Item.fromObject(x));
+    }
+
+    public async getFirstBtcBlockDetectedInChainGoingBackwards(numberOfBtcBlocks): Promise<Item> {
+        let blocks : any[] = await this.store.getCollection().find({"btcInfo":{$ne:null}}).sort({ "btcInfo.height": -1 }).limit(numberOfBtcBlocks).toArray();
+
+        if(blocks.length > 0){
+            return Item.fromObject(blocks[blocks.length -1]);
+        }
+
+        return null;
     }
     
     private async geRskBlocksBetweenHeight(startHeight: any, endHeight: any): Promise<any[]> {

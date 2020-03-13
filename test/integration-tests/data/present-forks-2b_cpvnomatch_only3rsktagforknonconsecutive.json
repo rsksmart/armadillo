@@ -52,7 +52,7 @@
       "NU": 0,
       "BN": 5093
     },
-    "lastDetectedHeight": 5093
+    "btcHeightLastTagFound": 5093
   },
   {
     "mainchainRangeForkCouldHaveStarted": {
@@ -120,6 +120,6 @@
       "NU": 0,
       "BN": 5102
     },
-    "lastDetectedHeight": 5102
+    "btcHeightLastTagFound": 5102
   }
 ]

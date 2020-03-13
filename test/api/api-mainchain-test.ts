@@ -158,7 +158,7 @@ describe("Mainchain api tests", () => {
 
     await mainchainService.save([copy(item1WithBTC)]);
 
-    let response : Item[] = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    let response : Item[] = await mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(100);
 
     expect(response.length).to.equal(1);
     expect([item1WithBTC]).to.deep.equal(response);
@@ -173,7 +173,7 @@ describe("Mainchain api tests", () => {
 
     await mainchainService.save(copy(itemsToSave));
 
-    response = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    response = await mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(100);
     expect(response.length).to.equal(22);
     var itemsToCheck =[item1WithBTC].concat(itemsToSave);
     expect(itemsToCheck.reverse()).to.deep.equal(response);
@@ -187,7 +187,7 @@ describe("Mainchain api tests", () => {
 
     await mainchainService.save(copy(itemsToSave));
 
-    response = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    response = await mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(100);
     expect(response.length).to.equal(32);
     itemsToCheck = itemsToCheck.reverse().concat(itemsToSave);
     expect(itemsToCheck.reverse()).to.deep.equal(response);
@@ -202,19 +202,19 @@ describe("Mainchain api tests", () => {
     let itemsToSaveBetween3and4 = itemsToSave;
     await mainchainService.save(copy(itemsToSave));
 
-    response = await mainchainService.getLastBtcBlocksDetectedInChain(100);
+    response = await mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(100);
     
     expect(response.length).to.equal(42);
     itemsToCheck = itemsToCheck.reverse().concat(itemsToSave);
     expect(itemsToCheck.reverse()).to.deep.equal(response);
 
      //return just chain between last BTC block
-    response = await mainchainService.getLastBtcBlocksDetectedInChain(1);
+    response = await mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(1);
     expect(response.length).to.equal(1);
     expect([item4WithBTC]).to.deep.equal(response);
 
     //return just chain between the last 2 BTC blocks
-    response = await mainchainService.getLastBtcBlocksDetectedInChain(2);
+    response = await mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(2);
     expect(response.length).to.equal(11);
     expect([item3WithBTC].concat(itemsToSaveBetween3and4).reverse()).to.deep.equal(response);
   });
