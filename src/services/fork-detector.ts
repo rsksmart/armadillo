@@ -48,7 +48,8 @@ export class ForkDetector {
 
         if (!newBtcBlock.hasRskTag()) {
             this.logger.info('NO RSKTAG present - Skipping BTC block', Printify.getPrintifyInfo(newBtcBlock));
-            return await this.blockSuccessfullyProcessed(newBtcBlock);
+            await this.blockSuccessfullyProcessed(newBtcBlock);
+            return;
         }
 
         this.logger.info('RSKTAG present', Printify.getPrintifyInfo(newBtcBlock));
@@ -80,7 +81,8 @@ export class ForkDetector {
             await this.addOrCreateFork(newBtcBlock);
         }
 
-        return await this.blockSuccessfullyProcessed(newBtcBlock);
+        await this.blockSuccessfullyProcessed(newBtcBlock);
+        return;
     }
 
     // The idea of this method is build an armadillo mainchain (like rsk mainchain) adding btc information if applicable.

@@ -35,7 +35,7 @@ export class Fork {
                 let forks = forkItems.sort((x, y) => x.rskForkInfo.forkDetectionData.BN > y.rskForkInfo.forkDetectionData.BN ? 0 : 1);
                 this.items = forks;
                 this.firstDetected = forks[forks.length - 1].rskForkInfo.forkDetectionData;
-                this.btcHeightLastTagFound = forkItems[0].btcInfo.height;
+                this.btcHeightLastTagFound = this.items[0].btcInfo.height;
             } else {
                 throw "forkItems should have at least one item"
             }

@@ -27,7 +27,7 @@ export class MainchainService  extends BaseService {
     }
 
     public async updateBtcInfoItem(mainchainBlockAtHeight: Item) : Promise<UpdateWriteOpResult>{
-        return this.store.getCollection().updateOne({"rskInfo.forkDetectionData": mainchainBlockAtHeight.rskInfo.forkDetectionData }, { $set: {"btcInfo": mainchainBlockAtHeight.btcInfo}});
+        return this.store.getCollection().updateOne({"rskInfo.forkDetectionData": mainchainBlockAtHeight.rskInfo.forkDetectionData }, { $set: {"btcInfo": mainchainBlockAtHeight.btcInfo, "btcHeightLastTagFound": mainchainBlockAtHeight.btcInfo.height }});
     }
 
     public async getBlockByForkDataDetection(forkDetectionData: ForkDetectionData) : Promise<Item> {
