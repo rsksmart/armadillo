@@ -1,7 +1,7 @@
 import { MainchainService } from '../../services/mainchain-service';
 import { ForkService } from '../../services/fork-service';
 import { MessageResponse, BlockchainHistory } from '../common/models';
-import { Item } from '../../common/forks';
+import { Item, Fork } from '../../common/forks';
 
 export class BlockchainController {
   private mainchainService: MainchainService;
@@ -20,12 +20,12 @@ export class BlockchainController {
       n = 5000;
     }
 
-    var mainchain : Item[] = await this.mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(n);
+    var mainchain: Item[] = await this.mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(n);
 
     let heightToGetForksFrom = 0;
 
     if (mainchain.length > 0) {
-      heightToGetForksFrom = mainchain[mainchain.length -1].btcInfo.height;
+      heightToGetForksFrom = mainchain[mainchain.length - 1].btcInfo.height;
     }
 
     let forks = await this.forkService.getForksDetected(heightToGetForksFrom);
@@ -39,7 +39,7 @@ export class BlockchainController {
     );
   }
 
-  public async getLastForksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
+  public async getLastForksInChain(req: any, res: any): Promise<MessageResponse<Fork[]>> {
     let n: number = parseInt(req.params.n);
 
     if (n > 5000) {
@@ -47,13 +47,7 @@ export class BlockchainController {
       n = 5000;
     }
 
-    var mainchain : Item = await this.mainchainService.getFirstBtcBlockDetectedInChainGoingBackwards(n);
-    let forks = [];
-   
-    if(mainchain != null){
-      forks = await this.forkService.getForksDetected(mainchain.btcInfo.height);
-    }
-
+    let forks : Fork[] = await this.forkService.getLastForks(n);
     return res.status(200).send(
       new MessageResponse(
         `Get forks in the last ${n} BTC blocks`,

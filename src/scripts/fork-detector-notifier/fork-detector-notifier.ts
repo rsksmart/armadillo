@@ -1,5 +1,4 @@
 import { Fork } from '../../common/forks';
-import { BlockchainHistory } from '../../api/common/models';
 import { RskApiService } from '../../services/rsk-api-service';
 import { ForkInformationEmail as ForkBodyEmail, GuessMinedBlockInfo } from './common/model';
 import { RskApiConfig } from '../../config/rsk-api-config';
@@ -10,9 +9,11 @@ const { getLogger, configure } = require('log4js');
 const INTERVAL = config.pollIntervalMs;
 const MIN_LENGTH = config.minForkLength;
 const logger = getLogger('fork-detector');
+var equal = require('deep-equal');
+
 configure('./log-config.json');
 
-let lastContent: string = '';
+let lastContent: string;
 
 start();
 
@@ -21,17 +22,17 @@ async function start() {
 
     while (true) {
         var forks: Fork[] = await getCurrentMainchain();
-        let forksFilted: Fork[] = forks.filter(f => f.items.length >= MIN_LENGTH);
-
-        if (shouldNotify(forksFilted)) {
+        // let forksFilted: Fork[] = forks.filter(f => f.items.length >= MIN_LENGTH);
+        if (shouldNotify(forks)) {
             logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
 
-            for (var i = 0; i < forksFilted.length; i++) {
-               await sendAlert(forksFilted[i]);
+            for (var i = 0; i < forks.length; i++) {
+               let forkToSend =forks[i];
+            //    sendAlert(forkToSend);
             }
 
-            let consideredForksString: string = formatForks(forksFilted);
-            lastContent = consideredForksString;
+         
+            lastContent = formatForks(forks);
         } else {
             logger.info("NO Forks detected");
         }
@@ -41,13 +42,15 @@ async function start() {
 }
 
 function shouldNotify(forks: Fork[]): boolean {
-    return forks.length > 0 &&
-        (forks.some(x => x.items.length >= MIN_LENGTH)) &&
-        (lastContent != formatForks(forks))
+    var shouldNotify = forks.length > 0 &&
+        lastContent != formatForks(forks) &&
+        forks.some(x => x.items.length >= MIN_LENGTH)
+
+    return shouldNotify;
 }
 
 function formatForks(forks: any): string {
-    return JSON.stringify(forks, () => { }, 2);
+    return JSON.stringify(forks, ()=> {}, 2);
 }
 
 function sleep(ms): Promise<any> {
@@ -59,9 +62,6 @@ async function getCurrentMainchain(): Promise<Fork[]> {
         .catch((e) => {
             logger.error(`Fail to check for forks: ERROR: ${e}`);
         });
-    console.log(response)
-    console.log(JSON.parse(response.body).data)
-    console.log(`${config.armadilloUrl}/forks/getLastForks/${config.chainDepth}`)
 
     return JSON.parse(response.body).data.map(x => Fork.fromObject(x));
 }
