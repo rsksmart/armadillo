@@ -13,7 +13,7 @@ var equal = require('deep-equal');
 
 configure('./log-config.json');
 
-let lastContent: string;
+let lastBtcHeightLastTagFound: number[] = [];
 
 start();
 
@@ -28,11 +28,10 @@ async function start() {
 
             for (var i = 0; i < forks.length; i++) {
                let forkToSend =forks[i];
-            //    sendAlert(forkToSend);
+                sendAlert(forkToSend);
             }
 
-         
-            lastContent = formatForks(forks);
+            lastBtcHeightLastTagFound = forks.map(x => x.getHeightForLastTagFoundInBTC());
         } else {
             logger.info("NO Forks detected");
         }
@@ -42,15 +41,8 @@ async function start() {
 }
 
 function shouldNotify(forks: Fork[]): boolean {
-    var shouldNotify = forks.length > 0 &&
-        lastContent != formatForks(forks) &&
-        forks.some(x => x.items.length >= MIN_LENGTH)
-
-    return shouldNotify;
-}
-
-function formatForks(forks: any): string {
-    return JSON.stringify(forks, ()=> {}, 2);
+    var forkFilted = forks.filter(x => !lastBtcHeightLastTagFound.includes(x.getHeightForLastTagFoundInBTC()));
+    return forkFilted.length > 0 && forkFilted.some(x => x.items.length >= MIN_LENGTH);;
 }
 
 function sleep(ms): Promise<any> {

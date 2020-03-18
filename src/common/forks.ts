@@ -69,7 +69,7 @@ export class Fork {
         return this.items[0];
     }
 
-    public getHeightForLastTagFoundInBTC() {
+    public getHeightForLastTagFoundInBTC() : number{
         return this.btcHeightLastTagFound;
     }
 }
