@@ -25,7 +25,7 @@ describe("Btc watcher tests, synchronization with BTC, ", () => {
   });
 
   it("From the very begining no btc blocks were detected", async () => {
-    let bestBlock = new BtcBlock(3, "", "");
+    let bestBlock = new BtcBlock(3, "", "", "");
 
     var getBestBlock = sinon.stub(btcApi, <any>'getBestBlock');
     getBestBlock.returns(bestBlock);
@@ -47,9 +47,9 @@ describe("Btc watcher tests, synchronization with BTC, ", () => {
   });
 
   it("Last block was detected is behind 2 blocks", async () => {
-    let btcBlockSaved = new BtcBlock(1, "", "");
-    let bestBlock2 = new BtcBlock(2, "", "");
-    let bestBlock3 = new BtcBlock(3, "", "");
+    let btcBlockSaved = new BtcBlock(1, "", "", "");
+    let bestBlock2 = new BtcBlock(2, "", "", "");
+    let bestBlock3 = new BtcBlock(3, "", "", "");
 
     var getBestBlock = sinon.stub(btcApi, <any>'getBestBlock');
     getBestBlock.returns(bestBlock3);
@@ -73,7 +73,7 @@ describe("Btc watcher tests, synchronization with BTC, ", () => {
 
 
   it("Already sync, no need to save new blocks", async () => {
-    let btcBlockSaved = new BtcBlock(1, "", "");
+    let btcBlockSaved = new BtcBlock(1, "", "", "");
 
     var getBestBlock = sinon.stub(btcApi, <any>'getBestBlock');
     getBestBlock.returns(btcBlockSaved);

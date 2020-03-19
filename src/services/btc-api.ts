@@ -1,7 +1,7 @@
 import { BtcApiConfig } from '../config/btc-api-config';
 import { get } from '../util/http';
 import { BtcBlock } from '../common/btc-block';
-
+ 
 interface PlainBtcHeader {
     height: number;
     hash: string;
@@ -20,7 +20,7 @@ export class HttpBtcApi {
         const coinbase: any = await this.getCoinbase(bestHeader.hash);
         const rskTag = this.extractTagFromCoinbase(coinbase);
 
-        return new BtcBlock(bestHeader.height, bestHeader.hash, rskTag);
+        return new BtcBlock(bestHeader.height, bestHeader.hash, rskTag, coinbase.guessedMiner);
     }
 
     public async getBlock(n: number): Promise<BtcBlock> {
@@ -28,7 +28,7 @@ export class HttpBtcApi {
         const coinbase: any = await this.getCoinbase(blockAtHeightN.hash);
         const rskTag = this.extractTagFromCoinbase(coinbase);
 
-        return new BtcBlock(blockAtHeightN.height, blockAtHeightN.hash, rskTag);
+        return new BtcBlock(blockAtHeightN.height, blockAtHeightN.hash, rskTag, coinbase.guessedMiner);
     }
 
     private baseUrl() : string {
@@ -43,7 +43,6 @@ export class HttpBtcApi {
 
     private async getBlockHeader(n: number) : Promise<PlainBtcHeader> {
         const response: any = await get(this.baseUrl() + '/block/getBlock/' + n);
-
         return response.block.header;
     }
 

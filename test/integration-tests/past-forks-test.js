@@ -15,6 +15,10 @@ const timeoutTests = utils.timeoutTests;
 const btcApiRoute = "raw";
 const apiPoolingTime = utils.apiPoolingTime;
 const loadingTime = utils.loadingTime;
+const dataInputPath = "test/integration-tests/data/";
+const forksPresentFilePrefix = dataInputPath + "past-forks-";
+const mainchainPresentFilePrefix = dataInputPath + "past-mainchain-";
+const fileSuffix = ".json"
 
 describe("RSK Forks in the past tests", () => {
     describe("RSK no match at same height with matching CPV, RSK height in the past regarding BTC chain", () => {
@@ -149,6 +153,51 @@ describe("RSK Forks in the past tests", () => {
             let startBTC = heightOfNonConsecutiveRSKnoMatchPastFollowingMatch - firstBtcBlock;
             let endBTC = startBTC + numberOfBtcBlocksToMove;
             await utils.validateMainchainRskMongoDB(mainchainBlocks, 6, startBTC, endBTC);
+        }).timeout(timeoutTests);
+    });
+
+    describe("RSK no match at same height with matching CPV, RSK height in the past regarding BTC chain, mongo output validation", () => {
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found, mongo output validation", async () => {
+            const testId = "pastfork_length1fork";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following consecutive BTC block, mongo output validation", async () => {
+            const testId = "pastfork_length2forkconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following non consecutive BTC block, mongo output validation", async () => {
+            const testId = "pastfork_length2forknonconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following consecutive BTC block, mongo output validation", async () => {
+            const testId = "pastfork_2forkslength1consecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following non consecutive BTC block, mongo output validation", async () => {
+            const testId = "pastfork_2forkslength1nonconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following consecutive BTC block, mongo output validation", async () => {
+            const testId = "pastfork_1fork1length1follows1rsktagmatchconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
+        }).timeout(timeoutTests);
+        it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following non consecutive BTC block, mongo output validation", async () => {
+            const testId = "pastfork_1fork1length1follows1rsktagmatchnonconsecutive";
+            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
     });
 });
