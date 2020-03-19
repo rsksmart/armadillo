@@ -9,7 +9,6 @@ const { getLogger, configure } = require('log4js');
 const INTERVAL = config.pollIntervalMs;
 const MIN_LENGTH = config.minForkLength;
 const logger = getLogger('fork-detector');
-var equal = require('deep-equal');
 
 configure('./log-config.json');
 
