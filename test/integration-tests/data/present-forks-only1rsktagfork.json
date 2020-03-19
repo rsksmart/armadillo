@@ -1,0 +1,57 @@
+[
+  {
+    "mainchainRangeForkCouldHaveStarted": {
+      "startBlock": {
+        "height": 768,
+        "hash": "0x2a79132c4fda0169afb8c15b2b9da7304abb1f465a84e4a4fb955f1b47b1a4c6",
+        "forkDetectionData": {
+          "prefixHash": "a8c525029b80bc9c9ffdd0735d118c3d10503555",
+          "CPV": "d64ffa21b68191",
+          "NU": 0,
+          "BN": 768
+        },
+        "prevHash": "0xd13792dc5aceb339bb5803bfe25e719aec6f6fd8ce27f67b2bb56f3a04b87e16",
+        "mainchain": true
+      },
+      "endBlock": {
+        "height": 769,
+        "hash": "0xd75545e2a7a7b79bdd3f9659526ef636596ce0ba1f52805067c0c2a30bb047f7",
+        "forkDetectionData": {
+          "prefixHash": "6bf8d8101386f9c79bcfca4a6d7cb88bf1c82bcf",
+          "CPV": "a2d64ffa21b681",
+          "NU": 0,
+          "BN": 769
+        },
+        "prevHash": "0x2a79132c4fda0169afb8c15b2b9da7304abb1f465a84e4a4fb955f1b47b1a4c6",
+        "mainchain": true
+      }
+    },
+    "items": [
+      {
+        "btcInfo": {
+          "height": 8723,
+          "hash": "133fb62189927e04251a99f5d75757ebd42fecb757ee4a6ff2edc76d1cc2b9cb"
+        },
+        "rskInfo": {
+          "height": 770,
+          "hash": "",
+          "forkDetectionData": {
+            "prefixHash": "5130a1a1a1d8a47f5734d4682da13211b0116d8d",
+            "CPV": "a2d64ffa21b681",
+            "NU": 0,
+            "BN": 770
+          },
+          "prevHash": "",
+          "mainchain": false
+        }
+      }
+    ],
+    "firstDetected": {
+      "prefixHash": "5130a1a1a1d8a47f5734d4682da13211b0116d8d",
+      "CPV": "a2d64ffa21b681",
+      "NU": 0,
+      "BN": 770
+    },
+    "btcHeightLastTagFound": 770
+  }
+]

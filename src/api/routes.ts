@@ -1,18 +1,18 @@
 import * as express from "express"
 import { MainchainService } from "../services/mainchain-service";
-import BranchController from "./controllers/branch-controller";
+import ForkController from "./controllers/fork-controller";
 import { MongoStore } from "../storage/mongo-store";
 import { BlockchainController } from "./controllers/blockchain-controller";
 import { MainchainController } from "./controllers/mainchain-controller";
-import { BranchService } from "../services/branch-service";
+import { ForkService } from "../services/fork-service";
 
-export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStore, config: any): express.Router {
+export function routersConfig(forkStore: MongoStore, mainchainStore: MongoStore, config: any): express.Router {
         const router: express.Router = express.Router();
         const mainchainService: MainchainService = new MainchainService(mainchainStore);
-        const branchService: BranchService = new BranchService(branchStore);
-        const branchController: BranchController = new BranchController(branchService);
+        const forkService: ForkService = new ForkService(forkStore);
+        const forkController: ForkController = new ForkController(forkService);
         const mainchainController: MainchainController = new MainchainController(mainchainService);
-        const blockchainsController: BlockchainController = new BlockchainController(mainchainService, branchService);
+        const blockchainsController: BlockchainController = new BlockchainController(mainchainService, forkService);
 
         //Forks routers
         router.get('/forks/getLastForks/:n', blockchainsController.getLastForksInChain.bind(blockchainsController));
@@ -24,10 +24,12 @@ export function routersConfig(branchStore: MongoStore, mainchainStore: MongoStor
         router.get('/blockchains/:n', blockchainsController.getLastBlocksInChain.bind(blockchainsController));
 
         //For testing 
-        if (false) {
+        if (true) {
                 router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
                 router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
-                router.get('/forks/removeAll', branchController.removeAll.bind(branchController));
+                router.get('/forks/removeAll', forkController.removeAll.bind(forkController));
+                router.get('/forks/getAll', forkController.getAll.bind(forkController));
+                router.get('/forks/getForksFrom/:n', forkController.getForksFrom.bind(forkController));
         }
 
         return router;

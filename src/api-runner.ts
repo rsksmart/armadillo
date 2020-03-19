@@ -3,14 +3,14 @@ import * as bodyParser from "body-parser";
 import  { routersConfig} from "./api/routes";
 import { MongoStore } from "./storage/mongo-store";
 import { ApiConfig } from "./config/api-config";
-import { MessageResponse } from "./api/common/message-response";
+import { MessageResponse } from "./api/common/models";
 
 const DEFAULT_CONFIG_PATH = "./config.json";
 const apiConfig = ApiConfig.getMainConfig(DEFAULT_CONFIG_PATH);
-const branches : MongoStore = new MongoStore(apiConfig.store.branches);
+const forks : MongoStore = new MongoStore(apiConfig.store.forks);
 const mainchain : MongoStore = new MongoStore(apiConfig.store.mainchain);
 
-branches.connect().then(function(){
+forks.connect().then(function(){
     mainchain.connect().then(function(){
         starBtcApi();
     });
@@ -34,7 +34,7 @@ function starBtcApi(){
     app.use(bodyParser.urlencoded({ extended: false }));
     //added a middleware 
     
-    const routers = routersConfig(branches, mainchain, apiConfig.forkApi);
+    const routers = routersConfig(forks, mainchain, apiConfig.forkApi);
     app.use(routers);
     app.use(logErrors);
     app.use(errorHandler);

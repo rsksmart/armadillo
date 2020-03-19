@@ -4,6 +4,7 @@ const Curl = require('node-libcurl').Curl;
 const randomHex = require('randomhex');
 const expect = require('chai').expect;
 const btclib = require('bitcoinjs-lib');
+const fs = require('fs')
 const CURL_DEFAULT_HTTP_VERSION = "	1.1";
 const submitMethodCases = require('./submit-method-cases').submitMethodCases;
 const fetch = require("node-fetch");
@@ -176,6 +177,62 @@ function filterObject(object, start, end) {
     return returnObject;
 }
 
+async function mongoResponseToBlockchainsForksResponseFromArmadilloApi(forksFromDBPath) {
+    let forks = await fs.readFileSync(forksFromDBPath);
+    forks = JSON.parse(forks);
+    let forksArmadilloApi = [];
+    for (fork in forks) {
+        let forkArray = forks[fork].items.reverse();
+        forkArray = forkArray.concat([
+            {
+                "btcInfo": null,
+                "rskInfo": forks[fork].mainchainRangeForkCouldHaveStarted.endBlock
+            }
+        ]);
+        forkArray = forkArray.concat([
+            {
+                "btcInfo": null,
+                "rskInfo": forks[fork].mainchainRangeForkCouldHaveStarted.startBlock
+            }
+        ]);
+        forksArmadilloApi = forksArmadilloApi.concat([forkArray]);
+    }
+    return forksArmadilloApi;
+}
+
+async function mongoResponseToBlockchainsFromArmadilloApi(forksFromDbPath, mainchainFromDbPath) {
+
+    let forks = [];
+    let mainchain = [];
+    try {
+        forks = await mongoResponseToBlockchainsForksResponseFromArmadilloApi(forksFromDbPath)
+    } catch (e) {
+        console.log("Couldn't get file " + forksFromDbPath);
+    }
+    try {
+        mainchain = JSON.parse(await fs.readFileSync(mainchainFromDbPath));
+    } catch (e) {
+        console.log("Couldn't get file " + mainchainFromDbPath);
+    }
+    return {
+        "message": "Get mainchain and forks in the last N blocks",
+        "success": true,
+        "data": {
+            "forks": forks,
+            "mainchain": mainchain.reverse()
+        }
+    }
+}
+
+async function insertToDbFromFile(fileName, collection) {
+    const insertDataText = fs.readFileSync(fileName);
+    const insertDataJSON = JSON.parse(insertDataText);
+    if (insertDataJSON.length !== 0) {
+        await mongo_utils.insertDocuments(mongo_utils.ArmadilloDB, collection, insertDataJSON);
+    }
+}
+
+
 ///////////////////////////////////////////
 //////// BTC API MOCKER Operations ////////
 ///////////////////////////////////////////
@@ -275,7 +332,7 @@ async function MoveXBlocks(
     for (let i = 0; i < blocksToAdvance; i++) {
         await getNextBlockInMockBTCApi(apiPoolingTime + loadingTime);
     }
-    await sleep(loadingTime*2);
+    await sleep(loadingTime * 2);
 }
 
 async function getBlockchainsAfterMovingXBlocks(
@@ -619,8 +676,8 @@ function validateForkItemRskBlockMongoDB(forkItem) {
 }
 async function validateRskMainchainBlocksInForkMongoDB(fork) {
     expect(fork).not.to.be.null;
-    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeForkCouldHaveStarted.endBlock });
-    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeForkCouldHaveStarted.startBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeWhereForkCouldHaveStarted.endBlock });
+    await validateRskBlockNodeVsArmadilloMonitorMongoDB({ rskInfo: fork.mainchainRangeWhereForkCouldHaveStarted.startBlock });
 }
 
 async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {
@@ -655,7 +712,7 @@ async function validateMainchainRskMongoDB(mainchain, expectedLength, btcStart, 
 async function validateBtcBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock, btcRskMap, mainchainInFork) {
     if (!mainchainInFork) {
         let shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
-        
+
         if (!shouldHaveBtcInfo) {
             expect(armadilloBlock.btcInfo).to.be.null;
         }
@@ -718,6 +775,24 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, _num
     }
 }
 
+async function validateMongoOutput(mainchainFile, forksFile) {
+    await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
+    const expectedResponseBlockchains = await mongoResponseToBlockchainsFromArmadilloApi(forksFile, mainchainFile);
+    await insertToDbFromFile(forksFile, mongo_utils.ArmadilloForks);
+    await insertToDbFromFile(mainchainFile, mongo_utils.ArmadilloMainchain);
+    expect(expectedResponseBlockchains.data.mainchain).not.to.be.null;
+    expect(expectedResponseBlockchains.data.forks).not.to.be.null;
+    const blockchainsResponse = await getBlockchains(1000);
+    // Debugging messages still in use.
+    // console.log("ACTUAL _____________");
+    // console.log("FORK Length: " + blockchainsResponse.data.forks.length);
+    // console.log("MAINCHAIN Length: " + blockchainsResponse.data.mainchain.length);
+    // console.log("EXPECTED ___________");
+    // console.log("FORK Length: " + expectedResponseBlockchains.data.forks.length);
+    // console.log("MAINCHAIN Length: " + expectedResponseBlockchains.data.mainchain.length);
+    expect(blockchainsResponse.data).to.be.eql(expectedResponseBlockchains.data);
+}
+
 module.exports = {
     rskdPromiseRequest,
     config,
@@ -750,5 +825,8 @@ module.exports = {
     validateRskBlockNodeVsArmadilloMonitorMongoDB,
     validateBtcBlockNodeVsArmadilloMonitorMongoDB,
     validateForksRskBlockMongoDB,
-    validateMainchainRskMongoDB
+    validateMainchainRskMongoDB,
+    mongoResponseToBlockchainsFromArmadilloApi,
+    insertToDbFromFile,
+    validateMongoOutput
 }
