@@ -1,40 +1,15 @@
 import { MainchainService } from '../../services/mainchain-service';
-import { BranchService } from '../../services/branch-service';
-import { Branch, BranchItem } from '../../common/branch';
-import { MessageResponse } from '../common/message-response';
-
-export class BlockchainHistory {
-  public forks: BranchItem[][];
-  public mainchain: BranchItem[];
-
-  constructor(mainchain: BranchItem[], forks: BranchItem[][]) {
-    this.forks = forks;
-    this.mainchain = mainchain;
-  }
-}
+import { ForkService } from '../../services/fork-service';
+import { MessageResponse, BlockchainHistory } from '../common/models';
+import { Item, Fork } from '../../common/forks';
 
 export class BlockchainController {
   private mainchainService: MainchainService;
-  private branchService: BranchService;
+  private forkService: ForkService;
 
-  constructor(mainchainService: MainchainService, branchService: BranchService) {
+  constructor(mainchainService: MainchainService, forkService: ForkService) {
     this.mainchainService = mainchainService;
-    this.branchService = branchService;
-  }
-
-  private async getBlockchain(n : number){
-    var mainchain : BranchItem[] = await this.mainchainService.getLastBtcBlocksDetectedInChain(n);
-
-    let heightToGetForksFrom = 0;
-
-    if (mainchain.length != 0) {
-      heightToGetForksFrom = mainchain[0].rskInfo.height - (n - 1);
-    }
-
-    let forksBranches = await this.branchService.getForksDetected(heightToGetForksFrom);
-    var forks: BranchItem[][] = forksBranches.map(x => Branch.fromObjectToListBranchItems(x));
-
-    return new BlockchainHistory(mainchain, forks);
+    this.forkService = forkService;
   }
 
   public async getLastBlocksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
@@ -45,18 +20,26 @@ export class BlockchainController {
       n = 5000;
     }
 
-    var data = await this.getBlockchain(n);
+    var mainchain: Item[] = await this.mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(n);
+
+    let heightToGetForksFrom = 0;
+
+    if (mainchain.length > 0) {
+      heightToGetForksFrom = mainchain[mainchain.length - 1].btcInfo.height;
+    }
+
+    let forks = await this.forkService.getForksDetected(heightToGetForksFrom);
 
     return res.status(200).send(
       new MessageResponse(
         `Get mainchain and forks in the last ${n} BTC blocks`,
         true,
-        data
+        new BlockchainHistory(mainchain, forks)
       )
     );
   }
 
-  public async getLastForksInChain(req: any, res: any): Promise<MessageResponse<BlockchainHistory>> {
+  public async getLastForksInChain(req: any, res: any): Promise<MessageResponse<Fork[]>> {
     let n: number = parseInt(req.params.n);
 
     if (n > 5000) {
@@ -64,13 +47,12 @@ export class BlockchainController {
       n = 5000;
     }
 
-    var data = await this.getBlockchain(n);
-
+    let forks : Fork[] = await this.forkService.getLastForks(n);
     return res.status(200).send(
       new MessageResponse(
         `Get forks in the last ${n} BTC blocks`,
         true,
-        data.forks
+        forks
       )
     );
   }
