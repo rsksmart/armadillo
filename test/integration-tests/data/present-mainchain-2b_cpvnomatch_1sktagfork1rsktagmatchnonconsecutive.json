@@ -1,0 +1,20 @@
+[
+  {
+    "btcInfo": {
+      "height": 8771,
+      "hash": "5037d94a1ad7a039a65514d2b8da05db0ef738a030596ae24b1dcaa5e3610c99"
+    },
+    "rskInfo": {
+      "height": 4973,
+      "hash": "0x20429e22d39564abea80c2ee54d913f51d38ba36483325f1fcee73c63d7722cf",
+      "forkDetectionData": {
+        "prefixHash": "f7f2a99a77f3f2e5857aa140bcc4d6d68c2a100a",
+        "CPV": "7bce02dee86991",
+        "NU": 0,
+        "BN": 4973
+      },
+      "prevHash": "0x90270c94083074af28de0b6b9192e1eca865b087b6bdeb723e8741f479c9f4e4",
+      "mainchain": true
+    }
+  }
+]

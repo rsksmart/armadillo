@@ -4,7 +4,7 @@ const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
 const ArmadilloStateTracker = "btc";
-const ArmadilloForks = "branches";
+const ArmadilloForks = "forks";
 
 let connectDB = async (_db) => {
     try {
