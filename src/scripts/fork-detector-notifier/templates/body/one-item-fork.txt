@@ -1,0 +1,15 @@
+◘ Fork started in: #forkTime
+
+◘ Miner name which mined BTC block: #minerMinedFirstItem
+
+◘ Distance to the RSK best block: #distanceFirstItemToBestBlock
+
+◘ BTC height: #btcListHeights
+
+◘ Range distance where fork could have started: (#startRangeWhereForkCouldHaveStarted, #endRangeWhereForkCouldHaveStarted)
+    - Diference in blocks between end and start: #diferenceInBlocksBetweenEndAndStart
+    - Distance to last jump: #distanceCPVtoPrevJump
+
+◘ Fork data complete:
+
+    #completeForkData

@@ -1,7 +1,8 @@
-import { Fork } from '../../common/forks';
+import { Fork, ForkItem } from '../../common/forks';
 import { RskApiService } from '../../services/rsk-api-service';
 import { ForkInformationEmail as ForkBodyEmail, GuessMinedBlockInfo } from './common/model';
 import { RskApiConfig } from '../../config/rsk-api-config';
+import { readFileSync } from 'fs';
 const curl = new (require('curl-request'))();
 const nodemailer = require('nodemailer');
 const config = require('./config.json');
@@ -9,7 +10,6 @@ const { getLogger, configure } = require('log4js');
 const INTERVAL = config.pollIntervalMs;
 const MIN_LENGTH = config.minForkLength;
 const logger = getLogger('fork-detector');
-var equal = require('deep-equal');
 
 configure('./log-config.json');
 
@@ -27,7 +27,7 @@ async function start() {
             logger.info(`Forks detected, sending notifications to ${config.recipients.join(', ')}`);
 
             for (var i = 0; i < forks.length; i++) {
-               let forkToSend =forks[i];
+                let forkToSend = forks[i];
                 sendAlert(forkToSend);
             }
 
@@ -71,8 +71,8 @@ async function forkBody(fork: Fork): Promise<string> {
     info.btcListHeights = getBtcListHeight(fork);
     info.forkLengthRskBlocks = getForkLengthInRskBlocks(fork);
     info.btcGuessedMinedInfo = getBtcGuessMinedInfo(fork);
+    info.btcGuessedMinersNames = fork.items.map(x => x.btcInfo.guessedMiner);
     info.fork = fork;
-
     return body(info);
 }
 
@@ -122,30 +122,25 @@ function getBtcListHeight(fork: Fork): number[] {
 
 function body(data: ForkBodyEmail): string {
     let minerListGuess = getGuessMinedBlocksList(data.btcGuessedMinedInfo);
+    let body : string =  data.forkBTCitemsLength > 1 ? readFileSync("./templates/body/multiple-item-fork.txt").toString() : readFileSync("./templates/body/one-item-fork.txt").toString();
+    body = body
+            .replace('#forkTime', data.forkTime)
+            .replace('#minerMinedFirstItem', data.btcGuessedMinedInfo[0].poolName.toString())
+            .replace('#distanceFirstItemToBestBlock', data.distanceFirstItemToBestBlock.toString())
+            .replace('#startRangeWhereForkCouldHaveStarted', data.rangeWhereForkCouldHaveStarted.startBlock.height.toString())
+            .replace('#endRangeWhereForkCouldHaveStarted', data.rangeWhereForkCouldHaveStarted.endBlock.height.toString())
+            .replace('#diferenceInBlocksBetweenEndAndStart',  Math.abs((data.rangeWhereForkCouldHaveStarted.startBlock.height - data.rangeWhereForkCouldHaveStarted.endBlock.height)).toString())
+            .replace('#distanceCPVtoPrevJump', data.distanceCPVtoPrevJump.toString())
+            .replace('#btcListHeights', data.btcListHeights.join(", "))
+            .replace('#forkLengthRskBlocks', data.forkLengthRskBlocks.toString())
+            .replace('#forkBTCitemsLength', data.forkBTCitemsLength.toString())
+            .replace('#minerListGuess', minerListGuess)
+            .replace('#btcGuessedMinedInfo', data.btcGuessedMinersNames.join(" | "))
+            .replace('#completeForkData', JSON.stringify(data.fork));
 
-    return `
-    - Range distance where fork could have started: (${data.rangeWhereForkCouldHaveStarted.startBlock.height}, ${data.rangeWhereForkCouldHaveStarted.endBlock.height})
-        - Diference between end and start: ${data.rangeWhereForkCouldHaveStarted.endBlock.height - data.rangeWhereForkCouldHaveStarted.startBlock.height}
-        - Distance to last jump: ${data.distanceCPVtoPrevJump}
-        
-    - Fork started in: ${data.forkTime}
-        - Distance first item in fork detected to the RSK best block: ${data.distanceFirstItemToBestBlock}
-        - Distances to the RSK best block: ${data.chainDistance}
+    console.log(body)
 
-    - Fork length in RSK blocks (from the first block up to last block detected): ${data.forkLengthRskBlocks}
-
-    - Number of BTC blocks found in fork: ${data.forkBTCitemsLength}
-        - list of BTC blocks height: ${data.btcListHeights.join(", ")}
-
-    - List of miners which mined BTC blocks in fork:
-        ${minerListGuess}
-
-    - Big picture of pools that mined each BTC block:
-        ${data.btcGuessedMinedInfo.map(x => x.poolName).join(" | ")}
-
-    - Fork data complete:
-        ${JSON.stringify(data.fork)}
-    `
+    return body;
 }
 
 function getGuessMinedBlocksList(list: GuessMinedBlockInfo[]): string {
@@ -158,11 +153,17 @@ function getGuessMinedBlocksList(list: GuessMinedBlockInfo[]): string {
     return minerListInfo.join('\n');
 }
 
-
 function forkTitle(fork: Fork): string {
     var forkLength = fork.items.length;
+    var title : string =  forkLength > 1 ? readFileSync("./templates/title/multiple-item-fork.txt").toString() : readFileSync("./templates/title/one-item-fork.txt").toString();
     var statingRSKHeight = fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
-    return `Fork length ${forkLength}, starting at RSK height ${statingRSKHeight}`
+
+    title = title.replace('#forkLength', forkLength.toString())
+            .replace('#statingRSKHeight', statingRSKHeight.toString())
+            .replace('#btcGuessMined', getBtcGuessMinedInfo(fork)[0].poolName)
+            .replace('#endingRSKHeight', fork.getLastDetected().rskForkInfo.forkDetectionData.BN.toString());
+
+    return title;
 }
 
 function getCPVdistanceToPreviousJump(fork: Fork): number {

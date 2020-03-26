@@ -1,6 +1,7 @@
 import { RangeForkInMainchain, Fork } from "../../../common/forks";
 
 export class ForkInformationEmail {
+    public btcGuessedMinersNames: string[];
     public forkBTCitemsLength: number;
     public forkTime: string;
     public distanceFirstItemToBestBlock: number;
