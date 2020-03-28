@@ -315,5 +315,22 @@ describe('Mainchain test', () => {
       expect(getBlocksByNumber.calledTwice).to.be.true;
       expect(getBlock.callCount).to.be.equal(4);
     });
+
+    it.only("Wait until tag's height in BTC block is greater than X blocks backward to the best RSK block", async (done) => {
+      // const rskBlock = new RskBlockInfo(100, "hash", "prevHash", true,"", new ForkDetectionData(PREFIX + CPV + NU + "00000064"));
+      // const btcBlockNew = new BtcBlock(10000, "btcHash", PREFIX + CPV + NU + "00000064", "");
+
+      // sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock]);
+      // sinon.stub(mainchainService, <any>'getBestBlock').returns(null);
+      // sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock);
+      
+      // try{
+      //   await forkDetector.onNewBlock(btcBlockNew).then(function() {
+      //     done();
+      //   });
+      // }catch(e){
+      // }
+      
+    });
   })
 })

@@ -69,7 +69,7 @@ export class ForkDetector {
         // }
 
         let rskBestBlockAtTheFirstMoment = await this.rskApiService.getBestBlock();
-        await this.waitForMinimumRskHeight(newBtcBlock.btcInfo.height);
+        await this.waitForMinimumRskHeight(newBtcBlock.rskTag.BN);
        
         let rskBlocksAtNewRskTagHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
         let rskBlockMatchInHeight: RskBlockInfo = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);

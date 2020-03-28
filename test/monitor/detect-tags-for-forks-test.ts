@@ -286,43 +286,5 @@ describe('Forks tests', () => {
       expect(saveFork.calledOnce).to.be.true;
       expect(addForkItem.notCalled).to.be.true;
     });
-
-    it("Wait until Tag's height in BTC block is greater than X blocks backward to the best RSK block", async () => {
-      let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
-      let item1 = new ForkItem(btcBlock5.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock5.rskTag, rskBlock111.height));
-      let forkFirstSaved = new Fork(rangeForkInMainchain, [item1]);
-
-      let getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');
-      getBlocksByNumber.returns([]);
-
-      let getBestBlock = sinon.stub(rskApiService, <any>'getBestBlock');
-      getBestBlock.returns(rskBlock111);
-
-      sinon.stub(rskApiService, <any>'getBlock');
-      getBestBlock.returns(rskBlock111);
-
-      let getForksDetected = sinon.stub(forkService, <any>'getForksDetected');
-      getForksDetected.onCall(0).returns([]);
-      getForksDetected.onCall(1).returns([forkFirstSaved]);
-
-      let getRangeForkWhenItCouldHaveStarted = sinon.stub(rskApiService, <any>'getRangeForkWhenItCouldHaveStarted')
-      getRangeForkWhenItCouldHaveStarted.returns(rangeForkInMainchain);
-
-      let saveFork = sinon.stub(forkService, <any>'save')
-      saveFork.callsFake(function (forkToSave) {
-        expect(forkToSave).to.deep.equal(forkFirstSaved);
-      });
-
-      let addForkItem = sinon.stub(forkService, <any>'addForkItem');
-      
-      sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
-
-      await forkDetector.onNewBlock(btcBlock5);
-      await forkDetector.onNewBlock(btcBlock5);
-
-      //Validations
-      expect(saveFork.calledOnce).to.be.true;
-      expect(addForkItem.notCalled).to.be.true;
-    });
   });
 })
