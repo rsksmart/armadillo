@@ -32,7 +32,7 @@ export class MainchainController {
 
     if(endHeight < startHeight){
       return new MessageResponse<Item[]>(
-        `endHeight:${endHeight} must be bigger than startHeight: ${startHeight}`,
+        `endHeight:${endHeight} must be greater than startHeight: ${startHeight}`,
         false,
         []
       )
@@ -54,7 +54,7 @@ export class MainchainController {
     
     if(endHeight < startHeight){
       return new MessageResponse<Item[]>(
-        `endHeight:${endHeight} must be bigger than startHeight: ${startHeight}`,
+        `endHeight:${endHeight} must be greater than startHeight: ${startHeight}`,
         false,
         []
       )
