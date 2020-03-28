@@ -16,6 +16,7 @@ import { BtcService } from "../../src/services/btc-service";
 import { sleep } from "../../src/util/helper";
 import { HttpBtcApi } from "../../src/services/btc-api";
 import { MainchainService } from "../../src/services/mainchain-service";
+import { ForkDetectorConfig } from "../../src/config/fork-detector-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00"; // 0
@@ -50,6 +51,7 @@ const fork = new Fork(null, [new ForkItem(btcBlock1.btcInfo, rskBlock1)]);
 
 let btcWatcher;
 let rskApiConfig: RskApiConfig;
+let forkDetectorConfig: ForkDetectorConfig;
 let mongoStore: MongoStore;
 let btcStore: MongoStore;
 let forkService: ForkService;
@@ -68,6 +70,7 @@ describe('Forks tests', () => {
     var httpBtcApi = stubObject<HttpBtcApi>(HttpBtcApi.prototype);
     btcWatcher = new BtcWatcher(httpBtcApi, null, 0);
     rskApiConfig =  new RskApiConfig("localhost:4444",0);
+    forkDetectorConfig =  new ForkDetectorConfig(3000, 5);
     mongoStore = stubObject<MongoStore>(MongoStore.prototype);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     forkService = new ForkService(mongoStore);
@@ -79,7 +82,7 @@ describe('Forks tests', () => {
     var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
     getBestBlockMainchainService.returns(null);
 
-    forkDetector = new ForkDetector(forkService, mainchainService, btcWatcher, rskApiService);
+    forkDetector = new ForkDetector(forkService, mainchainService, btcWatcher, rskApiService, forkDetectorConfig);
   });
 
   describe("Forks in present and in the past", () => {
@@ -247,6 +250,44 @@ describe('Forks tests', () => {
     });
 
     it("Tag repeted arrive, should not create a new fork, because it is already a fork, tag exists in fork", async () => {
+      let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
+      let item1 = new ForkItem(btcBlock5.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock5.rskTag, rskBlock111.height));
+      let forkFirstSaved = new Fork(rangeForkInMainchain, [item1]);
+
+      let getBlocksByNumber = sinon.stub(rskApiService, <any>'getBlocksByNumber');
+      getBlocksByNumber.returns([]);
+
+      let getBestBlock = sinon.stub(rskApiService, <any>'getBestBlock');
+      getBestBlock.returns(rskBlock111);
+
+      sinon.stub(rskApiService, <any>'getBlock');
+      getBestBlock.returns(rskBlock111);
+
+      let getForksDetected = sinon.stub(forkService, <any>'getForksDetected');
+      getForksDetected.onCall(0).returns([]);
+      getForksDetected.onCall(1).returns([forkFirstSaved]);
+
+      let getRangeForkWhenItCouldHaveStarted = sinon.stub(rskApiService, <any>'getRangeForkWhenItCouldHaveStarted')
+      getRangeForkWhenItCouldHaveStarted.returns(rangeForkInMainchain);
+
+      let saveFork = sinon.stub(forkService, <any>'save')
+      saveFork.callsFake(function (forkToSave) {
+        expect(forkToSave).to.deep.equal(forkFirstSaved);
+      });
+
+      let addForkItem = sinon.stub(forkService, <any>'addForkItem');
+      
+      sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
+
+      await forkDetector.onNewBlock(btcBlock5);
+      await forkDetector.onNewBlock(btcBlock5);
+
+      //Validations
+      expect(saveFork.calledOnce).to.be.true;
+      expect(addForkItem.notCalled).to.be.true;
+    });
+
+    it("Wait until Tag's height in BTC block is greater than X blocks backward to the best RSK block", async () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
       let item1 = new ForkItem(btcBlock5.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock5.rskTag, rskBlock111.height));
       let forkFirstSaved = new Fork(rangeForkInMainchain, [item1]);

@@ -15,6 +15,7 @@ import { MongoStore } from "../../src/storage/mongo-store";
 import { BtcService } from "../../src/services/btc-service";
 import { HttpBtcApi } from "../../src/services/btc-api";
 import { sleep } from "../../src/util/helper";
+import { ForkDetectorConfig } from "../../src/config/fork-detector-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434";
@@ -33,7 +34,8 @@ let mainchainService: MainchainService;
 let rskService: RskApiService;
 let forkDetector: ForkDetector;
 let btcService: BtcService;
-let btcBlockPrev = new BtcBlock(1, "btcHash", "", "")
+let btcBlockPrev = new BtcBlock(1, "btcHash", "", "");
+let forkDetectorConfig: ForkDetectorConfig;
 
 //Building mainchain when a new btc block arrives
 describe('Mainchain test', () => {
@@ -51,7 +53,8 @@ describe('Mainchain test', () => {
     rskService = new RskApiService(rskApiConfig);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     btcService = new BtcService(btcStore);
-    forkDetector = new ForkDetector(null, mainchainService, btcWatcher, rskService);
+    forkDetectorConfig =  new ForkDetectorConfig(3000, 5);
+    forkDetector = new ForkDetector(null, mainchainService, btcWatcher, rskService, forkDetectorConfig);
 
     var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
     getLastBlockDetected.returns(btcBlockPrev);

@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import { StoreConfig } from './store-config';
 import { BtcApiConfig } from './btc-api-config';
 import { ForkApiConfig } from './fork-api-config';
+import { ForkDetectorConfig } from './fork-detector-config';
 
 export class MonitorConfig {
     public configPath: string;
@@ -12,6 +13,7 @@ export class MonitorConfig {
     public readonly btcApi: BtcApiConfig;
     public readonly store: StoreConfig;
     public readonly forkApi: ForkApiConfig;
+    public readonly forkDetector: ForkDetectorConfig;
 
     public static getMainConfig(configPath: string): MonitorConfig {
 
@@ -29,14 +31,16 @@ export class MonitorConfig {
             StoreConfig.fromObject(config.store),
             BtcApiConfig.fromObject(config.btcApi),
             ForkApiConfig.fromObject(config.forkApi),
+            ForkDetectorConfig.fromObject(config.forkDetector),
         );
     }
 
-    constructor(logger: LoggerConfig, rskApi: RskApiConfig, store: StoreConfig, btcApi: BtcApiConfig, forkApi: ForkApiConfig) {
+    constructor(logger: LoggerConfig, rskApi: RskApiConfig, store: StoreConfig, btcApi: BtcApiConfig, forkApi: ForkApiConfig, forkDetector: ForkDetectorConfig) {
         this.logger = logger;
         this.rskApi = rskApi;
         this.store = store;
         this.btcApi = btcApi;
         this.forkApi = forkApi;
+        this.forkDetector = forkDetector;
     }
 }
