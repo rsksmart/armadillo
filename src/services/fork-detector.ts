@@ -66,14 +66,11 @@ export class ForkDetector {
         //     return await this.blockSuccessfullyProcessed(newBtcBlock);
         // }
 
-       let rskBlocksToWait: number = 5;
-       let rskBestBlockAtTheFirstMoment = await this.rskApiService.getBestBlock();
-        console.log("rskBestBlockAtTheFirstMoment", rskBestBlockAtTheFirstMoment)
+        let rskBlocksToWait: number = 5;
+        let rskBestBlockAtTheFirstMoment = await this.rskApiService.getBestBlock();
         await this.waitForMinimumRskHeight(rskBlocksToWait, newBtcBlock.btcInfo.height);
         let rskBlocksAtNewRskTagHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
-        console.log("rskBlocksAtNewRskTagHeight", rskBlocksAtNewRskTagHeight)
         let rskBlockMatchInHeight: RskBlockInfo = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
-        console.log("rskBlockMatchInHeight", rskBlockMatchInHeight) 
         if (rskBlockMatchInHeight) {
             // New tag is in mainchain
             let ok = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
@@ -90,7 +87,7 @@ export class ForkDetector {
         return;
     }
 
-    public async waitForMinimumRskHeight(rskBlocksToWait: number, height: number) : Promise<void> {
+    public async waitForMinimumRskHeight(rskBlocksToWait: number, height: number): Promise<void> {
         let bestBLockHeight = await this.rskApiService.getBestBlock();
 
         if (Math.abs(bestBLockHeight.height - height) < rskBlocksToWait) {
