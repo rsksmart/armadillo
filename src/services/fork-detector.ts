@@ -9,6 +9,7 @@ import { ForkService } from "./fork-service";
 import { RskApiService } from "./rsk-api-service";
 import { Printify } from "../util/printify";
 import { sleep } from "../util/helper";
+import { ForkDetectorConfig } from "../config/fork-detector-config";
 
 export class ForkDetector {
     private logger: Logger;
@@ -18,16 +19,17 @@ export class ForkDetector {
     private maxBlocksBackwardsToSearch: number = 448;
     private mainchainService: MainchainService;
     private blockForkWhenArmadilloStated: number = 1591000;
-
+    private forkDetectorConfig: ForkDetectorConfig;
     //TODO: move this into config file
     private minimunOverlapCPV: number = 3;
 
-    constructor(forkService: ForkService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService) {
+    constructor(forkService: ForkService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService, forkDetectorConfig: ForkDetectorConfig) {
         this.forkService = forkService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
         this.mainchainService = mainchainService
         this.logger = getLogger('fork-detector');
+        this.forkDetectorConfig = forkDetectorConfig;
 
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
@@ -66,9 +68,9 @@ export class ForkDetector {
         //     return await this.blockSuccessfullyProcessed(newBtcBlock);
         // }
 
-        let rskBlocksToWait: number = 5;
         let rskBestBlockAtTheFirstMoment = await this.rskApiService.getBestBlock();
-        await this.waitForMinimumRskHeight(rskBlocksToWait, newBtcBlock.btcInfo.height);
+        await this.waitForMinimumRskHeight(newBtcBlock.btcInfo.height);
+       
         let rskBlocksAtNewRskTagHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
         let rskBlockMatchInHeight: RskBlockInfo = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
         if (rskBlockMatchInHeight) {
@@ -87,12 +89,12 @@ export class ForkDetector {
         return;
     }
 
-    public async waitForMinimumRskHeight(rskBlocksToWait: number, height: number): Promise<void> {
+    public async waitForMinimumRskHeight(height: number): Promise<void> {
         let bestBLockHeight = await this.rskApiService.getBestBlock();
 
-        if (Math.abs(bestBLockHeight.height - height) < rskBlocksToWait) {
-            await sleep(0);
-            await this.waitForMinimumRskHeight(rskBlocksToWait, height);
+        if (Math.abs(bestBLockHeight.height - height) < this.forkDetectorConfig.rskBlocksToWait) {
+            await sleep(this.forkDetectorConfig.timeToSleepWaitingForkRskBlocks);
+            await this.waitForMinimumRskHeight(height);
         }
     }
 
