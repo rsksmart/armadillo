@@ -1,4 +1,4 @@
-import { RangeForkInMainchain, Fork } from "../../../common/forks";
+import { RangeForkInMainchain, Fork } from "../../../../common/forks";
 
 export class ForkInformationEmail {
     public btcGuessedMinersNames: string[];
