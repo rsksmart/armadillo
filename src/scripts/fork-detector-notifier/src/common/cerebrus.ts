@@ -14,6 +14,7 @@ export interface CerebrusConfig {
     sender: string;
     armadilloUrl: string;
     rskNodeUrl: string;
+    nBlocksForBtcHashrateForRskMainchain: number;
 }
 
 export class Cerebrus {
