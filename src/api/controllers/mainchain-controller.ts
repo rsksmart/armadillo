@@ -6,6 +6,7 @@ import { MessageResponse } from '../common/models';
 
 export class MainchainController {
   private service: MainchainService;
+        
 
   constructor(service: MainchainService) {
     this.service = service;
@@ -19,6 +20,51 @@ export class MainchainController {
     return res.status(200).send(
       new MessageResponse<Item[]>(
         `Get last ${blocks.length}/${req.params.n} blocks in mainchain`,
+        true,
+        blocks
+      )
+    );
+  }
+
+  public async getLastBtcBlocksBetweenHeight(req: any, res: any): Promise<MessageResponse<Item[]>> {
+    const startHeight: number = parseInt(req.params.startHeight);
+    const endHeight: number = parseInt(req.params.endHeight);
+
+    if(endHeight < startHeight){
+      return new MessageResponse<Item[]>(
+        `endHeight:${endHeight} must be greater than startHeight: ${startHeight}`,
+        false,
+        []
+      )
+    }
+    var blocks: Item[] = await this.service.getBtcBlocksBetweenHeight(startHeight, endHeight);
+    
+    return res.status(200).send(
+      new MessageResponse<Item[]>(
+        `Get just last BTC blocks between ${startHeight} and ${endHeight} BTC height`,
+        true,
+        blocks
+      )
+    );
+  }
+
+  public async getBtcBlocksBetweenRskHeight(req: any, res: any): Promise<MessageResponse<Item[]>> {
+    const startHeight: number = parseInt(req.params.startHeight);
+    const endHeight: number = parseInt(req.params.endHeight);
+    
+    if(endHeight < startHeight){
+      return new MessageResponse<Item[]>(
+        `endHeight:${endHeight} must be greater than startHeight: ${startHeight}`,
+        false,
+        []
+      )
+    }
+    
+    var blocks: Item[] = await this.service.getBtcBlocksBetweenRskHeight(startHeight, endHeight);
+    
+    return res.status(200).send(
+      new MessageResponse<Item[]>(
+        `Get just last BTC blocks between ${startHeight} and ${endHeight} RSK height`,
         true,
         blocks
       )

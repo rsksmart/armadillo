@@ -8,6 +8,8 @@ import { MainchainService } from "./mainchain-service";
 import { ForkService } from "./fork-service";
 import { RskApiService } from "./rsk-api-service";
 import { Printify } from "../util/printify";
+import { sleep } from "../util/helper";
+import { ForkDetectorConfig } from "../config/fork-detector-config";
 
 export class ForkDetector {
     private logger: Logger;
@@ -16,18 +18,18 @@ export class ForkDetector {
     private btcWatcher: BtcWatcher;
     private maxBlocksBackwardsToSearch: number = 448;
     private mainchainService: MainchainService;
-    //This is the 
     private blockForkWhenArmadilloStated: number = 1591000;
-
+    private forkDetectorConfig: ForkDetectorConfig;
     //TODO: move this into config file
     private minimunOverlapCPV: number = 3;
 
-    constructor(forkService: ForkService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService) {
+    constructor(forkService: ForkService, mainchainService: MainchainService, btcWatcher: BtcWatcher, rskApiService: RskApiService, forkDetectorConfig: ForkDetectorConfig) {
         this.forkService = forkService;
         this.btcWatcher = btcWatcher;
         this.rskApiService = rskApiService;
         this.mainchainService = mainchainService
         this.logger = getLogger('fork-detector');
+        this.forkDetectorConfig = forkDetectorConfig;
 
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
     }
@@ -66,23 +68,34 @@ export class ForkDetector {
         //     return await this.blockSuccessfullyProcessed(newBtcBlock);
         // }
 
+        let rskBestBlockAtTheFirstMoment = await this.rskApiService.getBestBlock();
+        await this.waitForMinimumRskHeight(newBtcBlock.rskTag.BN);
+       
         let rskBlocksAtNewRskTagHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
         let rskBlockMatchInHeight: RskBlockInfo = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
-
         if (rskBlockMatchInHeight) {
             // New tag is in mainchain
             let ok = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
 
             if (!ok) {
+                this.logger.error("trying to add block in mainchain")
                 return;
             }
         } else {
-            
-            await this.addOrCreateFork(newBtcBlock);
+
+            await this.addOrCreateFork(newBtcBlock, rskBestBlockAtTheFirstMoment);
         }
 
         await this.blockSuccessfullyProcessed(newBtcBlock);
         return;
+    }
+
+    public async waitForMinimumRskHeight(height: number): Promise<void> {
+        let bestBLockHeight: RskBlockInfo= await this.rskApiService.getBestBlock();
+        if (Math.abs(bestBLockHeight.height - height) < this.forkDetectorConfig.rskBlocksToWait) {
+            await sleep(this.forkDetectorConfig.timeToSleepWaitingForkRskBlocks);
+            await this.waitForMinimumRskHeight(height);
+        }
     }
 
     // The idea of this method is build an armadillo mainchain (like rsk mainchain) adding btc information if applicable.
@@ -118,7 +131,7 @@ export class ForkDetector {
 
             // Check if this tag is in mainchain or uncle at certain height.
             var blockThatMatchInMainnet: Item = await this.mainchainService.getBlockByForkDataDetection(newBtcBlock.rskTag);
-           
+
             if (blockThatMatchInMainnet) {
                 this.logger.info("Mainchain: rsk tag is pointing to an existing armadillo mainchain height. A miner could be stuck");
 
@@ -178,7 +191,6 @@ export class ForkDetector {
 
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.forkDetectionData.BN.toString()));
         await this.mainchainService.save(itemsToSaveInMainchain);
-
         return true;
     }
 
@@ -220,7 +232,7 @@ export class ForkDetector {
         return this.forkService.getForksDetected(minimunHeightToSearch);
     }
 
-    private tagIsInAFork(forks:Fork[], item: ForkItem): boolean {
+    private tagIsInAFork(forks: Fork[], item: ForkItem): boolean {
         return forks[0].getForkItems().some(x => x.rskForkInfo.forkDetectionData.equals(item.rskForkInfo.forkDetectionData));
     }
 
@@ -228,8 +240,7 @@ export class ForkDetector {
         return forks[0].getLastDetected().rskForkInfo.forkDetectionData.BN < item.rskForkInfo.forkDetectionData.BN;
     }
 
-    private async addOrCreateFork(btcBlock: BtcBlock) {
-        let rskBestBlock: RskBlockInfo = await this.rskApiService.getBestBlock();
+    private async addOrCreateFork(btcBlock: BtcBlock, rskBestBlock: RskBlockInfo) {
         let rskBlocksSameHeight;
 
         //Rsktag is comming pointing in a future rsk height, for armadillo monitor this is a fork
@@ -242,12 +253,12 @@ export class ForkDetector {
             rskBlocksSameHeight = await this.rskApiService.getBlock(btcBlock.rskTag.BN);
 
             //We shouldn't remove this if, should not come a null checking this heigh
-            if(!rskBlocksSameHeight){
+            if (!rskBlocksSameHeight) {
                 return await this.btcWatcher.blockProcessingFailed(btcBlock);
             }
         }
-        
-        var rskForkItem : RskForkItemInfo = RskForkItemInfo.fromForkDetectionData(btcBlock.rskTag,rskBestBlock.height);
+
+        var rskForkItem: RskForkItemInfo = RskForkItemInfo.fromForkDetectionData(btcBlock.rskTag, rskBestBlock.height);
         //Possible mainchain block from where it started to fork
         let item: ForkItem = new ForkItem(btcBlock.btcInfo, rskForkItem);
 

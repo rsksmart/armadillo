@@ -19,6 +19,8 @@ export function routersConfig(forkStore: MongoStore, mainchainStore: MongoStore,
 
         //Mainchain routers
         router.get('/mainchain/getLastBlocks/:n', mainchainController.getLastBlocks.bind(mainchainController));
+        router.get('/mainchain/getLastBtcBlocksBetweenHeight/:startHeight/:endHeight', mainchainController.getLastBtcBlocksBetweenHeight.bind(mainchainController));
+        router.get('/mainchain/getBtcBlocksBetweenRskHeight/:startHeight/:endHeight', mainchainController.getBtcBlocksBetweenRskHeight.bind(mainchainController));
 
         //Blockchain routers
         router.get('/blockchains/:n', blockchainsController.getLastBlocksInChain.bind(blockchainsController));
