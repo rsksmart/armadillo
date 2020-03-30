@@ -30,7 +30,7 @@ class MonitorRunner {
         this.btcService = new BtcService(mongoBtcStore);
         this.btcWatcher = new BtcWatcher(new HttpBtcApi(this.monitorConfig.btcApi), this.btcService, this.monitorConfig.rskApi.lastBtcBlockDetectedCheckpoint);
         this.rskApiService = new RskApiService(this.monitorConfig.rskApi);
-        this.forkDetector = new ForkDetector(this.forkService, this.mainchainService, this.btcWatcher, this.rskApiService);
+        this.forkDetector = new ForkDetector(this.forkService, this.mainchainService, this.btcWatcher, this.rskApiService, this.monitorConfig.forkDetector);
         this.logger = getLogger("monitor-runner.ts");
     }
 

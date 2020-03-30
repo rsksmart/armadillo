@@ -16,6 +16,7 @@ import { BtcService } from "../../src/services/btc-service";
 import { sleep } from "../../src/util/helper";
 import { HttpBtcApi } from "../../src/services/btc-api";
 import { MainchainService } from "../../src/services/mainchain-service";
+import { ForkDetectorConfig } from "../../src/config/fork-detector-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00"; // 0
@@ -50,6 +51,7 @@ const fork = new Fork(null, [new ForkItem(btcBlock1.btcInfo, rskBlock1)]);
 
 let btcWatcher;
 let rskApiConfig: RskApiConfig;
+let forkDetectorConfig: ForkDetectorConfig;
 let mongoStore: MongoStore;
 let btcStore: MongoStore;
 let forkService: ForkService;
@@ -68,6 +70,7 @@ describe('Forks tests', () => {
     var httpBtcApi = stubObject<HttpBtcApi>(HttpBtcApi.prototype);
     btcWatcher = new BtcWatcher(httpBtcApi, null, 0);
     rskApiConfig =  new RskApiConfig("localhost:4444",0);
+    forkDetectorConfig =  new ForkDetectorConfig(3000, 5);
     mongoStore = stubObject<MongoStore>(MongoStore.prototype);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     forkService = new ForkService(mongoStore);
@@ -79,7 +82,7 @@ describe('Forks tests', () => {
     var getBestBlockMainchainService = sinon.stub(mainchainService, <any>'getBestBlock')
     getBestBlockMainchainService.returns(null);
 
-    forkDetector = new ForkDetector(forkService, mainchainService, btcWatcher, rskApiService);
+    forkDetector = new ForkDetector(forkService, mainchainService, btcWatcher, rskApiService, forkDetectorConfig);
   });
 
   describe("Forks in present and in the past", () => {
