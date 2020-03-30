@@ -1,10 +1,11 @@
-import { RskApiService } from '../../../services/rsk-api-service';
+import { configure, getLogger } from 'log4js';
 import { RskApiConfig } from '../../../config/rsk-api-config';
-import { CerebrusConfig, Cerebrus } from './common/cerebrus';
-import { ArmadilloApi, ArmadilloApiImpl } from './common/armadillo-api';
+import { RskApiService } from '../../../services/rsk-api-service';
 import { AlertSender, MailAlertSender } from './common/alert-sender';
-import { getLogger, configure } from 'log4js';
+import { ArmadilloApi, ArmadilloApiImpl } from './common/armadillo-api';
+import { Cerebrus, CerebrusConfig } from './common/cerebrus';
 import ForkEmailBuilderImpl, { ForkEmailBuilder } from './common/fork-email-builder';
+import { ForkInformationBuilder, ForkInformationBuilderImpl } from './common/fork-information-builder';
 
 const logger = getLogger('fork-detector');
 
@@ -16,8 +17,9 @@ async function main() {
     const rskApiService: RskApiService = new RskApiService(new RskApiConfig(cerebrusConfig.rskNodeUrl, 0));
     const armadilloApi: ArmadilloApi = new ArmadilloApiImpl(cerebrusConfig.armadilloUrl);
 
-    const forkEmailBuilder: ForkEmailBuilder = new ForkEmailBuilderImpl(rskApiService);
-    const alertSender: AlertSender = new MailAlertSender(cerebrusConfig, forkEmailBuilder);
+    const forkInformationBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApiService, armadilloApi, cerebrusConfig);
+    const forkEmailBuilder: ForkEmailBuilder = new ForkEmailBuilderImpl();
+    const alertSender: AlertSender = new MailAlertSender(cerebrusConfig, forkInformationBuilder, forkEmailBuilder);
 
     const cerebrus: Cerebrus = new Cerebrus(cerebrusConfig, armadilloApi, alertSender);
 

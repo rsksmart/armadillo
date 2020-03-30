@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { Fork } from "../../../../common/forks";
 import { CerebrusConfig } from "./cerebrus";
 import { ForkEmailBuilder } from "./fork-email-builder";
+import { ForkInformation, ForkInformationBuilder } from "./fork-information-builder";
 import { ForkEmail } from "./model";
 
 export interface AlertSender {
@@ -11,12 +12,14 @@ export interface AlertSender {
 
 export class MailAlertSender implements AlertSender {
     private config: CerebrusConfig;
+    private forkInfoBuilder: ForkInformationBuilder;
     private emailBuilder: ForkEmailBuilder;
     private logger: Logger;
     
-    constructor(config: CerebrusConfig, emailBuilder: ForkEmailBuilder) {
+    constructor(config: CerebrusConfig, forkInfoBuilder: ForkInformationBuilder, emailBuilder: ForkEmailBuilder) {
         this.config = config;
         this.logger = getLogger('mail-alert-sender');
+        this.forkInfoBuilder = forkInfoBuilder;
         this.emailBuilder = emailBuilder;
     }
 
@@ -29,7 +32,8 @@ export class MailAlertSender implements AlertSender {
             }
         };
 
-        const email: ForkEmail = await this.emailBuilder.build(fork);
+        const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
+        const email: ForkEmail = await this.emailBuilder.build(forkInfo);
 
         const transport = nodemailer.createTransport(options);
         let info = await transport.sendMail({
