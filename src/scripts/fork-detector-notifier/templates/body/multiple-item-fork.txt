@@ -18,6 +18,8 @@
 ◘ Big picture of pools that mined each BTC block:
     #btcGuessedMinedInfo
 
+◘ % of BTC blocks used for RSK merge mining over the last #nBlocksForBtcHashrateForRskMainchain: #btcHashrateForRskMainchain 
+
 ◘ Fork data complete:
 
     #completeForkData
