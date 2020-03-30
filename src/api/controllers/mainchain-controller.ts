@@ -37,7 +37,7 @@ export class MainchainController {
         []
       )
     }
-    var blocks: Item[] = await this.service.getBtcBlocksBetweenRskHeight(startHeight, endHeight);
+    var blocks: Item[] = await this.service.getBtcBlocksBetweenHeight(startHeight, endHeight);
     
     return res.status(200).send(
       new MessageResponse<Item[]>(
