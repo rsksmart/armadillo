@@ -53,7 +53,7 @@ describe('Mainchain test', () => {
     rskService = new RskApiService(rskApiConfig);
     btcStore = stubObject<MongoStore>(MongoStore.prototype);
     btcService = new BtcService(btcStore);
-    forkDetectorConfig =  new ForkDetectorConfig(3000, 5);
+    forkDetectorConfig =  new ForkDetectorConfig(10, 5); // wait 10ms
     forkDetector = new ForkDetector(null, mainchainService, btcWatcher, rskService, forkDetectorConfig);
 
     var getLastBlockDetected = sinon.stub(btcService, <any>'getLastBlockDetected');
@@ -316,21 +316,42 @@ describe('Mainchain test', () => {
       expect(getBlock.callCount).to.be.equal(4);
     });
 
-    it.only("Wait until tag's height in BTC block is greater than X blocks backward to the best RSK block", async (done) => {
-      // const rskBlock = new RskBlockInfo(100, "hash", "prevHash", true,"", new ForkDetectionData(PREFIX + CPV + NU + "00000064"));
-      // const btcBlockNew = new BtcBlock(10000, "btcHash", PREFIX + CPV + NU + "00000064", "");
+    it("Wait until tag's height in BTC block is greater than X blocks backward to the best RSK block", async () => {
+      const partTag: string = PREFIX + CPV + NU;
+      const rskBlock1 = new RskBlockInfo(1, "hash1", "hash0", true, "", new ForkDetectionData(partTag + "00000001"));
+      const rskBlock2 = new RskBlockInfo(2, "hash2", "hash1", true, "", new ForkDetectionData(partTag + "00000002"));
+      const rskBlock3 = new RskBlockInfo(3, "hash3", "hash2", true, "", new ForkDetectionData(partTag + "00000003"));
+      const rskBlock4 = new RskBlockInfo(4, "hash4", "hash3", true, "", new ForkDetectionData(partTag + "00000004"));
+      const rskBlock5 = new RskBlockInfo(5, "hash5", "hash4", true, "", new ForkDetectionData(partTag + "00000005"));
+      const rskBlock6 = new RskBlockInfo(6, "hash6", "hash5", true, "", new ForkDetectionData(partTag + "00000006"));
+      const rskBlock7 = new RskBlockInfo(7, "hash7", "hash6", true, "", new ForkDetectionData(partTag + "00000007"));
+     
+      const mainchainBest = new Item(btcBlockInMainchain.btcInfo, rskBlock1);
 
-      // sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock]);
-      // sinon.stub(mainchainService, <any>'getBestBlock').returns(null);
-      // sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock);
+      sinon.stub(rskService, <any>'getBlocksByNumber').returns([rskBlock2]);
+      let getBestBlock = sinon.stub(rskService, <any>'getBestBlock');
+      getBestBlock.onCall(0).returns(rskBlock2);
+      getBestBlock.onCall(1).returns(rskBlock3);
+      getBestBlock.onCall(2).returns(rskBlock4);
+      getBestBlock.onCall(3).returns(rskBlock5);
+      getBestBlock.onCall(4).returns(rskBlock6);
+      getBestBlock.onCall(5).returns(rskBlock7);
+
+      let getBlock = sinon.stub(rskService, <any>'getBlock');
+      getBlock.withArgs(1).returns(rskBlock1);
+      getBlock.withArgs(2).returns(rskBlock2);
+      sinon.stub(mainchainService, <any>'getBestBlock').returns(mainchainBest);
       
-      // try{
-      //   await forkDetector.onNewBlock(btcBlockNew).then(function() {
-      //     done();
-      //   });
-      // }catch(e){
-      // }
-      
+      var saveMainchain = sinon.stub(mainchainService, <any>'save').callsFake(null);
+
+      let blockSuccessfullyProcessed = sinon.stub(btcWatcher, <any>'blockSuccessfullyProcessed');
+      var newBtcBLock = new BtcBlock(10, "btcHash", partTag + "00000002", "");
+      await forkDetector.onNewBlock(newBtcBLock);
+
+      //Validations
+      expect(saveMainchain.called).to.be.true;
+      expect(blockSuccessfullyProcessed.called).to.be.true;
+      expect(getBestBlock.callCount).to.be.equal(6);
     });
   })
 })

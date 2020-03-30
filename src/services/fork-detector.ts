@@ -78,6 +78,7 @@ export class ForkDetector {
             let ok = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
 
             if (!ok) {
+                this.logger.error("trying to add block in mainchain")
                 return;
             }
         } else {
@@ -90,8 +91,7 @@ export class ForkDetector {
     }
 
     public async waitForMinimumRskHeight(height: number): Promise<void> {
-        let bestBLockHeight = await this.rskApiService.getBestBlock();
-
+        let bestBLockHeight: RskBlockInfo= await this.rskApiService.getBestBlock();
         if (Math.abs(bestBLockHeight.height - height) < this.forkDetectorConfig.rskBlocksToWait) {
             await sleep(this.forkDetectorConfig.timeToSleepWaitingForkRskBlocks);
             await this.waitForMinimumRskHeight(height);
@@ -191,7 +191,6 @@ export class ForkDetector {
 
         this.logger.info("Mainchain: Saving new items in mainchain with rsk heights:", itemsToSaveInMainchain.map(x => x.rskInfo.forkDetectionData.BN.toString()));
         await this.mainchainService.save(itemsToSaveInMainchain);
-
         return true;
     }
 
