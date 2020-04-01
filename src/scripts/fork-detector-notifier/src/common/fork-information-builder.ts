@@ -20,6 +20,7 @@ export interface ForkInformation {
     fork: Fork;
     nBlocksForBtcHashrateForRskMainchain: number;
     btcHashrateForRskMainchain: number;
+    btcHashrateForRskMainchainDuringFork: number;
     endingRskHeight: number;
 }
 
@@ -38,6 +39,8 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
     private armadilloApi: ArmadilloApi;
     private cerebrusConfig: CerebrusConfig;
     
+    private readonly BTC_TO_RSK_AVERAGE_RATIO = 20;
+
     constructor(rskApiService: RskApiService, armadilloApi: ArmadilloApi, cerebrusConfig: CerebrusConfig) {
         this.rskApiService = rskApiService;
         this.armadilloApi = armadilloApi;
@@ -64,6 +67,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
             fork: fork,
             nBlocksForBtcHashrateForRskMainchain: this.cerebrusConfig.nBlocksForBtcHashrateForRskMainchain,
             btcHashrateForRskMainchain: await this.getBtcMainchainHashrate(fork),
+            btcHashrateForRskMainchainDuringFork: await this.getBtcMainchainHashrateDuringFork(fork),
             endingRskHeight: fork.getLastDetected().rskForkInfo.forkDetectionData.BN
         }
 
@@ -177,5 +181,19 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         const items: Item[] = await this.armadilloApi.getLastBtcBlocksBetweenHeight(start, end);
 
         return items.length / blocksToAccountFor;
+    }
+
+    async getBtcMainchainHashrateDuringFork(fork: Fork) : Promise<number> {
+        // earliest possible start of the fork
+        const start: number = fork.mainchainRangeWhereForkCouldHaveStarted.startBlock.height;
+        // height of the fork's last rsk block not found in rsk
+        const end: number = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+
+        const items: Item[] = await this.armadilloApi.getBtcBlocksBetweenRskHeight(start, end);
+
+        // average number of rsk blocks for each btc block is 20 on average
+        const expectedBtcBlocks: number = (end - start) / this.BTC_TO_RSK_AVERAGE_RATIO;
+
+        return items.length / expectedBtcBlocks;
     }
 }
