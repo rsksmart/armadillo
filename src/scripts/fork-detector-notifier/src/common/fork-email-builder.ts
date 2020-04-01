@@ -49,7 +49,8 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
                 .replace('#completeForkData', JSON.stringify(info.fork))
                 .replace('#nBlocksForBtcHashrateForRskMainchain', info.nBlocksForBtcHashrateForRskMainchain.toString())
                 .replace('#btcHashrateForRskMainchain', info.btcHashrateForRskMainchain.toFixed(2))
-                .replace('#btcHashrateForRskMainchainDuringFork', info.btcHashrateForRskMainchainDuringFork.toFixed(2));
+                .replace('#btcHashrateForRskMainchainDuringFork', info.btcHashrateForRskMainchainDuringFork.toFixed(2))
+                .replace('#btcForkBlockPercentageOverMergeMiningBlocks', info.btcForkBlockPercentageOverMergeMiningBlocks.toFixed(2));
         
         return body;
     }
