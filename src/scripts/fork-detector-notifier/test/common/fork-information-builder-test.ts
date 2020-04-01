@@ -119,4 +119,41 @@ describe('ForkInformationBuilder', () => {
         // the estimated amount of btc blocks is 50 (1 btc/20 rsk), so we expect 50 btc blocks between the rsk 1000-2000 period
         expect(forkInfo.btcHashrateForRskMainchainDuringFork).to.equal(0.10);
     })
+
+    it("builds attackerHashrate for fork with start with cpv matches field", async () => {
+        const rskApi: any = sinon.createStubInstance(RskApiService);
+        rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+
+        const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
+        armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
+        armadilloApi.getBtcBlocksBetweenRskHeight.withArgs(1900, 2020).returns(Promise.resolve(buildItemList(3)));
+
+        const infoBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApi, armadilloApi, buildConfig());
+
+        const startBlock: RskBlockInfo = new RskBlockInfo(1900, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "0000076c"))
+        const endBlock: RskBlockInfo = new RskBlockInfo(1964, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "000007ac"))
+        const range: RangeForkInMainchain = new RangeForkInMainchain(startBlock, endBlock);
+        
+        const fork: Fork = new Fork(range, [
+            new ForkItem(
+                new BtcHeaderInfo(1001, '', ''),
+                new RskForkItemInfo(
+                    new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
+                    2000
+                )
+            ),
+            new ForkItem(
+                new BtcHeaderInfo(1002, '', ''),
+                new RskForkItemInfo(
+                    new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
+                    2020
+                )
+            )
+        ]);
+
+        const forkInfo: ForkInformation = await infoBuilder.build(fork);
+
+        // expected: 2 / (2 + 3) = 2 / 5 = 0.4
+        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(0.4);
+    })
 })
