@@ -45,15 +45,11 @@ function buildItemList(n) : Item[] {
 
 describe('ForkInformationBuilder', () => {
     it("builds forkBTCitemsLength field", async () => {
-        const rskApiConfig: RskApiConfig = new RskApiConfig('localhost:4444', 0);
-        const rskApi: RskApiService = new RskApiService(rskApiConfig);
-        var getBestBlock = sinon.stub(rskApi, <any>'getBlock');
-        getBestBlock.returns(new RskBlockInfo(1000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000")));
+        const rskApi: any = sinon.createStubInstance(RskApiService);
+        rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
-        // const armadilloApi: ArmadilloApi = stubObject<ArmadilloApiImpl>(ArmadilloApiImpl.prototype)
-        const armadilloApi: ArmadilloApi = new ArmadilloApiImpl('localhost:6000');
-        const getLastBtcBlocksBetweenHeight: any = sinon.stub(armadilloApi, 'getLastBtcBlocksBetweenHeight');
-        getLastBtcBlocksBetweenHeight.returns([]);
+        const armadilloApi: any = sinon.createStubInstance(ArmadilloApiImpl);
+        armadilloApi.getLastBtcBlocksBetweenHeight.returns([]);
 
         const infoBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApi, armadilloApi, buildConfig());
 
@@ -71,15 +67,11 @@ describe('ForkInformationBuilder', () => {
     });
 
     it("builds btcHashrateForRskMainchain field", async () => {
-        const rskApiConfig: RskApiConfig = new RskApiConfig('localhost:4444', 0);
-        const rskApi: RskApiService = new RskApiService(rskApiConfig);
-        var getBestBlock = sinon.stub(rskApi, <any>'getBlock');
-        getBestBlock.returns(new RskBlockInfo(1000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000")));
+        const rskApi: any = sinon.createStubInstance(RskApiService);
+        rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
-        // const armadilloApi: ArmadilloApi = stubObject<ArmadilloApiImpl>(ArmadilloApiImpl.prototype)
-        const armadilloApi: ArmadilloApi = new ArmadilloApiImpl('localhost:6000');
-        const getLastBtcBlocksBetweenHeight: any = sinon.stub(armadilloApi, 'getLastBtcBlocksBetweenHeight');
-        getLastBtcBlocksBetweenHeight.returns(buildItemList(36));
+        const armadilloApi: any = sinon.createStubInstance(ArmadilloApiImpl);
+        armadilloApi.getLastBtcBlocksBetweenHeight.returns(buildItemList(36));
 
         const infoBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApi, armadilloApi, buildConfig());
 
