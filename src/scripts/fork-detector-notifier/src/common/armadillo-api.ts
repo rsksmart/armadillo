@@ -6,6 +6,7 @@ const curl = new (require('curl-request'))();
 export interface ArmadilloApi {
     getCurrentMainchain(chainDepth: number) : Promise<Fork[]>;
     getLastBtcBlocksBetweenHeight(start: number, end: number) : Promise<Item[]>;
+    getBtcBlocksBetweenRskHeight(start: number, end: number) : Promise<Item[]>;
 }
 
 export class ArmadilloApiImpl implements ArmadilloApi {
@@ -29,6 +30,20 @@ export class ArmadilloApiImpl implements ArmadilloApi {
 
     async getLastBtcBlocksBetweenHeight(start: number, end: number) : Promise<Item[]> {
         const endpoint = `${this.armadilloApiUrl}/mainchain/getLastBtcBlocksBetweenHeight/${start}/${end}`;
+
+        let response: any =
+            await curl.get(endpoint)
+                .catch((e: Error) => {
+                    this.logger.error(`Fail to retrieve from ${endpoint}: ${e}`)
+                    return JSON.stringify({ body: { data: [] } })
+                })
+
+        const items: Item[] = JSON.parse(response.body).data.map(i => Item.fromObject(i));
+        return items;
+    }
+
+    async getBtcBlocksBetweenRskHeight(start: number, end: number) : Promise<Item[]> {
+        const endpoint = `${this.armadilloApiUrl}/mainchain/getBtcBlocksBetweenRskHeight/${start}/${end}`;
 
         let response: any =
             await curl.get(endpoint)
