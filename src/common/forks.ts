@@ -22,6 +22,7 @@ export class Fork {
     public readonly items: ForkItem[];
     public readonly mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
     private btcHeightLastTagFound: number;
+    public rskHeightLastTagFound: number;
 
     constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
         this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
@@ -36,6 +37,7 @@ export class Fork {
                 this.items = forks;
                 this.firstDetected = forks[forks.length - 1].rskForkInfo.forkDetectionData;
                 this.btcHeightLastTagFound = this.items[0].btcInfo.height;
+                this.rskHeightLastTagFound = this.items[0].rskForkInfo.forkDetectionData.BN;
             } else {
                 throw "forkItems should have at least one item"
             }
@@ -50,6 +52,7 @@ export class Fork {
 
     public addNewForkItem(fork: ForkItem) {
         this.btcHeightLastTagFound = fork.btcInfo.height;
+        this.rskHeightLastTagFound = fork.rskForkInfo.forkDetectionData.BN;
         this.items.unshift(fork);
     }
 
