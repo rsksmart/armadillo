@@ -19,9 +19,9 @@ async function main() {
 
     const forkInformationBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApiService, armadilloApi, cerebrusConfig);
     const forkEmailBuilder: ForkEmailBuilder = new ForkEmailBuilderImpl();
-    const alertSender: AlertSender = new MailAlertSender(cerebrusConfig, forkInformationBuilder, forkEmailBuilder);
+    const alertSender: AlertSender = new MailAlertSender(cerebrusConfig, forkEmailBuilder);
 
-    const cerebrus: Cerebrus = new Cerebrus(cerebrusConfig, armadilloApi, alertSender);
+    const cerebrus: Cerebrus = new Cerebrus(cerebrusConfig, armadilloApi, alertSender, forkInformationBuilder);
 
     cerebrus.start();
 }
