@@ -17,19 +17,18 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
 
     async buildSubject(info: ForkInformation, defconLevel: DefconLevel) : Promise<string> {
         var forkLength = info.forkBTCitemsLength;
-        const defconLevelName: string = defconLevel.getName();
+        const level: string = defconLevel.getName();
 
         var subject : string = forkLength > 1 ?
-            readFileSync(`./templates/subject/${defconLevelName}-multiple-item-fork.txt`).toString() : 
-            readFileSync(`./templates/subject/${defconLevelName}-one-item-fork.txt`).toString();
+            readFileSync(`./templates/subject/${level}-multiple-item-fork.txt`).toString() : 
+            readFileSync(`./templates/subject/${level}-one-item-fork.txt`).toString();
         
         var statingRSKHeight = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
     
         subject = subject.replace('#forkLength', forkLength.toString())
                 .replace('#statingRSKHeight', statingRSKHeight.toString())
                 .replace('#btcGuessMined', info.btcGuessedMinedInfo[0].poolName)
-                .replace('#endingRSKHeight', info.endingRskHeight.toString())
-                .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString());
+                .replace('#endingRSKHeight', info.endingRskHeight.toString());
     
         return subject;
     }

@@ -2,6 +2,7 @@ import { Fork, Item, RangeForkInMainchain } from "../../../../common/forks";
 import { RskApiService } from "../../../../services/rsk-api-service";
 import { ArmadilloApi } from "./armadillo-api";
 import { CerebrusConfig } from "./cerebrus";
+import { RskBlockInfo } from "../../../../common/rsk-block";
 
 export interface ForkInformation {
     btcGuessedMinersNames: string[];
@@ -54,7 +55,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         let info: ForkInformation = {
             forkBTCitemsLength: fork.items.length,
             forkTime: this.getWhenForkIsHappening(fork),
-            distanceFirstItemToBestBlock: this.getDistanceToBestBlock(fork),
+            distanceFirstItemToBestBlock: await this.getDistanceToBestBlock(fork),
             cpvInfo: await this.getInformationCPVDidNotMatch(fork),
             distanceCPVtoPrevJump: await this.getCPVdistanceToPreviousJump(fork),
             bestBlockInRskInThatMoment: fork.getFirstDetected().rskForkInfo.rskBestBlockHeight,
@@ -113,8 +114,13 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         return forkTime;
     }
 
-    getDistanceToBestBlock(fork: Fork): number {
-        return Math.abs(fork.getFirstDetected().rskForkInfo.forkDetectionData.BN - fork.getFirstDetected().rskForkInfo.rskBestBlockHeight);
+    async getDistanceToBestBlock(fork: Fork): Promise<number> {
+        const startRange: RangeForkInMainchain = fork.mainchainRangeWhereForkCouldHaveStarted;
+        const consideredStartBlock: RskBlockInfo = startRange.startBlock.height > 1 ? startRange.startBlock : startRange.endBlock;
+    
+        const currentRskBestBlock: RskBlockInfo = await this.rskApiService.getBestBlock();
+
+        return Math.abs(currentRskBestBlock.height - consideredStartBlock.height);
     }
     
     async getInformationCPVDidNotMatch(fork: Fork): Promise<any> {
@@ -161,7 +167,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
     }
 
     getForkLengthInRskBlocks(fork: Fork): number {
-        return Math.abs(fork.getFirstDetected().rskForkInfo.forkDetectionData.BN - fork.getLastDetected().rskForkInfo.forkDetectionData.BN);
+        return Math.abs(fork.mainchainRangeWhereForkCouldHaveStarted.endBlock.height - fork.getLastDetected().rskForkInfo.forkDetectionData.BN);
     }
 
     getGuessMinedBlocksList(list: GuessMinedBlockInfo[]): string {
