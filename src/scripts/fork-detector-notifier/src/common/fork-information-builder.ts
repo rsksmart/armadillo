@@ -1,4 +1,4 @@
-import { Fork, RangeForkInMainchain, Item } from "../../../../common/forks";
+import { Fork, Item, RangeForkInMainchain } from "../../../../common/forks";
 import { RskApiService } from "../../../../services/rsk-api-service";
 import { ArmadilloApi } from "./armadillo-api";
 import { CerebrusConfig } from "./cerebrus";
@@ -22,6 +22,7 @@ export interface ForkInformation {
     btcHashrateForRskMainchain: number;
     btcHashrateForRskMainchainDuringFork: number;
     endingRskHeight: number;
+    btcForkBlockPercentageOverMergeMiningBlocks: number;
 }
 
 export interface GuessMinedBlockInfo {
@@ -68,7 +69,8 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
             nBlocksForBtcHashrateForRskMainchain: this.cerebrusConfig.nBlocksForBtcHashrateForRskMainchain,
             btcHashrateForRskMainchain: await this.getBtcMainchainHashrate(fork),
             btcHashrateForRskMainchainDuringFork: await this.getBtcMainchainHashrateDuringFork(fork),
-            endingRskHeight: fork.getLastDetected().rskForkInfo.forkDetectionData.BN
+            endingRskHeight: fork.getLastDetected().rskForkInfo.forkDetectionData.BN,
+            btcForkBlockPercentageOverMergeMiningBlocks: await this.getBtcForkBlockPercentageOverMergeMiningBlocks(fork)
         }
 
         return info;
@@ -195,5 +197,24 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         const expectedBtcBlocks: number = (end - start) / this.BTC_TO_RSK_AVERAGE_RATIO;
 
         return items.length / expectedBtcBlocks;
+    }
+
+    async getBtcForkBlockPercentageOverMergeMiningBlocks(fork: Fork) : Promise<number> {
+        const rangeStart: number = fork.mainchainRangeWhereForkCouldHaveStarted.startBlock.height;
+        const rangeEnd: number = fork.mainchainRangeWhereForkCouldHaveStarted.endBlock.height;
+        const lastDetectedHeight: number = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+
+        // take the end height when the range is too big (no CPV matches)
+        let start: number = rangeStart;
+        if ((rangeEnd - rangeStart) > 448) {
+            start = rangeEnd;
+        }
+
+        const honestBlocks: Item[] = await this.armadilloApi.getBtcBlocksBetweenRskHeight(start, lastDetectedHeight);
+
+        const attackerBlockCount: number = fork.items.length;
+        const honestBlockCount: number = honestBlocks.length;
+
+        return attackerBlockCount / (attackerBlockCount + honestBlockCount);
     }
 }

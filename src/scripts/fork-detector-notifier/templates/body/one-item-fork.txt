@@ -14,6 +14,8 @@
 
 ◘ % of BTC blocks used for RSK merge mining during the fork: #btcHashrateForRskMainchainDuringFork
 
+◘ % of BTC blocks used to merge mine the fork over the total merge mined blocks (fork + rsk mainchain ones): #btcForkBlockPercentageOverMergeMiningBlocks
+
 ◘ Fork data complete:
 
     #completeForkData
