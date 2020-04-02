@@ -4,9 +4,10 @@ import { CerebrusConfig } from "./cerebrus";
 import { ForkEmailBuilder } from "./fork-email-builder";
 import { ForkInformation } from "./fork-information-builder";
 import { ForkEmail } from "./model";
+import { DefconLevel } from "./defcon-level";
 
 export interface AlertSender {
-    sendAlert(forkInfo: ForkInformation): Promise<void>;
+    sendAlert(forkInfo: ForkInformation, defconLevel: DefconLevel): Promise<void>;
 }
 
 export class MailAlertSender implements AlertSender {
@@ -20,7 +21,7 @@ export class MailAlertSender implements AlertSender {
         this.emailBuilder = emailBuilder;
     }
 
-    async sendAlert(forkInfo: ForkInformation): Promise<void> {
+    async sendAlert(forkInfo: ForkInformation, defconLevel: DefconLevel): Promise<void> {
         const options = {
             host: this.config.server,
             auth: {
@@ -29,7 +30,7 @@ export class MailAlertSender implements AlertSender {
             }
         };
 
-        const email: ForkEmail = await this.emailBuilder.build(forkInfo);
+        const email: ForkEmail = await this.emailBuilder.build(forkInfo, defconLevel);
 
         const transport = nodemailer.createTransport(options);
         let info = await transport.sendMail({

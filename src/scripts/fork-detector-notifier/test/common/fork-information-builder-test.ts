@@ -47,6 +47,7 @@ describe('ForkInformationBuilder', () => {
     it("builds forkBTCitemsLength field", async () => {
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: any = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns([]);
@@ -70,6 +71,7 @@ describe('ForkInformationBuilder', () => {
     it("builds btcHashrateForRskMainchain field", async () => {
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: any = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(buildItemList(36));
@@ -94,6 +96,7 @@ describe('ForkInformationBuilder', () => {
     it("builds btcHashrateForRskMainchainDuringFork field", async () => {
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
@@ -123,6 +126,7 @@ describe('ForkInformationBuilder', () => {
     it("builds btcForkBlockPercentageOverMergeMiningBlocks field for fork with start with cpv matches", async () => {
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
@@ -160,6 +164,7 @@ describe('ForkInformationBuilder', () => {
     it("builds btcForkBlockPercentageOverMergeMiningBlocks field for fork with start with no cpv matches", async () => { 
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
@@ -192,6 +197,7 @@ describe('ForkInformationBuilder', () => {
     it("builds btcForkBlockPercentageOverMergeMiningBlocks field when there are no blocks used for rsk mainchain", async () => {
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
@@ -224,5 +230,81 @@ describe('ForkInformationBuilder', () => {
 
         // expected: 2 / (2 + 0) = 2 / 2 = 1
         expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(1);
+    })
+
+    it("builds getDistanceToBestBlock field when cpv match (start block height != 1)", async () => { 
+        const rskApi: any = sinon.createStubInstance(RskApiService);
+        rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(2000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+
+        const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
+        armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
+        armadilloApi.getBtcBlocksBetweenRskHeight.returns(Promise.resolve([]));
+
+        const infoBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApi, armadilloApi, buildConfig());
+
+        const startBlock: RskBlockInfo = new RskBlockInfo(1900, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "0000076c"))
+        const endBlock: RskBlockInfo = new RskBlockInfo(1964, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "000007ac"))
+        const range: RangeForkInMainchain = new RangeForkInMainchain(startBlock, endBlock);
+
+        const fork: Fork = new Fork(range, [
+            new ForkItem(
+                new BtcHeaderInfo(1001, '', ''),
+                new RskForkItemInfo(
+                    new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
+                    2000
+                )
+            ),
+            new ForkItem(
+                new BtcHeaderInfo(1002, '', ''),
+                new RskForkItemInfo(
+                    new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
+                    2020
+                )
+            )
+        ]);
+
+        const forkInfo: ForkInformation = await infoBuilder.build(fork);
+
+        // expected: 2 / (2 + 0) = 2 / 2 = 1
+        expect(forkInfo.distanceFirstItemToBestBlock).to.equal(100);
+    })
+
+    it("builds getDistanceToBestBlock field when no cpv match (start block height != 1)", async () => { 
+        const rskApi: any = sinon.createStubInstance(RskApiService);
+        rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(2000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
+
+        const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
+        armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
+        armadilloApi.getBtcBlocksBetweenRskHeight.returns(Promise.resolve([]));
+
+        const infoBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApi, armadilloApi, buildConfig());
+
+        const startBlock: RskBlockInfo = new RskBlockInfo(1, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "0000076c"))
+        const endBlock: RskBlockInfo = new RskBlockInfo(1950, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "000007ac"))
+        const range: RangeForkInMainchain = new RangeForkInMainchain(startBlock, endBlock);
+
+        const fork: Fork = new Fork(range, [
+            new ForkItem(
+                new BtcHeaderInfo(1001, '', ''),
+                new RskForkItemInfo(
+                    new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
+                    2000
+                )
+            ),
+            new ForkItem(
+                new BtcHeaderInfo(1002, '', ''),
+                new RskForkItemInfo(
+                    new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
+                    2020
+                )
+            )
+        ]);
+
+        const forkInfo: ForkInformation = await infoBuilder.build(fork);
+
+        // expected: 2 / (2 + 0) = 2 / 2 = 1
+        expect(forkInfo.distanceFirstItemToBestBlock).to.equal(50);
     })
 })
