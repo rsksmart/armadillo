@@ -22,13 +22,13 @@ export class BlockchainController {
 
     var mainchain: Item[] = await this.mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(n);
 
-    let heightToGetForksFrom = 0;
+    let btcHeightToGetForksFrom = 0;
 
     if (mainchain.length > 0) {
-      heightToGetForksFrom = mainchain[mainchain.length - 1].btcInfo.height;
+      btcHeightToGetForksFrom = mainchain[mainchain.length - 1].btcInfo.height;
     }
 
-    let forks = await this.forkService.getForksDetected(heightToGetForksFrom);
+    let forks = await this.forkService.getForksDetectedFromBtcHeight(btcHeightToGetForksFrom);
 
     return res.status(200).send(
       new MessageResponse(
