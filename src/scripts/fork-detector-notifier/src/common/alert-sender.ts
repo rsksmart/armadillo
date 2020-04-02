@@ -1,29 +1,26 @@
 import { getLogger, Logger } from "log4js";
 import nodemailer from "nodemailer";
-import { Fork } from "../../../../common/forks";
 import { CerebrusConfig } from "./cerebrus";
 import { ForkEmailBuilder } from "./fork-email-builder";
-import { ForkInformation, ForkInformationBuilder } from "./fork-information-builder";
+import { ForkInformation } from "./fork-information-builder";
 import { ForkEmail } from "./model";
 
 export interface AlertSender {
-    sendAlert(fork: Fork): Promise<void>;
+    sendAlert(forkInfo: ForkInformation): Promise<void>;
 }
 
 export class MailAlertSender implements AlertSender {
     private config: CerebrusConfig;
-    private forkInfoBuilder: ForkInformationBuilder;
     private emailBuilder: ForkEmailBuilder;
     private logger: Logger;
     
-    constructor(config: CerebrusConfig, forkInfoBuilder: ForkInformationBuilder, emailBuilder: ForkEmailBuilder) {
+    constructor(config: CerebrusConfig, emailBuilder: ForkEmailBuilder) {
         this.config = config;
         this.logger = getLogger('mail-alert-sender');
-        this.forkInfoBuilder = forkInfoBuilder;
         this.emailBuilder = emailBuilder;
     }
 
-    async sendAlert(fork: Fork): Promise<void> {    
+    async sendAlert(forkInfo: ForkInformation): Promise<void> {
         const options = {
             host: this.config.server,
             auth: {
@@ -32,7 +29,6 @@ export class MailAlertSender implements AlertSender {
             }
         };
 
-        const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
         const email: ForkEmail = await this.emailBuilder.build(forkInfo);
 
         const transport = nodemailer.createTransport(options);
