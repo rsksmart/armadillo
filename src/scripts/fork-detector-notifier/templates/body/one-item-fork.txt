@@ -12,7 +12,7 @@
     - Diference in blocks between end and start: #diferenceInBlocksBetweenEndAndStart
     - Distance to last jump: #distanceCPVtoPrevJump
 
-◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain: #btcHashrateForRskMainchain 
+◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain btc blocks: #btcHashrateForRskMainchain 
 
 ◘ Fork data complete:
 
