@@ -1,1 +1,1 @@
-Fork length #forkLength, RSK first height #statingRSKHeight, #btcGuessMined
+Fork length #forkLength, RSK first height #startingRskHeight, #btcGuessMined

@@ -1,5 +1,8 @@
 ◘ Fork started in: #forkTime
 
+◘ First detected RSK block at #startingRskHeight, BTC height #startingBtcHeight.
+◘ Last detected RSK block at #endingRskHeight, BTC height #endingBtcHeight.
+
 ◘ Distance from last item in fork to the RSK best block: #distanceFirstItemToBestBlock
 
 ◘ Range distance where fork could have started: (#startRangeWhereForkCouldHaveStarted, #endRangeWhereForkCouldHaveStarted)
@@ -18,9 +21,9 @@
 ◘ Big picture of pools that mined each BTC block:
     #btcGuessedMinedInfo
 
-◘ % of BTC blocks used for RSK merge mining over the last #nBlocksForBtcHashrateForRskMainchain: #btcHashrateForRskMainchain 
+◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain: #btcHashrateForRskMainchain 
 
-◘ % of BTC blocks used for RSK merge mining during the fork: #btcHashrateForRskMainchainDuringFork
+◘ % of BTC blocks used for RSK merged mining during the fork: #btcHashrateForRskMainchainDuringFork
 
 ◘ % of BTC blocks used to merge mine the fork over the total merge mined blocks (fork + rsk mainchain ones): #btcForkBlockPercentageOverMergeMiningBlocks
 
