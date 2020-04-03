@@ -8,5 +8,6 @@
     "chainDepth": 72,
     "pollIntervalMs": 60000,
     "minForkLength": 4,
-    "rskNodeUrl": "https://public-node.rsk.co/1.2.1"
+    "rskNodeUrl": "https://public-node.rsk.co/1.2.1",
+    "nBlocksForBtcHashrateForRskMainchain": 144
 }
