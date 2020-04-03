@@ -21,7 +21,7 @@
 ◘ Big picture of pools that mined each BTC block:
     #btcGuessedMinedInfo
 
-◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain: #btcHashrateForRskMainchain 
+◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain btc blocks: #btcHashrateForRskMainchain 
 
 ◘ % of BTC blocks used for RSK merged mining during the fork: #btcHashrateForRskMainchainDuringFork
 
