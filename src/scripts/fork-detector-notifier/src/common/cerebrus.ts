@@ -21,18 +21,16 @@ export interface CerebrusConfig {
 
 export class Cerebrus {
     private config: CerebrusConfig;
-    private armadilloApi: ArmadilloApi;
     private alertSender: AlertSender;
     private logger: Logger;
     private lastBtcHeightLastTagFound: number[];
     private forkInfoBuilder: ForkInformationBuilder;
     private defconLevels: DefconLevel[];
     
-    constructor(config: CerebrusConfig, armadilloApi: ArmadilloApi, alertSender: AlertSender, forkInfoBuilder: ForkInformationBuilder,
+    constructor(config: CerebrusConfig, alertSender: AlertSender, forkInfoBuilder: ForkInformationBuilder,
                 defconLevels: DefconLevel[]) {
         this.logger = getLogger('cerebrus');
         this.config = config;
-        this.armadilloApi = armadilloApi;
         this.alertSender = alertSender;
         this.forkInfoBuilder = forkInfoBuilder;
         this.defconLevels = defconLevels;
@@ -40,23 +38,12 @@ export class Cerebrus {
         this.lastBtcHeightLastTagFound = [];
     }
 
-    async start() : Promise<void> {
-        this.logger.info('Starting...');
-
-        while (true) {
-            var forks: Fork[] = await this.armadilloApi.getCurrentMainchain(this.config.chainDepth);
-
-            if (this.shouldNotify(forks)) {
-                await this.processForks(forks);
-            } else {
-                this.logger.info("NO Forks detected");
-            }
-
-            await this.sleep(this.config.pollIntervalMs);
+    public async processForks(forks: Fork[]) : Promise<void> {
+        if (!this.shouldNotify(forks)) {
+            this.logger.info('No forks to notify');
+            return;
         }
-    }
 
-    private async processForks(forks: Fork[]) : Promise<void> {
         this.logger.info(`Forks detected, sending notifications to ${this.config.recipients.join(', ')}`);
 
         for (let fork of forks) {
@@ -72,10 +59,6 @@ export class Cerebrus {
         var forkFilted = forks.filter(x => !this.lastBtcHeightLastTagFound.includes(x.getHeightForLastTagFoundInBTC()));
 
         return forkFilted.length > 0 && forkFilted.some(x => x.items.length >= this.config.minForkLength);
-    }
-
-    private async sleep(ms) : Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     private findActiveDefconLevel(forkInfo: ForkInformation) : DefconLevel {
