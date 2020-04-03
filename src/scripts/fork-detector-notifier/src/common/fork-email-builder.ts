@@ -1,31 +1,35 @@
 import { readFileSync } from "fs";
 import { ForkInformation } from "./fork-information-builder";
 import { ForkEmail } from "./model";
+import { DefconLevel } from "./defcon-level";
 
 export interface ForkEmailBuilder {
-    build(fork: ForkInformation) : Promise<ForkEmail>;
+    build(fork: ForkInformation, defconLevel: DefconLevel) : Promise<ForkEmail>;
 }
 
 export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
-    async build(fork: ForkInformation): Promise<ForkEmail> {
+    async build(fork: ForkInformation, defconLevel: DefconLevel): Promise<ForkEmail> {
         return {
-            subject: await this.buildSubject(fork),
+            subject: await this.buildSubject(fork, defconLevel),
             body: await this.buildBody(fork)
         }
     }
 
-    async buildSubject(info: ForkInformation) : Promise<string> {
+    async buildSubject(info: ForkInformation, defconLevel: DefconLevel) : Promise<string> {
         var forkLength = info.forkBTCitemsLength;
-        var subject : string = forkLength > 1 ? 
-            readFileSync("./templates/subject/multiple-item-fork.txt").toString() : 
-            readFileSync("./templates/subject/one-item-fork.txt").toString();
+        const defconLevelName: string = defconLevel.getName();
+
+        var subject : string = forkLength > 1 ?
+            readFileSync(`./templates/subject/${defconLevelName}-multiple-item-fork.txt`).toString() : 
+            readFileSync(`./templates/subject/${defconLevelName}-one-item-fork.txt`).toString();
         
         var statingRSKHeight = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
     
         subject = subject.replace('#forkLength', forkLength.toString())
                 .replace('#statingRSKHeight', statingRSKHeight.toString())
                 .replace('#btcGuessMined', info.btcGuessedMinedInfo[0].poolName)
-                .replace('#endingRSKHeight', info.endingRskHeight.toString());
+                .replace('#endingRSKHeight', info.endingRskHeight.toString())
+                .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString());
     
         return subject;
     }

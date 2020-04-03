@@ -1,0 +1,14 @@
+[
+    {
+        "name": "urgent",
+        "level": 1,
+        "forkLengthThreshold": 1,
+        "hashrateThreshold": 0.5
+    },
+    {
+        "name": "action-required",
+        "level": 2,
+        "forkLengthThreshold": 500,
+        "hashrateThreshold": 0.5
+    }
+]
