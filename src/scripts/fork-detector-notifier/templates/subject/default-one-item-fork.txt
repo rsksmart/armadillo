@@ -1,1 +1,1 @@
-Fork length #forkLength, RSK first height #startingRskHeight, #btcGuessMined
+#forkLengthRskBlocks length fork started #distanceFirstItemToBestBlock blocks ago
