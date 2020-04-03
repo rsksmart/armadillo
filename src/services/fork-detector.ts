@@ -73,6 +73,7 @@ export class ForkDetector {
        
         let rskBlocksAtNewRskTagHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
         let rskBlockMatchInHeight: RskBlockInfo = this.getBlockMatchWithRskTag(rskBlocksAtNewRskTagHeight, newBtcBlock.rskTag);
+        
         if (rskBlockMatchInHeight) {
             // New tag is in mainchain
             let ok = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
@@ -90,7 +91,7 @@ export class ForkDetector {
         return;
     }
 
-    public async waitForMinimumRskHeight(height: number): Promise<void> {
+    private async waitForMinimumRskHeight(height: number): Promise<void> {
         let bestBLockHeight: RskBlockInfo= await this.rskApiService.getBestBlock();
         if (Math.abs(bestBLockHeight.height - height) < this.forkDetectorConfig.rskBlocksToWait) {
             await sleep(this.forkDetectorConfig.timeToSleepWaitingForkRskBlocks);
@@ -215,21 +216,21 @@ export class ForkDetector {
         return forksThatOverlap;
     }
 
-    private getHeightforPossibleForks(numberBlock: number): number {
-        if (numberBlock > this.maxBlocksBackwardsToSearch) {
-            return numberBlock - this.maxBlocksBackwardsToSearch;
+    private getHeightforPossibleForks(blockHeight: number): number {
+        if (blockHeight > this.maxBlocksBackwardsToSearch) {
+            return blockHeight - this.maxBlocksBackwardsToSearch;
         } else {
             return 0;
         }
     }
 
-    private async getPossibleForks(blockNumber: number): Promise<Fork[]> {
+    private async getPossibleForks(blockHeight: number): Promise<Fork[]> {
         //No necesitamos los forks si no los ultimos "nodos" que se agregaron de cada forks
-        let minimunHeightToSearch = this.getHeightforPossibleForks(blockNumber);
+        let minimunRskHeightToSearch = this.getHeightforPossibleForks(blockHeight);
 
         //connect to the database to get possible forks, 
         //No deberiamos traer todo, solo hasta un maximo hacia atras
-        return this.forkService.getForksDetected(minimunHeightToSearch);
+        return this.forkService.getForksDetectedFromRskHeight(minimunRskHeightToSearch);
     }
 
     private tagIsInAFork(forks: Fork[], item: ForkItem): boolean {
