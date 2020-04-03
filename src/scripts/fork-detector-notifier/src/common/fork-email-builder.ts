@@ -24,16 +24,8 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
         var subject : string = forkLength > 1 ?
             readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-multiple-item-fork.txt`).toString() :
             readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-one-item-fork.txt`).toString();
-        
-        var statingRSKHeight = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
-    
-        subject = subject.replace('#forkLength', forkLength.toString())
-                .replace('#statingRSKHeight', statingRSKHeight.toString())
-                .replace('#btcGuessMined', info.btcGuessedMinedInfo[0].poolName)
-                .replace('#endingRSKHeight', info.endingRskHeight.toString())
-                .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString());
-    
-        return subject;
+
+        return this.replaceKeys(subject, info);
     }
 
     async buildBody(info: ForkInformation) : Promise<string> {
@@ -41,9 +33,21 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
             readFileSync(`${this.TEMPLATES_BASE_PATH}/body/multiple-item-fork.txt`).toString() :
             readFileSync(`${this.TEMPLATES_BASE_PATH}/body/one-item-fork.txt`).toString();
 
-        const body: string = template
+        return this.replaceKeys(template, info);
+    }
+
+    private replaceKeys(template: string, info: ForkInformation) : string {
+        const startingRskHeight: number = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
+        const startingBtcHeight: number = info.fork.getFirstDetected().btcInfo.height;
+        const endingBtcHeight: number = info.fork.getLastDetected().btcInfo.height;
+
+        return template
                 .replace('#forkTime', info.forkTime)
-                .replace('#minerMinedFirstItem', info.btcGuessedMinedInfo[0].poolName.toString())
+                .replace('#btcGuessMined', info.btcGuessedMinedInfo[0].poolName)
+                .replace('#startingRskHeight', startingRskHeight.toString())
+                .replace('#endingRskHeight', info.endingRskHeight.toString())
+                .replace('#startingBtcHeight', startingBtcHeight.toString())
+                .replace('#endingBtcHeight', endingBtcHeight.toString())
                 .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString())
                 .replace('#startRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.startBlock.height.toString())
                 .replace('#endRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.endBlock.height.toString())
@@ -59,8 +63,9 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
                 .replace('#btcHashrateForRskMainchain', info.btcHashrateForRskMainchain.toFixed(2))
                 .replace('#btcHashrateForRskMainchainDuringFork', info.btcHashrateForRskMainchainDuringFork.toFixed(2))
                 .replace('#btcForkBlockPercentageOverMergeMiningBlocks', info.btcForkBlockPercentageOverMergeMiningBlocks.toFixed(2))
-                .replace('#estimatedTimeFor4000Blocks', info.estimatedTimeFor4000Blocks.toString());
-        
-        return body;
+                .replace('#estimatedTimeFor4000Blocks', 
+                    info.estimatedTimeFor4000Blocks.toString() === 'Invalid Date' ? 
+                        'Not enough items to perform an estimation with' :
+                        info.estimatedTimeFor4000Blocks.toString());
     }
 }
