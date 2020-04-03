@@ -1,4 +1,4 @@
-import { Fork, Item, RangeForkInMainchain } from "../../../../common/forks";
+import { Fork, Item, RangeForkInMainchain, ForkItem } from "../../../../common/forks";
 import { RskApiService } from "../../../../services/rsk-api-service";
 import { ArmadilloApi } from "./armadillo-api";
 import { CerebrusConfig } from "./cerebrus";
@@ -24,6 +24,7 @@ export interface ForkInformation {
     btcHashrateForRskMainchainDuringFork: number;
     endingRskHeight: number;
     btcForkBlockPercentageOverMergeMiningBlocks: number;
+    estimatedTimeFor4000Blocks: Date;
 }
 
 export interface GuessMinedBlockInfo {
@@ -71,7 +72,8 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
             btcHashrateForRskMainchain: await this.getBtcMainchainHashrate(fork),
             btcHashrateForRskMainchainDuringFork: await this.getBtcMainchainHashrateDuringFork(fork),
             endingRskHeight: fork.getLastDetected().rskForkInfo.forkDetectionData.BN,
-            btcForkBlockPercentageOverMergeMiningBlocks: await this.getBtcForkBlockPercentageOverMergeMiningBlocks(fork)
+            btcForkBlockPercentageOverMergeMiningBlocks: await this.getBtcForkBlockPercentageOverMergeMiningBlocks(fork),
+            estimatedTimeFor4000Blocks: this.getEstimatedTimeFor4000Blocks(fork)
         }
 
         return info;
@@ -222,5 +224,23 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         const honestBlockCount: number = honestBlocks.length;
 
         return attackerBlockCount / (attackerBlockCount + honestBlockCount);
+    }
+
+    getEstimatedTimeFor4000Blocks(fork: Fork) : Date {
+        const firstDetected: ForkItem = fork.getFirstDetected();
+        const lastDetected: ForkItem = fork.getLastDetected();
+
+        const lastDetectedTime = new Date(lastDetected.time);
+        const firstDetectedTime = new Date(firstDetected.time);
+
+        const timeDiff: number = lastDetectedTime.getTime() - firstDetectedTime.getTime();
+        const blockDiff: number = lastDetected.rskForkInfo.forkDetectionData.BN - firstDetected.rskForkInfo.forkDetectionData.BN;
+
+        const timePerBlock: number = (timeDiff / blockDiff);
+
+        // use a linear regression between the first detected and last detected to estimate time for 4000 blocks
+        const estimatedTimestamp: number = timePerBlock * 4000 + firstDetectedTime.getTime();
+
+        return new Date(estimatedTimestamp);
     }
 }
