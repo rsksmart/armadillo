@@ -227,6 +227,11 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
     }
 
     getEstimatedTimeFor4000Blocks(fork: Fork) : Date {
+        if (fork.items.length == 1) {
+            // cannot perform an estimation with only one item
+            return new Date(undefined);
+        }
+
         const firstDetected: ForkItem = fork.getFirstDetected();
         const lastDetected: ForkItem = fork.getLastDetected();
 
