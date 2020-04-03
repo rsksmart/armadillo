@@ -1,9 +1,8 @@
 import { getLogger, Logger } from "log4js";
-import { ArmadilloApi } from "./armadillo-api";
 import { Fork } from "../../../../common/forks";
 import { AlertSender } from "./alert-sender";
-import { ForkInformationBuilder, ForkInformation } from "./fork-information-builder";
 import { DefconLevel } from "./defcon-level";
+import { ForkInformation, ForkInformationBuilder } from "./fork-information-builder";
 
 export interface CerebrusConfig {
     chainDepth: number;
@@ -33,7 +32,11 @@ export class Cerebrus {
         this.config = config;
         this.alertSender = alertSender;
         this.forkInfoBuilder = forkInfoBuilder;
-        this.defconLevels = defconLevels;
+        this.defconLevels = defconLevels || [];
+
+        if (this.defconLevels.length === 0) {
+            throw new Error('No Defcon levels provided');
+        }
 
         this.lastBtcHeightLastTagFound = [];
     }
@@ -62,10 +65,10 @@ export class Cerebrus {
     }
 
     private findActiveDefconLevel(forkInfo: ForkInformation) : DefconLevel {
-        // filter, order and return the highest level available
+        // filter, sort descending and return the highest level available
         return this.defconLevels
             .filter(level => level.activeFor(forkInfo))
-            .sort((a, b) => a.getLevel() - b.getLevel())
+            .sort((a, b) =>  b.getLevel() - a.getLevel())
             .shift();
     }
 }
