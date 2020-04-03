@@ -1,1 +1,1 @@
-Fork length #forkLength, RSK first height: #statingRSKHeight | last height #endingRSKHeight
+Fork length #forkLength, RSK first height: #startingRskHeight | last height #endingRskHeight
