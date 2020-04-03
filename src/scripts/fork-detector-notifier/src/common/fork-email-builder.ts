@@ -8,6 +8,8 @@ export interface ForkEmailBuilder {
 }
 
 export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
+    private readonly TEMPLATES_BASE_PATH = './templates';
+
     async build(fork: ForkInformation, defconLevel: DefconLevel): Promise<ForkEmail> {
         return {
             subject: await this.buildSubject(fork, defconLevel),
@@ -20,8 +22,8 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
         const defconLevelName: string = defconLevel.getName();
 
         var subject : string = forkLength > 1 ?
-            readFileSync(`./templates/subject/${defconLevelName}-multiple-item-fork.txt`).toString() : 
-            readFileSync(`./templates/subject/${defconLevelName}-one-item-fork.txt`).toString();
+            readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-multiple-item-fork.txt`).toString() :
+            readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-one-item-fork.txt`).toString();
         
         var statingRSKHeight = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
     
@@ -35,7 +37,9 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
     }
 
     async buildBody(info: ForkInformation) : Promise<string> {
-        const template : string =  info.forkBTCitemsLength > 1 ? readFileSync("./templates/body/multiple-item-fork.txt").toString() : readFileSync("./templates/body/one-item-fork.txt").toString();
+        const template : string =  info.forkBTCitemsLength > 1 ?
+            readFileSync(`${this.TEMPLATES_BASE_PATH}/body/multiple-item-fork.txt`).toString() :
+            readFileSync(`${this.TEMPLATES_BASE_PATH}/body/one-item-fork.txt`).toString();
 
         const body: string = template
                 .replace('#forkTime', info.forkTime)
