@@ -39,7 +39,8 @@ function buildInfo(distanceToStart, forkHashrate) : ForkInformation {
         btcHashrateForRskMainchain: 1,
         btcHashrateForRskMainchainDuringFork: 1,
         endingRskHeight: 1,
-        btcForkBlockPercentageOverMergeMiningBlocks: forkHashrate
+        btcForkBlockPercentageOverMergeMiningBlocks: forkHashrate,
+        estimatedTimeFor4000Blocks: new Date()
     };
 }
 
