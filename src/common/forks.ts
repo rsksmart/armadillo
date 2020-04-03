@@ -96,11 +96,10 @@ export class ForkItem {
     public rskForkInfo: RskForkItemInfo;
     public time: string;
 
-    constructor(btcInfo: BtcHeaderInfo, rskForkInfo: RskForkItemInfo) {
+    constructor(btcInfo: BtcHeaderInfo, rskForkInfo: RskForkItemInfo, time: string = Date()) {
         this.btcInfo = btcInfo;
         this.rskForkInfo = rskForkInfo;
-
-        this.time = Date();
+        this.time = time;
     }
 
     static fromObject(forkItem: any): ForkItem {
