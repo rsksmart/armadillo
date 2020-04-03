@@ -37,14 +37,17 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
     }
 
     private replaceKeys(template: string, info: ForkInformation) : string {
-        const statingRSKHeight: number = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
+        const startingRskHeight: number = info.fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
+        const startingBtcHeight: number = info.fork.getFirstDetected().btcInfo.height;
+        const endingBtcHeight: number = info.fork.getLastDetected().btcInfo.height;
 
         return template
                 .replace('#forkTime', info.forkTime)
-                .replace('#statingRSKHeight', statingRSKHeight.toString())
                 .replace('#btcGuessMined', info.btcGuessedMinedInfo[0].poolName)
-                .replace('#endingRSKHeight', info.endingRskHeight.toString())
-                .replace('#minerMinedFirstItem', info.btcGuessedMinedInfo[0].poolName.toString())
+                .replace('#startingRskHeight', startingRskHeight.toString())
+                .replace('#endingRskHeight', info.endingRskHeight.toString())
+                .replace('#startingBtcHeight', startingBtcHeight.toString())
+                .replace('#endingBtcHeight', endingBtcHeight.toString())
                 .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString())
                 .replace('#startRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.startBlock.height.toString())
                 .replace('#endRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.endBlock.height.toString())
