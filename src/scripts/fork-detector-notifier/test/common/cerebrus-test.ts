@@ -241,6 +241,32 @@ describe("Cerebrus", async () => {
         expect(alertSender.sendAlert.calledWith(forkInfo, expectedDefconLevel)).to.be.true;
     })
 
+    it('uses the least priority level as fallback when a fork does not match any of the existing levels', async () => {
+        const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
+        const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
+
+        const forkInfo = buildForkInfo({
+            forkLengthRskBlocks: 3,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.2
+        });
+        forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
+
+        const defconLevels: DefconLevel[] = [
+            new DefconLevel(1, 'low', 5, 0.3),
+            new DefconLevel(2, 'high', 50, 0.5),
+        ];
+        const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels);
+
+        const forks: Fork[] = createForkWithItems(2);
+
+        await cerebrus.processForks(forks);
+
+        const expectedDefconLevel: DefconLevel = defconLevels.find(d => d.getName() === 'low');
+
+        expect(alertSender.sendAlert.calledOnce).to.be.true;
+        expect(alertSender.sendAlert.calledWith(forkInfo, expectedDefconLevel)).to.be.true;
+    })
+
     it('constructor fails due to null defcon levels array', async () => {
         const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
         const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
