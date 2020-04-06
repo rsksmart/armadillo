@@ -65,10 +65,18 @@ export class Cerebrus {
     }
 
     private findActiveDefconLevel(forkInfo: ForkInformation) : DefconLevel {
-        // filter, sort descending and return the highest level available
-        return this.defconLevels
+        // sort descending priority
+        const sortedLevels: DefconLevel[] = this.defconLevels.sort((a, b) =>  b.getLevel() - a.getLevel());
+
+        // find active level
+        const activeLevel = this.defconLevels
             .filter(level => level.activeFor(forkInfo))
-            .sort((a, b) =>  b.getLevel() - a.getLevel())
             .shift();
+
+        // least priority level should be the last of the list
+        const leastPriorityLevel = sortedLevels[sortedLevels.length - 1];
+
+        // resort to least priority if no matching level
+        return activeLevel || leastPriorityLevel;
     }
 }
