@@ -9,13 +9,16 @@ import { ForkInformationBuilder, ForkInformationBuilderImpl } from './common/for
 import { DefconLevel } from './common/defcon-level';
 import ArmadilloPollingService from './common/armadillo-polling-service';
 
-const logger = getLogger('fork-detector');
+const logger = getLogger('main');
 
 async function main() {
     configure('./log-config.json');
 
     const cerebrusConfig: CerebrusConfig = require('./config.json');
+    logger.debug('Loaded config: ', cerebrusConfig);
+
     const defconLevels: DefconLevel[] = loadDefconLevels();
+    logger.debug('Loaded defcon levels: ', defconLevels.map(d => d.getName()));
 
     const rskApiService: RskApiService = new RskApiService(new RskApiConfig(cerebrusConfig.rskNodeUrl, 0));
     const armadilloApi: ArmadilloApi = new ArmadilloApiImpl(cerebrusConfig.armadilloUrl);
