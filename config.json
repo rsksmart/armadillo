@@ -38,5 +38,9 @@
     },
     "forkApi": {
         "port": "6000"
+    },
+    "forkDetector": {
+        "timeToSleepWaitingForkRskBlocks": 3000,
+        "rskBlocksToWait": 5
     }
 }
