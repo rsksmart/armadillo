@@ -32,7 +32,7 @@ export default class ForkController {
   public async getForksFrom(req: any, res: any): Promise<MessageResponse<any>> {
     let n: number = parseInt(req.params.n);
 
-    var data = await this.service.getForksDetected(n);
+    var data = await this.service.getForksDetectedFromBtcHeight(n);
 
     return res.status(200).send(new MessageResponse(
       `Get forks from ${n}`,

@@ -22,6 +22,7 @@ export class Fork {
     public readonly items: ForkItem[];
     public readonly mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain;
     private btcHeightLastTagFound: number;
+    public rskHeightLastTagFound: number;
 
     constructor(mainchainRangeWhereForkCouldHaveStarted: RangeForkInMainchain, forkItems: ForkItem | ForkItem[]) {
         this.mainchainRangeWhereForkCouldHaveStarted = mainchainRangeWhereForkCouldHaveStarted;
@@ -35,7 +36,8 @@ export class Fork {
                 let forks = forkItems.sort((x, y) => x.rskForkInfo.forkDetectionData.BN > y.rskForkInfo.forkDetectionData.BN ? 0 : 1);
                 this.items = forks;
                 this.firstDetected = forks[forks.length - 1].rskForkInfo.forkDetectionData;
-                this.btcHeightLastTagFound = forkItems[0].btcInfo.height;
+                this.btcHeightLastTagFound = this.items[0].btcInfo.height;
+                this.rskHeightLastTagFound = this.items[0].rskForkInfo.forkDetectionData.BN;
             } else {
                 throw "forkItems should have at least one item"
             }
@@ -50,6 +52,7 @@ export class Fork {
 
     public addNewForkItem(fork: ForkItem) {
         this.btcHeightLastTagFound = fork.btcInfo.height;
+        this.rskHeightLastTagFound = fork.rskForkInfo.forkDetectionData.BN;
         this.items.unshift(fork);
     }
 
@@ -69,7 +72,7 @@ export class Fork {
         return this.items[0];
     }
 
-    public getHeightForLastTagFoundInBTC() {
+    public getHeightForLastTagFoundInBTC() : number{
         return this.btcHeightLastTagFound;
     }
 }
@@ -93,11 +96,10 @@ export class ForkItem {
     public rskForkInfo: RskForkItemInfo;
     public time: string;
 
-    constructor(btcInfo: BtcHeaderInfo, rskForkInfo: RskForkItemInfo) {
+    constructor(btcInfo: BtcHeaderInfo, rskForkInfo: RskForkItemInfo, time: string = Date()) {
         this.btcInfo = btcInfo;
         this.rskForkInfo = rskForkInfo;
-
-        this.time = Date();
+        this.time = time;
     }
 
     static fromObject(forkItem: any): ForkItem {

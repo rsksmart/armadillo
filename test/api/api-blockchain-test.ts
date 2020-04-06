@@ -13,6 +13,7 @@ import { MessageResponse, BlockchainHistory } from "../../src/api/common/models"
 import { copy } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
+const PREFIX1 = "11116e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
 const NU = "00"; // 0
 const btcInfo = new BtcHeaderInfo(0, "", "");
@@ -79,5 +80,67 @@ describe("Blockchain api tests", () => {
 
     let response : MessageResponse<BlockchainHistory> = await blockchainController.getLastBlocksInChain(param, mockRes);
     expect("Get mainchain and forks in the last 5000 BTC blocks").to.deep.equal(response.message);
+  });
+
+  it("getLastForksInChain method", async () => {
+
+    let blockchainController = new BlockchainController(mainchainService, forkService);
+    let start = new RskBlockInfo(1, "", "", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
+    let end = new RskBlockInfo(2, "", "", true, "", new ForkDetectionData(PREFIX + CPV + NU + "00000002"));
+    let rangeForkInMainchain = new RangeForkInMainchain(start, end);
+    let param = { "params": { "n": 1 }};
+
+    //Add a fork, check if the last fork (which is the only one) it there.
+    var fork1 = new Fork(rangeForkInMainchain, new ForkItem(new BtcHeaderInfo(1000,"",""), new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000003"), 0)))
+    let response : MessageResponse<Fork[]>  = await blockchainController.getLastForksInChain(param, mockRes);
+    expect(response.data).to.deep.equal([]);
+    await forkService.save(copy(fork1))
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    expect(response.data).to.deep.equal([fork1]);
+
+    //Add a second fork, check if the last fork is this.
+    var fork2 = new Fork(rangeForkInMainchain, new ForkItem(new BtcHeaderInfo(1100,"",""), new RskForkItemInfo(new ForkDetectionData(PREFIX1 + CPV + NU + "00000003"), 0)))
+    await forkService.save(copy(fork2));
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    expect(response.data).to.deep.equal([fork2]);
+
+     //Add a third fork and add a new item, check if the last fork is this.
+    var newPrefix = "9b9b9b9b9b9b9b9b9b9b9b9b9b99b9b9bb9b9b9b";
+    var fork3 = new Fork(rangeForkInMainchain, new ForkItem(new BtcHeaderInfo(900,"",""), new RskForkItemInfo(new ForkDetectionData(newPrefix + CPV + NU + "00000003"), 0)))
+    await forkService.save(copy(fork3));
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    let item = new ForkItem(new BtcHeaderInfo(1200,"",""), new RskForkItemInfo(new ForkDetectionData(newPrefix + CPV + NU + "00000003"), 100));
+    await forkService.addForkItem(fork3.firstDetected.prefixHash, item);
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    fork3.addNewForkItem(item);
+    expect(response.data).to.deep.equal([fork3]);
+
+    //Add another item into the third fork, check if the last fork is this.
+    let item2 = new ForkItem(new BtcHeaderInfo(1300,"",""), new RskForkItemInfo(new ForkDetectionData(newPrefix + CPV + NU + "00000003"), 100));
+    await forkService.addForkItem(fork3.firstDetected.prefixHash, item2);
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    fork3.addNewForkItem(item2);
+    expect(response.data).to.deep.equal([fork3]);
+
+    //Add a new item into the second fork, check if the last fork is this.
+    let item3 = new ForkItem(new BtcHeaderInfo(1400,"",""), new RskForkItemInfo(new ForkDetectionData(PREFIX1 + CPV + NU + "00000003"), 100));
+    await forkService.addForkItem(fork2.firstDetected.prefixHash, item3);
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    fork2.addNewForkItem(item3);
+    expect(response.data).to.deep.equal([fork2]);
+
+    //check the last 2 blocks
+    param = { "params": { "n": 2}};
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    expect(response.data).to.deep.equal([fork2, fork3]);
+    
+    //check the last 3 blocks
+    param = { "params": { "n": 3}};
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    expect(response.data).to.deep.equal([fork2, fork3, fork1]);
+
+    //check the last 6000 blocks, should find the 3 existing forks
+    response = await blockchainController.getLastForksInChain(param, mockRes);
+    expect(response.data).to.deep.equal([fork2, fork3, fork1]);
   });
 });

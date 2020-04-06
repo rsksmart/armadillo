@@ -27,7 +27,7 @@ export class MainchainService  extends BaseService {
     }
 
     public async updateBtcInfoItem(mainchainBlockAtHeight: Item) : Promise<UpdateWriteOpResult>{
-        return this.store.getCollection().updateOne({"rskInfo.forkDetectionData": mainchainBlockAtHeight.rskInfo.forkDetectionData }, { $set: {"btcInfo": mainchainBlockAtHeight.btcInfo}});
+        return this.store.getCollection().updateOne({"rskInfo.forkDetectionData": mainchainBlockAtHeight.rskInfo.forkDetectionData }, { $set: {"btcInfo": mainchainBlockAtHeight.btcInfo, "btcHeightLastTagFound": mainchainBlockAtHeight.btcInfo.height }});
     }
 
     public async getBlockByForkDataDetection(forkDetectionData: ForkDetectionData) : Promise<Item> {
@@ -50,14 +50,41 @@ export class MainchainService  extends BaseService {
         return blocks.map(x => Item.fromObject(x));
     }
 
-    public async getFirstBtcBlockDetectedInChainGoingBackwards(numberOfBtcBlocks): Promise<Item> {
-        let blocks : any[] = await this.store.getCollection().find({"btcInfo":{$ne:null}}).sort({ "btcInfo.height": -1 }).limit(numberOfBtcBlocks).toArray();
+    public async getBtcBlocksBetweenHeight(startHeight: number, endHeight: number): Promise<Item[]> {
 
-        if(blocks.length > 0){
-            return Item.fromObject(blocks[blocks.length -1]);
+        if(endHeight < startHeight){
+            return [];
         }
 
-        return null;
+        let blocks : any[] = await this.store.getCollection()
+            .find({
+                "btcInfo":{$ne:null},
+                "btcInfo.height": {
+                    $gte: startHeight,
+                    $lte: endHeight
+                }})
+            .sort({ "btcInfo.height": -1 })
+            .toArray();
+
+        return blocks.map(x => Item.fromObject(x));
+    }
+
+    public async getBtcBlocksBetweenRskHeight(startHeight: number, endHeight: number): Promise<Item[]> {
+        if(endHeight < startHeight){
+            return [];
+        }
+
+        let blocks : any[] = await this.store.getCollection()
+            .find({
+                "btcInfo":{$ne:null},
+                "rskInfo.height": {
+                    $gte: startHeight,
+                    $lte: endHeight
+                }})
+            .sort({ "btcInfo.height": -1 })
+            .toArray();
+
+        return blocks.map(x => Item.fromObject(x));
     }
     
     private async geRskBlocksBetweenHeight(startHeight: any, endHeight: any): Promise<any[]> {
@@ -66,7 +93,9 @@ export class MainchainService  extends BaseService {
                 $gte: startHeight,
                 $lte: endHeight
             }
-        }).sort({ "rskInfo.height": -1, "rskInfo.mainchain": 1 }).toArray();
+        })
+        .sort({ "rskInfo.height": -1, "rskInfo.mainchain": 1 })
+        .toArray();
     }
 
     public async getLastMainchainItems(numberOfItems): Promise<Item[]> {

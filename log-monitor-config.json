@@ -1,8 +1,9 @@
 {
     "appenders": {
         "file": {
-            "type": "file",
-            "filename": "output-monitor.log"
+            "type": "dateFile",
+            "filename": "output-monitor.log",
+            "daysToKeep": 10
         },
         "console": {
             "type": "console"

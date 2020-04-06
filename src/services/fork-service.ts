@@ -12,16 +12,31 @@ export class ForkService extends BaseService {
     }
 
     public async addForkItem(prefixHash: string, forkItem: ForkItem): Promise<void> {
-        await this.store.getCollection().updateOne({ 'firstDetected.prefixHash': prefixHash }, { $push: { 'items': forkItem } });
+        await this.store.getCollection().updateOne({ 'firstDetected.prefixHash': prefixHash }, { $push: { 'items': forkItem }, $set: { "btcHeightLastTagFound": forkItem.btcInfo.height }});
     }
 
-    public async getForksDetected(heightToSearch: number = 0): Promise<Fork[]> {
+    public async getForksDetectedFromBtcHeight(btcHeightToSearch: number = 0): Promise<Fork[]> {
         let forks: any[] = await this.store.getCollection().find({
             "btcHeightLastTagFound": {
-                $gte: heightToSearch,
+                $gte: btcHeightToSearch,
             }
         }).toArray();
 
+        return forks.map(x => Fork.fromObject(x));
+    }
+
+    public async getForksDetectedFromRskHeight(rskHeightToSearch: number = 0): Promise<Fork[]> {
+        let forks: any[] = await this.store.getCollection().find({
+            "rskHeightLastTagFound": {
+                $gte: rskHeightToSearch,
+            }
+        }).toArray();
+
+        return forks.map(x => Fork.fromObject(x));
+    }
+
+    public async getLastForks(numberOfForks: number = 1): Promise<Fork[]> {
+        let forks: any[] = await this.store.getCollection().find({}).sort({ "btcHeightLastTagFound": -1 }).limit(numberOfForks).toArray();
         return forks.map(x => Fork.fromObject(x));
     }
 
