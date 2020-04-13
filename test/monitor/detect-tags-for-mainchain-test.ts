@@ -235,7 +235,7 @@ describe('Mainchain test', () => {
   })
 
   describe('New btc block with RSK tag is pointing to an RSK uncle', () => {
-    it.only("Buinding mainchain with best block instead using the uncle at that height, also save uncle", async () => {
+    it("Buinding mainchain with best block instead using the uncle at that height, also save uncle", async () => {
       const btcBlock = new BtcBlock(200, "btcHash", PREFIX + CPV + NU + "00000003", "");
       const rskUncle = new RskBlockInfo(3, "hash3_NoBest", "hash2", false, "", new ForkDetectionData(PREFIX + CPV + NU + "00000003"));
       const rskBestBlock = new RskBlockInfo(10, "hash10", "hash9", true, "", new ForkDetectionData(PREFIX + CPV + NU + "0000000A"));
