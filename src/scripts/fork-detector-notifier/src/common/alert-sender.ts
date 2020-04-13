@@ -5,9 +5,11 @@ import { ForkEmailBuilder } from "./fork-email-builder";
 import { ForkInformation } from "./fork-information-builder";
 import { ForkEmail } from "./model";
 import { DefconLevel } from "./defcon-level";
+import { Alert } from "./alert-type";
+
 
 export interface AlertSender {
-    sendAlert(forkInfo: ForkInformation, defconLevel: DefconLevel): Promise<void>;
+    sendAlert(alert: Alert): Promise<void>;
 }
 
 export class MailAlertSender implements AlertSender {
@@ -21,7 +23,7 @@ export class MailAlertSender implements AlertSender {
         this.emailBuilder = emailBuilder;
     }
 
-    async sendAlert(forkInfo: ForkInformation, defconLevel: DefconLevel): Promise<void> {
+    async sendAlert(alert: Alert): Promise<void> {
         const options = {
             host: this.config.server,
             auth: {
@@ -30,18 +32,19 @@ export class MailAlertSender implements AlertSender {
             }
         };
 
-        const email: ForkEmail = await this.emailBuilder.build(forkInfo, defconLevel);
+        const subject = alert.getSubject();
+        const body = alert.getBody();
 
         const transport = nodemailer.createTransport(options);
-        let info = await transport.sendMail({
+        const info = await transport.sendMail({
             from: this.config.sender,
             to: this.config.recipients,
-            subject: email.subject,
-            text: email.body
+            subject: alert.getSubject(),
+            text: alert.getBody()
         });
 
         this.logger.info(`Sent message: ${info.messageId}`)
-        this.logger.debug(`Subject: ${email.subject}`)
-        this.logger.debug(`Body: ${email.body}`)
+        this.logger.debug(`Subject: ${subject}`)
+        this.logger.debug(`Body: ${body}`)
     }
 }

@@ -3,6 +3,7 @@ import { Fork } from "../../../../common/forks";
 import { AlertSender } from "./alert-sender";
 import { DefconLevel } from "./defcon-level";
 import { ForkInformation, ForkInformationBuilder } from "./fork-information-builder";
+import { Alert, RepeatedForkAlert, DefconAlert } from "./alert-type";
 
 export interface CerebrusConfig {
     chainDepth: number;
@@ -22,7 +23,7 @@ export class Cerebrus {
     private config: CerebrusConfig;
     private alertSender: AlertSender;
     private logger: Logger;
-    private lastBtcHeightLastTagFound: number[];
+    private forksSent: Fork[];
     private forkInfoBuilder: ForkInformationBuilder;
     private defconLevels: DefconLevel[];
     
@@ -38,7 +39,7 @@ export class Cerebrus {
             throw new Error('No Defcon levels provided');
         }
 
-        this.lastBtcHeightLastTagFound = [];
+        this.forksSent = [];
     }
 
     public async processForks(forks: Fork[]) : Promise<void> {
@@ -49,13 +50,32 @@ export class Cerebrus {
 
         this.logger.info(`Forks detected, sending notifications to ${this.config.recipients.join(', ')}`);
 
-        for (let fork of forks) {
-            const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
-            const defconLevel: DefconLevel = this.findActiveDefconLevel(forkInfo);
-            await this.alertSender.sendAlert(forkInfo, defconLevel);
-        }
+        // for (let fork of forks) {
+        //     const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
+        //     const defconLevel: DefconLevel = this.findActiveDefconLevel(forkInfo);
+        //     await this.alertSender.sendAlert(forkInfo, defconLevel);
+        // }
 
-        this.lastBtcHeightLastTagFound = forks.map(x => x.getHeightForLastTagFoundInBTC());
+        // this.lastBtcHeightLastTagFound = forks.map(x => x.getHeightForLastTagFoundInBTC());
+
+        for (let fork of forks) {
+            let alert: Alert;
+            
+            if (this.isARepeatedFork(fork)) {
+                alert = new RepeatedForkAlert(fork);
+            } else {
+                const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
+                const defconLevel: DefconLevel = this.findActiveDefconLevel(forkInfo);
+                alert = new DefconAlert(fork, defconLevel);
+                // añadir a forks enviados
+                this.forksSent.add(fork);
+            }
+
+            await this.alertSender.sendAlert(alert);
+        }
+    }
+    private isARepeatedFork(fork: Fork) : boolean {
+        return false;
     }
 
     private shouldNotify(forks: Fork[]) : boolean {
