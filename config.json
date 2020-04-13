@@ -27,6 +27,10 @@
         "port": 5000
     },
     "store": {
+        "auth": {
+            "user": "armadillo",
+            "password": "set this value"
+        },
         "port": "27017",
         "host": "localhost",
         "databaseName": "armadillo",
