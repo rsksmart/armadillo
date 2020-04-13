@@ -9,9 +9,9 @@ export class StoreConfig {
 
     public static fromObject(config: any): StoreConfig {
         return new StoreConfig(
-            new MongoConfig(config.host, config.port, config.databaseName, config.collections.forks),
-            new MongoConfig(config.host, config.port, config.databaseName, config.collections.mainchain),
-            new MongoConfig(config.host, config.port, config.databaseName, config.collections.btc)
+            new MongoConfig(config.auth.user, config.auth.password, config.host, config.port, config.databaseName, config.collections.forks),
+            new MongoConfig(config.auth.user, config.auth.password, config.host, config.port, config.databaseName, config.collections.mainchain),
+            new MongoConfig(config.auth.user, config.auth.password, config.host, config.port, config.databaseName, config.collections.btc)
         )
     }
 
