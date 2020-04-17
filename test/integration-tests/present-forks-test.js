@@ -47,7 +47,7 @@ const dataInputPath = "test/integration-tests/data/";
 const forksPresentFilePrefix = dataInputPath + "present-forks-";
 const mainchainPresentFilePrefix = dataInputPath + "present-mainchain-";
 const fileSuffix = ".json"
-const needToSaveOutputData = true;
+const needToSaveOutputData = false;
 
 const btcApiRoute = "raw";
 describe("RSK Forks in the present tests", () => {
@@ -1160,7 +1160,6 @@ describe("RSK Forks in the present tests", () => {
                 }).timeout(timeoutTests);
                 it("should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, mongo output validation", async () => {
                     const testId = "7b_cpv_1rsktagmatch2rsktagforknonconsecutive";
-                    console.log(testId);
                     const forksFile = forksPresentFilePrefix + testId + fileSuffix;
                     const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
                     await utils.validateMongoOutput(mainchainFile, forksFile);

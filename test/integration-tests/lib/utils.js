@@ -834,11 +834,6 @@ async function validateMongoOutput(mainchainFile, forksFile) {
     const expectedResponseBlockchainsWoTimeField = await removeTimeFieldFromForksResponse(expectedResponseBlockchains);
     const blockchainsResponse = await getBlockchains(1000);
     const blockchainsResponseWoTimeField = await removeTimeFieldFromForksResponse(blockchainsResponse);
-    // console.log( "+++++ BLOCKCHAINS RESPONSE +++++++");
-    // console.log(JSON.stringify(blockchainsResponseWoTimeField, null, 2));
-    // console.log( "+++++ EXPECTED RESPONSE +++++++");
-    // console.log(JSON.stringify(expectedResponseBlockchainsWoTimeField, null, 2));
-    // console.log("===== END RESPONSES ========");
     expect(blockchainsResponseWoTimeField.data).to.be.eql(expectedResponseBlockchainsWoTimeField.data);
 
 }
