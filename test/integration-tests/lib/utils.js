@@ -66,10 +66,10 @@ const mapRskMatch = {
     "115": 7385,
     "118": 7415,
     "119": 7435,
-    "129": 7490,
+    "129": 7484,
     "131": 7372,
     "133": 7374,
-    "135": 7489,
+    "135": 7483,
     "137": 6470,
     "140": 6530
 };
@@ -184,35 +184,11 @@ function filterObject(object, start, end) {
     return returnObject;
 }
 
-async function mongoResponseToBlockchainsForksResponseFromArmadilloApi(forksFromDBPath) {
-    let forks = await fs.readFileSync(forksFromDBPath);
-    forks = JSON.parse(forks);
-    let forksArmadilloApi = [];
-    for (fork in forks) {
-        let forkArray = forks[fork].items.reverse();
-        forkArray = forkArray.concat([
-            {
-                "btcInfo": null,
-                "rskInfo": forks[fork].mainchainRangeWhereForkCouldHaveStarted.endBlock
-            }
-        ]);
-        forkArray = forkArray.concat([
-            {
-                "btcInfo": null,
-                "rskInfo": forks[fork].mainchainRangeWhereForkCouldHaveStarted.startBlock
-            }
-        ]);
-        forksArmadilloApi = forksArmadilloApi.concat([forkArray]);
-    }
-    return forksArmadilloApi;
-}
-
 async function mongoResponseToBlockchainsFromArmadilloApi(forksFromDbPath, mainchainFromDbPath) {
-
     let forks = [];
     let mainchain = [];
     try {
-        forks = await mongoResponseToBlockchainsForksResponseFromArmadilloApi(forksFromDbPath)
+        forks = JSON.parse(await fs.readFileSync(forksFromDbPath));
     } catch (e) {
         console.log("Couldn't get file " + forksFromDbPath);
     }
@@ -239,13 +215,16 @@ async function insertToDbFromFile(fileName, collection) {
     }
 }
 
-async function saveMongoDbDumpFiles(testId) {
-    const mainchainBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
-    const forksBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloForks);
-    const forksFile = forksPresentFilePrefix + testId + fileSuffix;
-    const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix;
-    mongo_utils.saveCollectionToFile(forksBlocks, forksFile);
-    mongo_utils.saveCollectionToFile(mainchainBlocks, mainchainFile);
+/** Auxiliary function to save mongo output for certain end to end tests
+ * @needToSaveOutputData boolean to determine if output data should be saved or not
+ */
+async function saveOutputData(needToSaveOutputData, forksFile, mainchainFile) {
+    if (needToSaveOutputData) {
+        const mainchainBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
+        const forksBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloForks);
+        mongo_utils.saveCollectionToFile(forksBlocks, forksFile);
+        mongo_utils.saveCollectionToFile(mainchainBlocks, mainchainFile);
+    }
 }
 
 ///////////////////////////////////////////
@@ -347,7 +326,7 @@ async function MoveXBlocks(
     for (let i = 0; i < blocksToAdvance; i++) {
         await getNextBlockInMockBTCApi(apiPoolingTime + loadingTime);
     }
-    await sleep(loadingTime * (4+blocksToAdvance));
+    await sleep(loadingTime * (4 + blocksToAdvance));
 }
 
 async function getBlockchainsAfterMovingXBlocks(
@@ -832,15 +811,36 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, _num
     }
 }
 
+async function removeTimeFieldFromForksResponse(blockchainsResponse) {
+    let blockchainsResponseModified = JSON.parse(JSON.stringify(blockchainsResponse));
+    for (fork in blockchainsResponseModified.data.forks) {
+        for (forkItem in blockchainsResponseModified.data.forks[fork].items) {
+            if (blockchainsResponseModified.data.forks[fork].items[forkItem].hasOwnProperty("time")) {
+                blockchainsResponseModified.data.forks[fork].items[forkItem].time = "";
+            }
+        }
+    }
+    return blockchainsResponseModified;
+}
+
 async function validateMongoOutput(mainchainFile, forksFile) {
-    await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);    
+    await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
     await insertToDbFromFile(forksFile, mongo_utils.ArmadilloForks);
     await insertToDbFromFile(mainchainFile, mongo_utils.ArmadilloMainchain);
     const expectedResponseBlockchains = await mongoResponseToBlockchainsFromArmadilloApi(forksFile, mainchainFile);
     expect(expectedResponseBlockchains.data.mainchain).not.to.be.null;
     expect(expectedResponseBlockchains.data.forks).not.to.be.null;
+
+    const expectedResponseBlockchainsWoTimeField = await removeTimeFieldFromForksResponse(expectedResponseBlockchains);
     const blockchainsResponse = await getBlockchains(1000);
-    expect(blockchainsResponse.data).to.be.eql(expectedResponseBlockchains.data);
+    const blockchainsResponseWoTimeField = await removeTimeFieldFromForksResponse(blockchainsResponse);
+    // console.log( "+++++ BLOCKCHAINS RESPONSE +++++++");
+    // console.log(JSON.stringify(blockchainsResponseWoTimeField, null, 2));
+    // console.log( "+++++ EXPECTED RESPONSE +++++++");
+    // console.log(JSON.stringify(expectedResponseBlockchainsWoTimeField, null, 2));
+    // console.log("===== END RESPONSES ========");
+    expect(blockchainsResponseWoTimeField.data).to.be.eql(expectedResponseBlockchainsWoTimeField.data);
+
 }
 
 module.exports = {
@@ -878,5 +878,6 @@ module.exports = {
     validateMainchainRskMongoDB,
     mongoResponseToBlockchainsFromArmadilloApi,
     insertToDbFromFile,
-    validateMongoOutput
+    validateMongoOutput,
+    saveOutputData
 }

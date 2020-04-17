@@ -254,7 +254,7 @@ describe("RSK no forks tests", () => {
         await utils.validateMainchain(100, 41, reorgBlocks);
         }).timeout(timeoutTests);
 
-    it("should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint, it goes as a sibling, end to end", async () => {
+        it("should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint, it goes as a sibling, end to end", async () => {
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightForSiblingRskTag);
         await mongo_utils.DeleteDB(mongo_utils.ArmadilloDB);
