@@ -7,6 +7,7 @@ export interface ArmadilloApi {
     getCurrentMainchain(chainDepth: number) : Promise<Fork[]>;
     getLastBtcBlocksBetweenHeight(start: number, end: number) : Promise<Item[]>;
     getBtcBlocksBetweenRskHeight(start: number, end: number) : Promise<Item[]>;
+    getSimilarForks(forkDataDetection: string, guessedMiner: string) : Promise<Fork[]>;
 }
 
 export class ArmadilloApiImpl implements ArmadilloApi {
@@ -54,5 +55,20 @@ export class ArmadilloApiImpl implements ArmadilloApi {
 
         const items: Item[] = JSON.parse(response.body).data.map(i => Item.fromObject(i));
         return items;
+    }
+
+    async getSimilarForks(forkDataDetection: string, guessedMiner: string): Promise<Fork[]> {
+        const endpoint = `${this.armadilloApiUrl}/forks/getSimilarForks/${forkDataDetection}/${guessedMiner}`;
+
+        let response: any =
+            await curl.get(endpoint)
+                .catch((e: Error) => {
+                    this.logger.error(`Fail to retrieve from ${endpoint}: ${e}`)
+                    return JSON.stringify({ body: { data: [] } })
+                })
+
+        const items: Fork[] = JSON.parse(response.body).data.map(i => Fork.fromObject(i));
+        return items;
+
     }
 }

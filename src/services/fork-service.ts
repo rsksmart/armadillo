@@ -1,6 +1,8 @@
 import { MongoStore } from "../storage/mongo-store";
 import { Fork, ForkItem } from "../common/forks";
 import BaseService from "./base-service";
+import { ForkDetectionData } from "../common/fork-detection-data";
+import { fork } from "cluster";
 
 export class ForkService extends BaseService {
     constructor(store: MongoStore) {
@@ -51,4 +53,31 @@ export class ForkService extends BaseService {
             .catch(function () {
             });
     }
+
+    public async getForksThatMatchWithSomePartOfForkDetectionData(forkDetectionData: string, guessedMiner: string) : Promise<Fork[]>{
+
+        let forkDetectionDataObject = new ForkDetectionData(forkDetectionData);
+
+        const matchEntireForkDetectionData : Fork[] = await this.store.getCollection().find({
+                        "firstDetected.prefixHash": forkDetectionDataObject.prefixHash,
+                        "firstDetected.CPV": forkDetectionDataObject.CPV,
+                        "firstDetected.NU": forkDetectionDataObject.NU,
+                        "firstDetected.BN": forkDetectionDataObject.BN})
+                        .toArray();
+
+        const matchJustPrefixHash : Fork[] = await this.store.getCollection().find({"firstDetected.prefixHash": forkDetectionDataObject.prefixHash}).toArray();
+
+        const matchTheRest : Fork[] = await this.store.getCollection().find({
+                        "firstDetected.CPV": forkDetectionDataObject.CPV,
+                        "firstDetected.NU": forkDetectionDataObject.NU,
+                        "firstDetected.BN": forkDetectionDataObject.BN})
+                        .toArray();
+        
+        let concatAllData = matchEntireForkDetectionData.concat(matchJustPrefixHash.filter(x => matchEntireForkDetectionData.some(y => y.firstDetected.toString() == x.firstDetected.toString())));
+
+        concatAllData = concatAllData.concat(concatAllData.filter(x => matchTheRest.some(y => y.firstDetected.toString() == x.firstDetected.toString())));
+
+        return concatAllData;
+    }
 }
+    

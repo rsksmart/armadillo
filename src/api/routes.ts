@@ -16,6 +16,7 @@ export function routersConfig(forkStore: MongoStore, mainchainStore: MongoStore,
 
         //Forks routers
         router.get('/forks/getLastForks/:n', blockchainsController.getLastForksInChain.bind(blockchainsController));
+        router.get('/forks/getSimilarForks/:forkDataDetection/:guessedMiner', forkController.getForksThatMatchWithSomePartOfForkDetectionData.bind(forkController));
 
         //Mainchain routers
         router.get('/mainchain/getLastBlocks/:n', mainchainController.getLastBlocks.bind(mainchainController));
@@ -26,7 +27,7 @@ export function routersConfig(forkStore: MongoStore, mainchainStore: MongoStore,
         router.get('/blockchains/:n', blockchainsController.getLastBlocksInChain.bind(blockchainsController));
 
         //For testing 
-        if (true) {
+        if (false) {
                 router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
                 router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
                 router.get('/forks/removeAll', forkController.removeAll.bind(forkController));

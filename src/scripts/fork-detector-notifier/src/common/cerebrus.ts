@@ -61,14 +61,15 @@ export class Cerebrus {
         for (let fork of forks) {
             let alert: Alert;
             
+            const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
+
             if (this.isARepeatedFork(fork)) {
-                alert = new RepeatedForkAlert(fork);
+                alert = new RepeatedForkAlert(forkInfo);
             } else {
-                const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
                 const defconLevel: DefconLevel = this.findActiveDefconLevel(forkInfo);
-                alert = new DefconAlert(fork, defconLevel);
+                alert = new DefconAlert(forkInfo, defconLevel);
                 // añadir a forks enviados
-                this.forksSent.add(fork);
+                this.forksSent.push(fork);
             }
 
             await this.alertSender.sendAlert(alert);
@@ -79,7 +80,7 @@ export class Cerebrus {
     }
 
     private shouldNotify(forks: Fork[]) : boolean {
-        var forkFilted = forks.filter(x => !this.lastBtcHeightLastTagFound.includes(x.getHeightForLastTagFoundInBTC()));
+        var forkFilted = forks.filter(x => !this.forksSent.includes(y => y. x.getHeightForLastTagFoundInBTC()));
 
         return forkFilted.length > 0 && forkFilted.some(x => x.items.length >= this.config.minForkLength);
     }

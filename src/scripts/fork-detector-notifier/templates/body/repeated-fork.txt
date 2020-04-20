@@ -1,0 +1,14 @@
+◘ Detected height #startingRskHeight
+
+◘ Miner name which mined BTC block: #btcGuessMined
+
+◘ Distance to the RSK best block: #distanceFirstItemToBestBlock
+
+◘ BTC heights: #btcListHeights
+
+◘ % of pool which is stuck: #porcentageOfItemsStuckForPool
+
+◘ number of blocks stuck of total: #stuckItemsForPool of #totalItemsForPool
+
+◘ Fork data complete:
+    #completeForkData

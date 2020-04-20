@@ -1,0 +1,1 @@
+#porcentageOfItemsStuckForPool of #poolName is  stuck at height #rskHeightDetected in rsk

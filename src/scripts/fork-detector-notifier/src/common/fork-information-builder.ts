@@ -5,6 +5,9 @@ import { CerebrusConfig } from "./cerebrus";
 import { RskBlockInfo } from "../../../../common/rsk-block";
 
 export interface ForkInformation {
+    itemsInMainnetForPoolInAPeriod: number,
+    itemsInForksForPoolInAPeriod: number,
+    itemsInForkRepeatedInAPeriod: number,
     btcGuessedMinersNames: string[];
     forkBTCitemsLength: number;
     forkTime: string;
@@ -73,10 +76,33 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
             btcHashrateForRskMainchainDuringFork: await this.getBtcMainchainHashrateDuringFork(fork),
             endingRskHeight: fork.getLastDetected().rskForkInfo.forkDetectionData.BN,
             btcForkBlockPercentageOverMergeMiningBlocks: await this.getBtcForkBlockPercentageOverMergeMiningBlocks(fork),
-            estimatedTimeFor4000Blocks: this.getEstimatedTimeFor4000Blocks(fork)
+            estimatedTimeFor4000Blocks: this.getEstimatedTimeFor4000Blocks(fork),
+            // itemsInMainnetForPoolInAPeriod: this.itemsInMainnetForPoolInAPeriod(fork),
+            itemsInForksForPoolInAPeriod: this.itemsInForksForPoolInAPeriod(fork),
+            itemsInForkRepeatedInAPeriod: this.itemsInForkRepeatedInAPeriod(),
         }
 
         return info;
+    }
+
+    // itemsInMainnetForPoolInAPeriod(fork: Fork): Promise<number> {
+    //     var 
+
+    //     const items: Item[] = await this.armadilloApi.getLastBtcBlocksBetweenHeight(start, end);
+    // }
+    
+    // itemsInForkRepeatedInAPeriod(fork: Fork): number {
+    //     const forkDataDetection = fork.getLastDetected().rskForkInfo.forkDetectionData;
+
+    //     this.armadilloApi.getForkGivenAFork
+    // }
+    
+    async itemsInForksForPoolInAPeriod(fork: Fork): number {
+        const forkDataDetection = fork.getFirstDetected().rskForkInfo.forkDetectionData.toString().replace('0x', '');
+
+        let forks = await this.armadilloApi.getSimilarForks(forkDataDetection, fork.getFirstDetected().btcInfo.guessedMiner);
+
+
     }
     
     getBtcGuessMinedInfo(fork: Fork): GuessMinedBlockInfo[] {

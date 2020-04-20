@@ -21,6 +21,8 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
         var forkLength = info.forkBTCitemsLength;
         const defconLevelName: string = defconLevel.getName();
 
+        //given a for we have to know if a fork is repetead.
+
         var subject : string = forkLength > 1 ?
             readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-multiple-item-fork.txt`).toString() :
             readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-one-item-fork.txt`).toString();

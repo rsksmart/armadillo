@@ -40,4 +40,17 @@ export default class ForkController {
       data
     ));
   }
+
+  public async getForksThatMatchWithSomePartOfForkDetectionData(req: any, res: any): Promise<MessageResponse<any>> {
+    let forkDetectionData: string = req.params.forkDataDetection;
+    let guessedMiner: string = req.params.guessedMiner;
+
+    var data = await this.service.getForksThatMatchWithSomePartOfForkDetectionData(forkDetectionData, guessedMiner);
+
+    return res.status(200).send(new MessageResponse(
+      `Get forks from ${guessedMiner} pool and match with this forkDetectionData: ${forkDetectionData}`,
+      true,
+      data
+    ));
+  }
 }
