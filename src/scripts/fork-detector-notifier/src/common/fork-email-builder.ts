@@ -48,7 +48,7 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
                 .replace('#endingRskHeight', info.endingRskHeight.toString())
                 .replace('#startingBtcHeight', startingBtcHeight.toString())
                 .replace('#endingBtcHeight', endingBtcHeight.toString())
-                .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString())
+                .replace('#distanceToBestBlock', info.distanceToBestBlock.toString())
                 .replace('#startRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.startBlock.height.toString())
                 .replace('#endRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.endBlock.height.toString())
                 .replace('#diferenceInBlocksBetweenEndAndStart',  Math.abs((info.rangeWhereForkCouldHaveStarted.startBlock.height - info.rangeWhereForkCouldHaveStarted.endBlock.height)).toString())
