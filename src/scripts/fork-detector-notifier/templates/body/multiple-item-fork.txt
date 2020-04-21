@@ -3,7 +3,7 @@
 ◘ First detected RSK block at #startingRskHeight, BTC height #startingBtcHeight.
 ◘ Last detected RSK block at #endingRskHeight, BTC height #endingBtcHeight.
 
-◘ Distance from last item in fork to the RSK best block: #distanceFirstItemToBestBlock
+◘ Distance from last item in fork to the RSK best block: #distanceToBestBlock
 
 ◘ Range distance where fork could have started: (#startRangeWhereForkCouldHaveStarted, #endRangeWhereForkCouldHaveStarted)
     - Diference between end and start: #diferenceInBlocksBetweenEndAndStart

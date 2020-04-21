@@ -8,7 +8,7 @@ export interface ForkInformation {
     btcGuessedMinersNames: string[];
     forkBTCitemsLength: number;
     forkTime: string;
-    distanceFirstItemToBestBlock: number;
+    distanceToBestBlock: number;
     cpvInfo: any;
     distanceCPVtoPrevJump: number;
     bestBlockInRskInThatMoment: number;
@@ -56,7 +56,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         let info: ForkInformation = {
             forkBTCitemsLength: fork.items.length,
             forkTime: this.getWhenForkIsHappening(fork),
-            distanceFirstItemToBestBlock: await this.getDistanceToBestBlock(fork),
+            distanceToBestBlock: this.getDistanceToBestBlock(fork),
             cpvInfo: await this.getInformationCPVDidNotMatch(fork),
             distanceCPVtoPrevJump: await this.getCPVdistanceToPreviousJump(fork),
             bestBlockInRskInThatMoment: fork.getFirstDetected().rskForkInfo.rskBestBlockHeight,
@@ -116,13 +116,8 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         return forkTime;
     }
 
-    async getDistanceToBestBlock(fork: Fork): Promise<number> {
-        const startRange: RangeForkInMainchain = fork.mainchainRangeWhereForkCouldHaveStarted;
-        const consideredStartBlock: RskBlockInfo = startRange.startBlock.height > 1 ? startRange.startBlock : startRange.endBlock;
-    
-        const currentRskBestBlock: RskBlockInfo = await this.rskApiService.getBestBlock();
-
-        return Math.abs(currentRskBestBlock.height - consideredStartBlock.height);
+    getDistanceToBestBlock(fork: Fork): number {
+        return Math.abs(fork.getLastDetected().rskForkInfo.rskBestBlockHeight - fork.getLastDetected().rskForkInfo.forkDetectionData.BN);
     }
     
     async getInformationCPVDidNotMatch(fork: Fork): Promise<any> {

@@ -1,1 +1,1 @@
-#forkLengthRskBlocks length fork started #distanceFirstItemToBestBlock blocks ago/
+#forkLengthRskBlocks length fork started #distanceToBestBlock blocks ago/
