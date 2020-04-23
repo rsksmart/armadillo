@@ -146,7 +146,7 @@ let findBlocks = async (_db, _collection) => {
                 .toArray();
         }
         catch (e) {
-            console.error(e.message)
+            console.error("error: " + e.message)
         }
         finally {
             await db.connection.close();

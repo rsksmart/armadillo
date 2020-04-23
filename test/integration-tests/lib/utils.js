@@ -184,11 +184,19 @@ function filterObject(object, start, end) {
     return returnObject;
 }
 
+function reverseForkItems(forks) {
+    for (fork in forks){
+        forks[fork].items = forks[fork].items.reverse();
+    }
+    return forks;
+}
+
 async function mongoResponseToBlockchainsFromArmadilloApi(forksFromDbPath, mainchainFromDbPath) {
     let forks = [];
     let mainchain = [];
     try {
         forks = JSON.parse(await fs.readFileSync(forksFromDbPath));
+        forks = reverseForkItems(forks);
     } catch (e) {
         console.log("Couldn't get file " + forksFromDbPath);
     }
@@ -220,10 +228,8 @@ async function insertToDbFromFile(fileName, collection) {
  */
 async function saveOutputData(needToSaveOutputData, forksFile, mainchainFile) {
     if (needToSaveOutputData) {
-        const mainchainBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloMainchain);
-        const forksBlocks = await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloForks);
-        mongo_utils.saveCollectionToFile(forksBlocks, forksFile);
-        mongo_utils.saveCollectionToFile(mainchainBlocks, mainchainFile);
+        await mongo_utils.saveCollectionToFile(mongo_utils.ArmadilloForks, forksFile);
+        await mongo_utils.saveCollectionToFile(mongo_utils.ArmadilloMainchain, mainchainFile);
     }
 }
 
@@ -709,6 +715,14 @@ async function validateRskMainchainBlocksInForkMongoDB(fork) {
 async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {
     await validateRskMainchainBlocksInForkMongoDB(fork);
     expect(fork.items.length).to.be.equal(expectedAmountOfForkItems);
+    fork.items = fork.items.sort((a,b) => b.btcInfo.height - a.btcInfo.height);
+    //WIP Still debugging v
+// console.log(`last btc height of fork in fork items is ${fork.items[0].btcInfo.height} vs variable outside the array of ${btcHeightLastTagFound}`)
+    // console.log(`last rsk height of fork in fork items is ${fork.items[0].rskForkInfo.height} vs variable outside the array of ${rskHeightLastTagFound}`);
+    expect(fork.items[0].btcInfo.height).to.be.equal(btcHeightLastTagFound, 
+        `last btc height of fork in fork items is ${fork.items[0].btcInfo.height} vs variable outside the array of ${btcHeightLastTagFound}`);
+    expect(fork.items[0].rskForkInfo.height).to.be.equal(rskHeightLastTagFound,
+        `last rsk height of fork in fork items is ${fork.items[0].rskForkInfo.height} vs variable outside the array of ${rskHeightLastTagFound}`);
     for (forkItemPos in fork.items) {
         await validateForkItemRskBlockMongoDB(fork.items[forkItemPos]);
     }
@@ -832,9 +846,18 @@ async function validateMongoOutput(mainchainFile, forksFile) {
     expect(expectedResponseBlockchains.data.forks).not.to.be.null;
 
     const expectedResponseBlockchainsWoTimeField = await removeTimeFieldFromForksResponse(expectedResponseBlockchains);
-    const blockchainsResponse = await getBlockchains(1000);
+    const blockchainsResponse = await getBlockchains(10000);
     const blockchainsResponseWoTimeField = await removeTimeFieldFromForksResponse(blockchainsResponse);
-    expect(blockchainsResponseWoTimeField.data).to.be.eql(expectedResponseBlockchainsWoTimeField.data);
+    //For debug only: Start **********
+    const debug = false;
+    if (debug) {
+        expectedResponseFileName = "debug_expectedResponse.json";
+        actualResponseFileName = "debug_actualResponse.json";
+        fs.writeFileSync(expectedResponseFileName,JSON.stringify(expectedResponseBlockchainsWoTimeField,null,2));
+        fs.writeFileSync(actualResponseFileName, JSON.stringify(blockchainsResponseWoTimeField,null,2));
+    }
+    //For debug only: Finish *********
+   expect(blockchainsResponseWoTimeField.data).to.be.eql(expectedResponseBlockchainsWoTimeField.data);
 
 }
 

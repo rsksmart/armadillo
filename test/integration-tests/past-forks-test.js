@@ -34,6 +34,7 @@ describe("RSK Forks in the past tests", () => {
             const testId = "pastfork_length1fork";
             utils.saveOutputData(needToSaveOutputData, forksPastFilePrefix + testId + fileSuffix, mainchainPastFilePrefix + testId + fileSuffix);
         }).timeout(timeoutTests);
+        //FIXME: Review why mongo output of this test is failing
         it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following consecutive BTC block", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
                 btcApiRoute, heightOfConsecutiveRSKnoMatchPastSameBranch, 2, 2000, apiPoolingTime, loadingTime);
@@ -43,7 +44,7 @@ describe("RSK Forks in the past tests", () => {
             await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [2], 0, bestRskBlock);
             await utils.validateMainchain(1000, 1);
             const testId = "pastfork_length2forkconsecutive";
-            utils.saveOutputData(needToSaveOutputData, forksPastFilePrefix + testId + fileSuffix, mainchainPastFilePrefix + testId + fileSuffix);
+            await utils.saveOutputData(needToSaveOutputData, forksPastFilePrefix + testId + fileSuffix, mainchainPastFilePrefix + testId + fileSuffix);
         }).timeout(timeoutTests);
         it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following non consecutive BTC block", async () => {
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(
@@ -178,6 +179,7 @@ describe("RSK Forks in the past tests", () => {
             const mainchainFile = mainchainPastFilePrefix + testId + fileSuffix
             await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
+        //FIXME: Review why this is failing
         it("should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following consecutive BTC block, mongo output validation", async () => {
             const testId = "pastfork_length2forkconsecutive";
             const forksFile = forksPastFilePrefix + testId + fileSuffix;
