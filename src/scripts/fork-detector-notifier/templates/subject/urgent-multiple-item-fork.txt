@@ -1,1 +1,0 @@
-[URGENT] ⚠ - #forkLengthRskBlocks length fork started #distanceToBestBlock blocks ago

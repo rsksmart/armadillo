@@ -29,7 +29,7 @@ function buildConfig() : CerebrusConfig {
 
 function buildDefconLevels() : DefconLevel[] {
     return [
-        new DefconLevel(1, 'low', 1, 0.0, 100, []),
+        new DefconLevel(1, 'low', 1, 0.0, 10000000, []),
         new DefconLevel(2, 'high', 100, 0.5, 6000, [])
     ]
 }
@@ -62,7 +62,7 @@ function buildForkInfo(params) : ForkInformation {
         btcGuessedMinersNames: [''],
         forkBTCitemsLength: 1,
         forkTime: '',
-        distanceToBestBlock: 1,
+        distanceFromLastDetectedToBestBlock: 1,
         cpvInfo: '',
         distanceCPVtoPrevJump: 1,
         bestBlockInRskInThatMoment: 1,

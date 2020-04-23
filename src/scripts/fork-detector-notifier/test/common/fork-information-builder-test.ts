@@ -263,7 +263,7 @@ describe('ForkInformationBuilder', () => {
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
-        expect(forkInfo.distanceToBestBlock).to.equal(100);
+        expect(forkInfo.distanceFromLastDetectedToBestBlock).to.equal(100);
     })
 
     it("builds getDistanceToBestBlock field when no cpv match (start block height != 1)", async () => { 
@@ -299,7 +299,7 @@ describe('ForkInformationBuilder', () => {
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
-        expect(forkInfo.distanceToBestBlock).to.equal(180);
+        expect(forkInfo.distanceFromLastDetectedToBestBlock).to.equal(180);
     })
 
     it('builds estimatedTimeFor4000Blocks field when enough items', async () => {
