@@ -1213,7 +1213,8 @@ describe("RSK Forks in the present tests", () => {
                     const forksFile = forksPresentFilePrefix + testId + fileSuffix;
                     const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
                     await utils.validateMongoOutput(mainchainFile, forksFile);
-                }).timeout(timeoutTests); it("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation", async () => {
+                }).timeout(timeoutTests); 
+                it("should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation", async () => {
                     const testId = "7b_cpvnomatch_1rsktagfork1rsktagmatchconsecutive";
                     const forksFile = forksPresentFilePrefix + testId + fileSuffix;
                     const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
