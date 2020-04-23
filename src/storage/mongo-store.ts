@@ -16,9 +16,16 @@ export class MongoStore {
     public constructor(mongoConfig: MongoConfig) {
         this.logger = getLogger("mongo-store");
         this.mongoConfig = mongoConfig;
-        var user = encodeURIComponent(mongoConfig.user);
-        var password = encodeURIComponent(mongoConfig.password);
-        this.path = `mongodb://${user}:${password}@${this.mongoConfig.host}:${this.mongoConfig.port}/${this.mongoConfig.databaseName}`;
+
+        let authPath =  "";
+        
+        if(mongoConfig.auth){
+            var user = encodeURIComponent(mongoConfig.auth.user);
+            var password = encodeURIComponent(mongoConfig.auth.password);
+            authPath = `${user}:${password}@`;
+        }
+        
+        this.path = `mongodb://${authPath}${this.mongoConfig.host}:${this.mongoConfig.port}/${this.mongoConfig.databaseName}`;
     }
 
     public async disconnect(): Promise<void> {

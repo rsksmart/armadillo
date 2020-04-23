@@ -1,0 +1,12 @@
+{
+    "store": {
+        "port": "27017",
+        "host": "localhost",
+        "databaseName": "armadillo-test",
+        "collections": {
+            "forks": "branches",
+            "mainchain": "mainchain",
+            "btc": "btc"
+        }
+    }
+}
