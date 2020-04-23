@@ -1,9 +1,8 @@
 import "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
-import { stubObject } from "ts-sinon";
 import { RskApiService } from "../../../../services/rsk-api-service";
-import { ArmadilloApi, ArmadilloApiImpl } from "../../src/common/armadillo-api";
+import { ArmadilloApiImpl } from "../../src/common/armadillo-api";
 import { Fork, RangeForkInMainchain, ForkItem, Item } from "../../../../common/forks";
 import { ForkInformationBuilder, ForkInformationBuilderImpl, ForkInformation } from "../../src/common/fork-information-builder";
 import { RskBlockInfo, RskForkItemInfo } from "../../../../common/rsk-block";
@@ -235,7 +234,6 @@ describe('ForkInformationBuilder', () => {
     it("builds getDistanceToBestBlock field when cpv match (start block height != 1)", async () => { 
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
-        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(2000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
@@ -252,28 +250,25 @@ describe('ForkInformationBuilder', () => {
                 new BtcHeaderInfo(1001, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
-                    2000
+                    2100
                 )
             ),
             new ForkItem(
                 new BtcHeaderInfo(1002, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
-                    2020
+                    2120
                 )
             )
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
-
-        // expected: 2 / (2 + 0) = 2 / 2 = 1
-        expect(forkInfo.distanceFirstItemToBestBlock).to.equal(100);
+        expect(forkInfo.distanceFromLastDetectedToBestBlock).to.equal(100);
     })
 
     it("builds getDistanceToBestBlock field when no cpv match (start block height != 1)", async () => { 
         const rskApi: any = sinon.createStubInstance(RskApiService);
         rskApi.getBlock.returns(Promise.resolve(new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
-        rskApi.getBestBlock.returns(Promise.resolve(new RskBlockInfo(2000, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000000"))));
 
         const armadilloApi: sinon.SinonStubbedInstance<ArmadilloApiImpl> = sinon.createStubInstance(ArmadilloApiImpl);
         armadilloApi.getLastBtcBlocksBetweenHeight.returns(Promise.resolve([]));
@@ -297,15 +292,14 @@ describe('ForkInformationBuilder', () => {
                 new BtcHeaderInfo(1002, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
-                    2020
+                    2200
                 )
             )
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
-        // expected: 2 / (2 + 0) = 2 / 2 = 1
-        expect(forkInfo.distanceFirstItemToBestBlock).to.equal(50);
+        expect(forkInfo.distanceFromLastDetectedToBestBlock).to.equal(180);
     })
 
     it('builds estimatedTimeFor4000Blocks field when enough items', async () => {

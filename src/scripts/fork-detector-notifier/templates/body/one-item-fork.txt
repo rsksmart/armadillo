@@ -4,7 +4,7 @@
 
 ◘ Miner name which mined BTC block: #btcGuessMined
 
-◘ Distance to the RSK best block: #distanceFirstItemToBestBlock
+◘ Distance to the RSK best block: #distanceFromLastDetectedToBestBlock
 
 ◘ BTC height: #btcListHeights
 
