@@ -8,7 +8,7 @@ export interface ForkInformation {
     btcGuessedMinersNames: string[];
     forkBTCitemsLength: number;
     forkTime: string;
-    distanceToBestBlock: number;
+    distanceFromLastDetectedToBestBlock: number;
     cpvInfo: any;
     distanceCPVtoPrevJump: number;
     bestBlockInRskInThatMoment: number;
@@ -56,7 +56,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         let info: ForkInformation = {
             forkBTCitemsLength: fork.items.length,
             forkTime: this.getWhenForkIsHappening(fork),
-            distanceToBestBlock: this.getDistanceToBestBlock(fork),
+            distanceFromLastDetectedToBestBlock: this.getDistanceFromLastDetectedToBestBlock(fork),
             cpvInfo: await this.getInformationCPVDidNotMatch(fork),
             distanceCPVtoPrevJump: await this.getCPVdistanceToPreviousJump(fork),
             bestBlockInRskInThatMoment: fork.getFirstDetected().rskForkInfo.rskBestBlockHeight,
@@ -116,10 +116,16 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         return forkTime;
     }
 
-    getDistanceToBestBlock(fork: Fork): number {
+    getDistanceFromLastDetectedToBestBlock(fork: Fork): number {
         return Math.abs(fork.getLastDetected().rskForkInfo.rskBestBlockHeight - fork.getLastDetected().rskForkInfo.forkDetectionData.BN);
     }
-    
+
+    getForkLengthInRskBlocks(fork: Fork): number {
+        const startRange: RangeForkInMainchain = fork.mainchainRangeWhereForkCouldHaveStarted;
+        const consideredStartBlock: RskBlockInfo = startRange.startBlock.height > 1 ? startRange.startBlock : startRange.endBlock;
+        return Math.abs(fork.getLastDetected().rskForkInfo.forkDetectionData.BN - consideredStartBlock.height);
+    }
+
     async getInformationCPVDidNotMatch(fork: Fork): Promise<any> {
         let heightToFind = fork.getFirstDetected().rskForkInfo.forkDetectionData.BN;
     
@@ -163,9 +169,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         return btcHeightList;
     }
 
-    getForkLengthInRskBlocks(fork: Fork): number {
-        return Math.abs(fork.mainchainRangeWhereForkCouldHaveStarted.endBlock.height - fork.getLastDetected().rskForkInfo.forkDetectionData.BN);
-    }
+    
 
     getGuessMinedBlocksList(list: GuessMinedBlockInfo[]): string {
         let minerListInfo: string[] = [];

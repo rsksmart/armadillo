@@ -16,7 +16,7 @@ function buildInfo(forkLengthRskBlocks: number, forkHashrate : number, bestBlock
         btcGuessedMinersNames: [''],
         forkBTCitemsLength: 1,
         forkTime: '',
-        distanceToBestBlock: 1,
+        distanceFromLastDetectedToBestBlock: 1,
         cpvInfo: '',
         distanceCPVtoPrevJump: 1,
         bestBlockInRskInThatMoment: bestBlockInRskInThatMoment,
