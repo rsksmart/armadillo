@@ -1,4 +1,4 @@
-import retry from 'async-await-retry';
+import retry  = require('async-await-retry');
 
 export const checkTag = (value: string) => {
     value = String(value).toLowerCase();

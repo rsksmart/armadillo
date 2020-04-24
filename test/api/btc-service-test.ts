@@ -6,9 +6,9 @@ import { MongoStore } from "../../src/storage/mongo-store";
 import { ApiConfig } from "../../src/config/api-config";
 import { BtcService } from "../../src/services/btc-service";
 
-const mainConfig = ApiConfig.getMainConfig('./config.json');
-const mongoBtcService = new MongoStore(mainConfig.store.btc);
-const btcService = new BtcService(mongoBtcService);
+const storeConfig = ApiConfig.getStoreConfig('./config-test.json');
+const mongoBtcStore = new MongoStore(storeConfig.btc);
+const btcService = new BtcService(mongoBtcStore);
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
 const NU = "00"; // 0

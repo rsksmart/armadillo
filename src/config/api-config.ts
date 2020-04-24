@@ -18,6 +18,10 @@ export class ApiConfig {
         return mainConfig;
     }
 
+    public static getStoreConfig(configPath: string): StoreConfig {
+        return StoreConfig.fromObject(JSON.parse(readFileSync(configPath).toString()).store);
+    }
+
     public static fromObject(config: any): ApiConfig {
         return new ApiConfig(
             LoggerConfig.fromObject(config.logger.api),
