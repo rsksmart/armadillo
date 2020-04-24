@@ -12,9 +12,9 @@ import { stubObject } from "ts-sinon";
 import { BtcApiConfig } from "../../src/config/btc-api-config";
 import { sleep } from "../../src/util/helper";
 
-const mainConfig = ApiConfig.getMainConfig('./config.json');
-const mongoBtcService = new MongoStore(mainConfig.store.btc);
-const btcService = new BtcService(mongoBtcService);
+const storeConfig = ApiConfig.getStoreConfig('./config-test.json');
+const mongoBtcStore = new MongoStore(storeConfig.btc);
+const btcService = new BtcService(mongoBtcStore);
 const config = stubObject<BtcApiConfig>(BtcApiConfig.prototype);
 const btcApi = new HttpBtcApi(config)
 const btcWatcher = new BtcWatcher(btcApi, btcService);
