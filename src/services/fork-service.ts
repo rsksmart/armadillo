@@ -12,7 +12,14 @@ export class ForkService extends BaseService {
     }
 
     public async addForkItem(prefixHash: string, forkItem: ForkItem): Promise<void> {
-        await this.store.getCollection().updateOne({ 'firstDetected.prefixHash': prefixHash }, { $push: { 'items': forkItem }, $set: { "btcHeightLastTagFound": forkItem.btcInfo.height }});
+        await this.store.getCollection().updateOne(
+            { 'firstDetected.prefixHash': prefixHash },
+            { $push: { 'items': forkItem },
+              $set: { "btcHeightLastTagFound": forkItem.btcInfo.height,
+                      "rskHeightLastTagFound": forkItem.rskForkInfo.forkDetectionData.BN
+                    }
+            }
+        );
     }
 
     public async getForksDetectedFromBtcHeight(btcHeightToSearch: number = 0): Promise<Fork[]> {
