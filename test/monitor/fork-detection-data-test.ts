@@ -123,7 +123,7 @@ describe("Overlap CPV", () => {
 
     let rangeForkInMainchain = new RangeForkInMainchain(rskBlock, rskBlock);
 
-    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Fork(rangeForkInMainchain, new ForkItem(btcInfo, rskForkItem))]);
+    sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns([new Fork(rangeForkInMainchain, new ForkItem(btcInfo, rskForkItem, Date()))]);
     let posibleforks: Fork[] = await forkDetector.getForksThatOverlap(forkData);
     sinon.stub(rskService, <any>'getBestBlock').returns(rskBlock);
 
@@ -146,7 +146,7 @@ describe("Overlap CPV", () => {
 
     let rangeForkInMainchain = new RangeForkInMainchain(rskBlock1, rskBlock1);
 
-    let list = [new Fork(rangeForkInMainchain, new ForkItem(btcInfo, rskBlock)), new Fork(rangeForkInMainchain, new ForkItem(btcInfo, rskBlock2))]
+    let list = [new Fork(rangeForkInMainchain, new ForkItem(btcInfo, rskBlock, Date())), new Fork(rangeForkInMainchain, new ForkItem(btcInfo, rskBlock2, Date()))]
 
     sinon.stub(ForkDetector.prototype, <any>"getPossibleForks").returns(list);
     let posibleForks: Fork[] = await forkDetector.getForksThatOverlap(forkData);

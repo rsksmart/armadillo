@@ -261,7 +261,7 @@ export class ForkDetector {
 
         var rskForkItem: RskForkItemInfo = RskForkItemInfo.fromForkDetectionData(btcBlock.rskTag, rskBestBlock.height);
         //Possible mainchain block from where it started to fork
-        let item: ForkItem = new ForkItem(btcBlock.btcInfo, rskForkItem);
+        let item: ForkItem = new ForkItem(btcBlock.btcInfo, rskForkItem, Date());
 
         let forks: Fork[] = await this.getForksThatOverlap(rskForkItem.forkDetectionData);
 
