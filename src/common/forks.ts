@@ -96,13 +96,13 @@ export class ForkItem {
     public rskForkInfo: RskForkItemInfo;
     public time: string;
 
-    constructor(btcInfo: BtcHeaderInfo, rskForkInfo: RskForkItemInfo, time: string = Date()) {
+    constructor(btcInfo: BtcHeaderInfo, rskForkInfo: RskForkItemInfo, time: string) {
         this.btcInfo = btcInfo;
         this.rskForkInfo = rskForkInfo;
-        this.time = time;
+        this.time = time || Date();
     }
 
     static fromObject(forkItem: any): ForkItem {
-        return new ForkItem(BtcHeaderInfo.fromObject(forkItem.btcInfo), RskForkItemInfo.fromObject(forkItem.rskForkInfo));
+        return new ForkItem(BtcHeaderInfo.fromObject(forkItem.btcInfo), RskForkItemInfo.fromObject(forkItem.rskForkInfo), forkItem.time);
     }
 }
