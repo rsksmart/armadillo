@@ -175,7 +175,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         let minerListInfo: string[] = [];
     
         for (var i = 0; i < list.length; i++) {
-            minerListInfo.push(`${list[i].poolName} had mined ${list[i].totalPorcentageOfBlocksMined}% of total fork's blocks (# blocks: ${list[i].numberOfBlocksMined})`);
+            minerListInfo.push(`${list[i].poolName} had mined ${list[i].totalPorcentageOfBlocksMined.toFixed(2)}% of total fork's blocks (# blocks: ${list[i].numberOfBlocksMined})`);
         }
     
         return minerListInfo.join('\n');
@@ -240,7 +240,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         const timeDiff: number = lastDetectedTime.getTime() - firstDetectedTime.getTime();
         const blockDiff: number = lastDetected.rskForkInfo.forkDetectionData.BN - firstDetected.rskForkInfo.forkDetectionData.BN;
 
-        const timePerBlock: number = (timeDiff / blockDiff);
+        const timePerBlock: number = timeDiff / blockDiff;
 
         // use a linear regression between the first detected and last detected to estimate time for 4000 blocks
         const estimatedTimestamp: number = timePerBlock * 4000 + firstDetectedTime.getTime();
