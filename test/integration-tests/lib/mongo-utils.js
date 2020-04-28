@@ -1,27 +1,31 @@
 let MongoClient = require('mongodb').MongoClient;
 const fs = require('fs');
+//All this configs shouldn't be here, I think you can use the configs are in config-test.json, are basically the sames.
 const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
 const ArmadilloStateTracker = "btc";
 const ArmadilloForks = "forks";
 
+//TODO I think you can create a ForkTestService which can extend BaseService, and add all mongo db methods or reuse the existing ones. 
+//TODO: I can help you on that
 let connectDB = async (_db) => {
     try {
         let db = await MongoClient.connect(MongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
         return { db: await db.db(_db), connection: db };
     } catch (e) {
+
+        //TODO: please remove this try and catch and the console log, doesn't have sense
         console.error("couldn't connect to mongoDB");
         return null;
     }
 }
 
-
-
 let DeleteDB = async (_db) => {
     let db = await connectDB(_db);
     let dbo = db.db;
     let colNames = [];
+    //TODO 
     try {
         colNames = await dbo.listCollections().toArray();
     }
@@ -44,12 +48,14 @@ let DeleteDB = async (_db) => {
     }
 }
 
+//TODO: I will define all the function like this one.
 async function saveCollectionToFile(_collection, _fileName) {
     let blocks = await findBlocks (ArmadilloDB, _collection);
     fs.writeFileSync(_fileName,JSON.stringify(blocks,null,2));
 }
 
 let updateLastCheckedBtcBlock = async (btcBlock) => {
+    //TODO: why you have 2 try catchs in this function. 
     try {
         let db = await connectDB(ArmadilloDB);
         let dbo = db.db;
@@ -57,8 +63,9 @@ let updateLastCheckedBtcBlock = async (btcBlock) => {
         //Delete the collection:
         var query = {};
         var newvalue = { $set: btcBlock };
-        try {
 
+        //TODO: If there are an error here you basically log a console error an return a result which is null. Doesn't have sense
+        try {
             result = await dbo
                 .collection(ArmadilloStateTracker)
                 .updateOne(query, newvalue);
@@ -76,6 +83,7 @@ let updateLastCheckedBtcBlock = async (btcBlock) => {
 }
 
 async function updateOneMainchainBlock(RSKBlockNumber, isMainchain, armadilloBlock) {
+    //TODO I think all this functions should not have try catchs, connections for tests must not fail.
     try {
         let db = await connectDB(ArmadilloDB);
         let dbo = db.db;
@@ -126,6 +134,7 @@ async function findOneMainchainBlock(RSKBlockNumber, isMainchain) {
         finally {
             await db.connection.close();
         }
+        //TODO: if there are an error you are triggering another error null[0] jehehhee
         return result[0];
     } catch (err) {
         throw err;
@@ -159,6 +168,7 @@ let findBlocks = async (_db, _collection) => {
 
 let insertDocuments = async (_db, _collection, _jsonData) => {
     try {
+        //I think the problem you have here is that every test, every funciton is connecting to de db. you are opening and close it connections. probably there you have some issue
         let db = await connectDB(_db);
         let dbo = db.db;
         let result = [];

@@ -1,3 +1,4 @@
+//TODO: remove const you are not using (mainchain and forks , expect)
 const expect = require('chai').expect;
 const assert = require('chai').assert;
 const utils = require('./lib/utils');
@@ -100,5 +101,4 @@ describe("RSK Forks in the future tests", () => {
             await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
     });
-
 });

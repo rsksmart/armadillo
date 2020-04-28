@@ -12,6 +12,8 @@ const mongo_utils = require("./mongo-utils");
 const timeoutTests = 5 * 60 * 1000;//5 minutes
 const apiPoolingTime = 200;
 const loadingTime = 800;
+//TODO: you can move all this confins into config-test.json. 
+//TODO: we have in this utils file: defined data (like the maps), global functions, functions to validate things, there you have 4 responsibilities in 1 file.
 const config = {
     "rskd": {
         "url": "localhost",
@@ -141,6 +143,7 @@ function sleep(millis) {
     return new Promise(resolve => setTimeout(resolve, millis));
 }
 
+//TODO: remove this function is not in use
 var addLeadingZeros = (totalLength, s) => {
     let lenS = s.toString(16).length;
     for (lenS; lenS < totalLength; lenS++) {
@@ -319,6 +322,7 @@ async function swapMainchainBlockWithSibling(rskBlockNumber) {
     return blockInfoMainchain;
 }
 
+//don't use uppercase in functions
 async function MoveXBlocks(
     btcApiRoute, initialHeight, blocksToMove,
     apiPoolingTime, loadingTime) {
@@ -347,7 +351,6 @@ async function getDBForksAfterMovingXBlocks(btcApiRoute, initialHeight, blocksTo
     await MoveXBlocks(btcApiRoute, initialHeight, blocksToMove, apiPoolingTime, loadingTime);
     return await mongo_utils.findBlocks(mongo_utils.ArmadilloDB, mongo_utils.ArmadilloForks);
 }
-
 
 async function setBlockAsLastChecked(blockNumber) {
     try {
@@ -759,13 +762,18 @@ async function validateForksCreated(blockchainsResponse, lastForksResponse, _num
     expect(lengthOfForks).not.to.be.null;
     const numberOfForksExpected = lengthOfForks.length;
     expect(blockchainsResponse.data).to.be.an('object').that.is.not.empty;
-    expect(blockchainForks).to.be.an('array').that.is.not.empty;
+     //I think in all the places that you are checking is and array then, is not empty and then has elements, is validating the same thing over and over.
+    //I would remove this 
+    // --> expect(blockchainForks).to.be.an('array').that.is.not.empty;
     expect(blockchainForks.length).to.be.equal(numberOfForksExpected);
     for (forkPos in blockchainForks) {
+        //I think you don't need to do this blockchainForks[forkPos] you just have to use the forkPost
         const fork = blockchainForks[forkPos];
         expect(fork.length).to.be.equal(lengthOfForks[forkPos] + 2);
         for (pos in fork) {
+            //same here you are not iterating positions you are iterating objects. so fork is a object fork is not a position
             expect(fork[pos]).not.to.be.null;//
+            //not sure
             fork[pos].src = "blockchains";
             fork[pos].pos = pos;
             let mainchainInFork = (pos >= (fork.length - 2));
@@ -780,6 +788,7 @@ async function validateMongoOutput(mainchainFile, forksFile) {
     const expectedResponseBlockchains = await mongoResponseToBlockchainsFromArmadilloApi(forksFile, mainchainFile);
     await insertToDbFromFile(forksFile, mongo_utils.ArmadilloForks);
     await insertToDbFromFile(mainchainFile, mongo_utils.ArmadilloMainchain);
+    // don't check is not null if you are checking then that has data
     expect(expectedResponseBlockchains.data.mainchain).not.to.be.null;
     expect(expectedResponseBlockchains.data.forks).not.to.be.null;
     const blockchainsResponse = await getBlockchains(1000);

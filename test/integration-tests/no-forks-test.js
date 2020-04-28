@@ -4,6 +4,7 @@ const utils = require('./lib/utils');
 const mongo_utils = require('./lib/mongo-utils');
 const db = mongo_utils.ArmadilloDB;
 const mainchain = mongo_utils.ArmadilloMainchain;
+//TODO: remove dependencies you are not using
 const stateTracker = mongo_utils.ArmadilloStateTracker;
 const firstBtcBlock = 8704;
 const heightOfNoRskTags = firstBtcBlock + 0;
@@ -115,6 +116,7 @@ describe("RSK no forks tests", () => {
         await utils.validateMainchain(1000, 41);
     }).timeout(timeoutTests);
     it("should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo input validation", async () => {
+        //TODO: remove raw parameter, is the same for all
         await utils.MockBtcApiChangeRoute("raw");
         await utils.setHeightInMockBTCApi(heightOfConsecutiveRskTags);
         await utils.setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
@@ -274,5 +276,7 @@ describe("RSK no forks tests", () => {
         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
         await utils.validateMainchain(2, 41, reorgBlocks);
         await utils.validateMainchain(100, 41, reorgBlocks);
+        //TODO: you can use a flag --timeout  5 * 60 * 1000 (5 min) when you ran mocha. like you did it with  --retries 3
+        //Also retries should be removed.
     }).timeout(timeoutTests);
 });
