@@ -184,24 +184,20 @@ function filterObject(object, start, end) {
     return returnObject;
 }
 
-function reverseForkItems(forks) {
-    for (fork in forks){
-        forks[fork].items = forks[fork].items.reverse();
-    }
-    return forks;
-}
-
 async function mongoResponseToBlockchainsFromArmadilloApi(forksFromDbPath, mainchainFromDbPath) {
     let forks = [];
     let mainchain = [];
     try {
-        forks = JSON.parse(await fs.readFileSync(forksFromDbPath));
-        forks = reverseForkItems(forks);
+        forks = JSON.parse(fs.readFileSync(forksFromDbPath));
+        forks = forks.map(fork => {
+            fork.items = fork.items.reverse();
+            return fork;
+        });
     } catch (e) {
         console.log("Couldn't get file " + forksFromDbPath);
     }
     try {
-        mainchain = JSON.parse(await fs.readFileSync(mainchainFromDbPath));
+        mainchain = JSON.parse(fs.readFileSync(mainchainFromDbPath));
     } catch (e) {
         console.log("Couldn't get file " + mainchainFromDbPath);
     }
@@ -350,13 +346,8 @@ async function getDBForksAfterMovingXBlocks(btcApiRoute, initialHeight, blocksTo
 
 
 async function setBlockAsLastChecked(blockNumber) {
-    try {
-        const btcBlock = await getBtcApiBlockNumber(blockNumber);
-        await mongo_utils.updateLastCheckedBtcBlock(btcBlock);
-    }
-    catch (e) {
-        return;
-    }
+    const btcBlock = await getBtcApiBlockNumber(blockNumber);
+    await mongo_utils.updateLastCheckedBtcBlock(btcBlock);
 }
 
 ////////////////////////////////
@@ -693,17 +684,17 @@ async function validateRskBlockNodeVsArmadilloMonitorMongoDB(armadilloBlock) {
 }
 
 function validateForkItemRskBlockMongoDB(forkItem) {
-    expect(forkItem.rskInfo.hash).to.be.equal("");
-    expect(forkItem.rskInfo.prevHash).to.be.equal("");
-    if (forkItem.rskInfo.height >= 448) {
-        expect(forkItem.rskInfo.forkDetectionData).to.be.an("object").that.is.not.empty;
-        expect(forkItem.rskInfo.forkDetectionData.prefixHash).to.be.not.null.and.not.to.equal("");
-        expect(forkItem.rskInfo.forkDetectionData.prefixHash.length).to.be.equal(40);
-        expect(forkItem.rskInfo.forkDetectionData.CPV).to.be.not.null.and.not.to.equal("");
-        expect(forkItem.rskInfo.forkDetectionData.CPV.length).to.be.equal(14);
-        expect(forkItem.rskInfo.forkDetectionData.NU).to.be.not.null;
-        expect(forkItem.rskInfo.forkDetectionData.NU).to.be.a("number");
-        expect(forkItem.rskInfo.forkDetectionData.BN).to.be.equal(forkItem.rskInfo.height);
+    expect(forkItem.rskForkInfo).to.not.have.property("hash");
+    expect(forkItem.rskForkInfo).to.not.have.property("prevHash");
+    if (forkItem.rskForkInfo.forkDetectionData.BN >= 448) {
+        expect(forkItem.rskForkInfo.forkDetectionData).to.be.an("object").that.is.not.empty;
+        expect(forkItem.rskForkInfo.forkDetectionData.prefixHash).to.be.not.null.and.not.to.equal("");
+        expect(forkItem.rskForkInfo.forkDetectionData.prefixHash.length).to.be.equal(40);
+        expect(forkItem.rskForkInfo.forkDetectionData.CPV).to.be.not.null.and.not.to.equal("");
+        expect(forkItem.rskForkInfo.forkDetectionData.CPV.length).to.be.equal(14);
+        expect(forkItem.rskForkInfo.forkDetectionData.NU).to.be.not.null;
+        expect(forkItem.rskForkInfo.forkDetectionData.NU).to.be.a("number");
+        expect(forkItem.rskForkInfo.forkDetectionData.BN).to.be.a("number");
     }
 }
 async function validateRskMainchainBlocksInForkMongoDB(fork) {
@@ -715,14 +706,11 @@ async function validateRskMainchainBlocksInForkMongoDB(fork) {
 async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {
     await validateRskMainchainBlocksInForkMongoDB(fork);
     expect(fork.items.length).to.be.equal(expectedAmountOfForkItems);
-    fork.items = fork.items.sort((a,b) => b.btcInfo.height - a.btcInfo.height);
-    //WIP Still debugging v
-// console.log(`last btc height of fork in fork items is ${fork.items[0].btcInfo.height} vs variable outside the array of ${btcHeightLastTagFound}`)
-    // console.log(`last rsk height of fork in fork items is ${fork.items[0].rskForkInfo.height} vs variable outside the array of ${rskHeightLastTagFound}`);
-    expect(fork.items[0].btcInfo.height).to.be.equal(btcHeightLastTagFound, 
-        `last btc height of fork in fork items is ${fork.items[0].btcInfo.height} vs variable outside the array of ${btcHeightLastTagFound}`);
-    expect(fork.items[0].rskForkInfo.height).to.be.equal(rskHeightLastTagFound,
-        `last rsk height of fork in fork items is ${fork.items[0].rskForkInfo.height} vs variable outside the array of ${rskHeightLastTagFound}`);
+    fork.items = fork.items.sort((a, b) => b.btcInfo.height - a.btcInfo.height);
+    expect(fork.items[0].btcInfo.height).to.be.equal(fork.btcHeightLastTagFound,
+        `last btc height of fork in fork items is ${fork.items[0].btcInfo.height} vs variable outside the array of ${fork.btcHeightLastTagFound}`);
+    expect(fork.items[0].rskForkInfo.forkDetectionData.BN).to.be.equal(fork.rskHeightLastTagFound,
+        `last rsk height of fork in fork items is ${fork.items[0].rskForkInfo.forkDetectionData.BN} vs variable outside the array of ${fork.rskHeightLastTagFound}`);
     for (forkItemPos in fork.items) {
         await validateForkItemRskBlockMongoDB(fork.items[forkItemPos]);
     }
@@ -730,8 +718,8 @@ async function validateForkRskBlockMongoDB(fork, expectedAmountOfForkItems) {
 
 async function validateForksRskBlockMongoDB(forks, forkItemsExpected) {
     expect(forks.length).to.be.equal(forkItemsExpected.length);
-    for (forkPos in forks.items) {
-        await validateForkRskBlockMongoDB(forks.items[forkPos], forkItemsExpected[forkPos]);
+    for (forkPos in forks) {
+        await validateForkRskBlockMongoDB(forks[forkPos], forkItemsExpected[forkPos]);
     }
 }
 
@@ -853,11 +841,11 @@ async function validateMongoOutput(mainchainFile, forksFile) {
     if (debug) {
         expectedResponseFileName = "debug_expectedResponse.json";
         actualResponseFileName = "debug_actualResponse.json";
-        fs.writeFileSync(expectedResponseFileName,JSON.stringify(expectedResponseBlockchainsWoTimeField,null,2));
-        fs.writeFileSync(actualResponseFileName, JSON.stringify(blockchainsResponseWoTimeField,null,2));
+        fs.writeFileSync(expectedResponseFileName, JSON.stringify(expectedResponseBlockchainsWoTimeField, null, 2));
+        fs.writeFileSync(actualResponseFileName, JSON.stringify(blockchainsResponseWoTimeField, null, 2));
     }
     //For debug only: Finish *********
-   expect(blockchainsResponseWoTimeField.data).to.be.eql(expectedResponseBlockchainsWoTimeField.data);
+    expect(blockchainsResponseWoTimeField.data).to.be.eql(expectedResponseBlockchainsWoTimeField.data);
 
 }
 
