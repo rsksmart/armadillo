@@ -3,19 +3,24 @@ import { ForkInformation } from "./fork-information-builder";
 export class DefconLevel {
     private level: number;
     private name: string;
-    private distanceThreshold: number;
+    private forkLengthThreshold: number;
     private hashrateThreshold: number;
+    private distanceToBestBlockThreshold: number;
+    private recipients: string[];
 
-    constructor(level: number, name: string, distanceThreshold: number, hashrateThreshold: number) {
+    constructor(level: number, name: string, forkLengthThreshold: number, hashrateThreshold: number, distanceToBestBlockThreshold: number, recipients: string[]) {
         this.level = level;
         this.name = name || '';
-        this.distanceThreshold = distanceThreshold;
+        this.forkLengthThreshold = forkLengthThreshold;
         this.hashrateThreshold = hashrateThreshold;
+        this.distanceToBestBlockThreshold = distanceToBestBlockThreshold;
+        this.recipients = recipients;
     }
 
     public activeFor(forkInfo: ForkInformation) : boolean {
-        return forkInfo.forkLengthRskBlocks >= this.distanceThreshold && 
-            forkInfo.btcForkBlockPercentageOverMergeMiningBlocks >= this.hashrateThreshold;
+        return  forkInfo.forkLengthRskBlocks >= this.forkLengthThreshold && 
+            forkInfo.btcForkBlockPercentageOverMergeMiningBlocks >= this.hashrateThreshold &&
+            Math.abs(forkInfo.bestBlockInRskInThatMoment - forkInfo.endingRskHeight) <= this.distanceToBestBlockThreshold;
     }
 
     public getLevel() : number {
@@ -23,6 +28,10 @@ export class DefconLevel {
     }
 
     public getName(): string {
-        return (this.name && this.name.length !== 0) ? this.name : 'default';
+        return this.name;
+    }
+
+    public getRecipients(): string[] {
+        return this.recipients;
     }
 }

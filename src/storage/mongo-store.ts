@@ -16,7 +16,16 @@ export class MongoStore {
     public constructor(mongoConfig: MongoConfig) {
         this.logger = getLogger("mongo-store");
         this.mongoConfig = mongoConfig;
-        this.path = "mongodb://" + this.mongoConfig.host + ":" + this.mongoConfig.port + "/" + this.mongoConfig.databaseName;
+
+        let authPath =  "";
+        
+        if(mongoConfig.auth){
+            var user = encodeURIComponent(mongoConfig.auth.user);
+            var password = encodeURIComponent(mongoConfig.auth.password);
+            authPath = `${user}:${password}@`;
+        }
+        
+        this.path = `mongodb://${authPath}${this.mongoConfig.host}:${this.mongoConfig.port}/${this.mongoConfig.databaseName}`;
     }
 
     public async disconnect(): Promise<void> {
@@ -47,7 +56,6 @@ export class MongoStore {
             await this.sleep(2000);
             await this.connectMongo();
             connectionAttempt++;
-
         }
 
         if (connectionAttempt > 3) {
@@ -74,6 +82,7 @@ export class MongoStore {
             this.isConnected = true;
         }
         catch (error) {
+            this.logger.error(error);
         }
     }
 }

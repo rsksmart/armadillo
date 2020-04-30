@@ -1,4 +1,4 @@
-import { MongoConfig } from './mongo-config';
+import { MongoConfig, AuthConfig } from './mongo-config';
 
 export class StoreConfig {
 
@@ -8,10 +8,13 @@ export class StoreConfig {
     public readonly btc: MongoConfig;
 
     public static fromObject(config: any): StoreConfig {
+        
+        let auth = config.auth ? AuthConfig.fromObject(config.auth) : null;
+        
         return new StoreConfig(
-            new MongoConfig(config.host, config.port, config.databaseName, config.collections.forks),
-            new MongoConfig(config.host, config.port, config.databaseName, config.collections.mainchain),
-            new MongoConfig(config.host, config.port, config.databaseName, config.collections.btc)
+            new MongoConfig(auth, config.host, config.port, config.databaseName, config.collections.forks),
+            new MongoConfig(auth, config.host, config.port, config.databaseName, config.collections.mainchain),
+            new MongoConfig(auth, config.host, config.port, config.databaseName, config.collections.btc)
         )
     }
 
