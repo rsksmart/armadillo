@@ -18,12 +18,9 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
     }
 
     async buildSubject(info: ForkInformation, defconLevel: DefconLevel) : Promise<string> {
-        var forkLength = info.forkBTCitemsLength;
         const defconLevelName: string = defconLevel.getName();
 
-        var subject : string = forkLength > 1 ?
-            readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-multiple-item-fork.txt`).toString() :
-            readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-one-item-fork.txt`).toString();
+        var subject : string = readFileSync(`${this.TEMPLATES_BASE_PATH}/subject/${defconLevelName}-fork.txt`).toString();
 
         return this.replaceKeys(subject, info);
     }
@@ -48,7 +45,7 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
                 .replace('#endingRskHeight', info.endingRskHeight.toString())
                 .replace('#startingBtcHeight', startingBtcHeight.toString())
                 .replace('#endingBtcHeight', endingBtcHeight.toString())
-                .replace('#distanceFirstItemToBestBlock', info.distanceFirstItemToBestBlock.toString())
+                .replace('#distanceFromLastDetectedToBestBlock', info.distanceFromLastDetectedToBestBlock.toString())
                 .replace('#startRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.startBlock.height.toString())
                 .replace('#endRangeWhereForkCouldHaveStarted', info.rangeWhereForkCouldHaveStarted.endBlock.height.toString())
                 .replace('#diferenceInBlocksBetweenEndAndStart',  Math.abs((info.rangeWhereForkCouldHaveStarted.startBlock.height - info.rangeWhereForkCouldHaveStarted.endBlock.height)).toString())

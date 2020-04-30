@@ -29,8 +29,8 @@ function buildConfig() : CerebrusConfig {
 
 function buildDefconLevels() : DefconLevel[] {
     return [
-        new DefconLevel(1, 'low', 1, 0.0),
-        new DefconLevel(2, 'high', 100, 0.5)
+        new DefconLevel(1, 'low', 1, 0.0, 10000000, []),
+        new DefconLevel(2, 'high', 100, 0.5, 6000, [])
     ]
 }
 
@@ -62,7 +62,7 @@ function buildForkInfo(params) : ForkInformation {
         btcGuessedMinersNames: [''],
         forkBTCitemsLength: 1,
         forkTime: '',
-        distanceFirstItemToBestBlock: 1,
+        distanceFromLastDetectedToBestBlock: 1,
         cpvInfo: '',
         distanceCPVtoPrevJump: 1,
         bestBlockInRskInThatMoment: 1,
@@ -225,9 +225,9 @@ describe("Cerebrus", async () => {
         forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
 
         const defconLevels: DefconLevel[] = [
-            new DefconLevel(1, 'low', 1, 0.0),
-            new DefconLevel(2, 'med', 50, 0.5),
-            new DefconLevel(3, 'high', 100, 0.5)
+            new DefconLevel(1, 'low', 1, 0.0, 10000000, []),
+            new DefconLevel(2, 'med', 50, 0.5, 10000000, []),
+            new DefconLevel(3, 'high', 100, 0.5, 6000, [])
         ];
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels);
 
@@ -252,8 +252,8 @@ describe("Cerebrus", async () => {
         forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
 
         const defconLevels: DefconLevel[] = [
-            new DefconLevel(1, 'low', 5, 0.3),
-            new DefconLevel(2, 'high', 50, 0.5),
+            new DefconLevel(1, 'low', 5, 0.3, 10000000, []),
+            new DefconLevel(2, 'high', 50, 0.5, 6000, []),
         ];
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels);
 

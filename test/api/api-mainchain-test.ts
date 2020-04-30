@@ -14,12 +14,12 @@ import { copy } from "../../src/util/helper";
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; 
 const NU = "00";
-const BN = "000004c9"; 
+const BN = "000004c9";
 const RSKTAG = PREFIX + CPV + NU + BN;
 const btcInfo = new BtcHeaderInfo(0, "", "");
-const mainConfig = ApiConfig.getMainConfig('./config.json');
-const mongoStore = new MongoStore(mainConfig.store.mainchain);
-const mainchainService = new MainchainService(mongoStore);
+const storeConfig = ApiConfig.getStoreConfig('./config-test.json');
+const mongo = new MongoStore(storeConfig.mainchain);
+const mainchainService = new MainchainService(mongo);
 const mockRes = { "status": () => { return { "send": (y: any) => { return y } } } };
 
 //Before you run this test you have to run a mongo instance
