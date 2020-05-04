@@ -9,10 +9,10 @@
 ◘ BTC height: #btcListHeights
 
 ◘ Range distance where fork could have started: (#startRangeWhereForkCouldHaveStarted, #endRangeWhereForkCouldHaveStarted)
-    - Diference in blocks between end and start: #diferenceInBlocksBetweenEndAndStart
-    - Distance to last jump: #distanceCPVtoPrevJump
+    ◘ Difference in blocks between end and start: #diferenceInBlocksBetweenEndAndStart
+    ◘ Distance to last jump: #distanceCPVtoPrevJump
 
-◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain btc blocks: #btcHashrateForRskMainchain 
+◘ % of BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain BTC blocks: #btcHashrateForRskMainchain 
 
 ◘ Fork data complete:
 
