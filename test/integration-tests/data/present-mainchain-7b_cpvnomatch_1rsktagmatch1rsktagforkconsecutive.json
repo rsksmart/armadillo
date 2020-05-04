@@ -2,19 +2,21 @@
   {
     "btcInfo": {
       "height": 8781,
-      "hash": "286f58784568022e149a96d439a3a95a4cfa07b7f5fe6b4bde21f5489a1c9e3e"
+      "hash": "286f58784568022e149a96d439a3a95a4cfa07b7f5fe6b4bde21f5489a1c9e3e",
+      "guessedMiner": null
     },
     "rskInfo": {
       "height": 5228,
-      "hash": "0x74cf47c965c29eb456635702a1619a49544f13f49637439c024e74ed0c926034",
+      "hash": "0xc934395ecdd075fe3b9f884e2b25994346ba0dd3f4da95aa05cbab0e77178071",
       "forkDetectionData": {
-        "prefixHash": "9c12b2c6a36fc409a0db0e75fcae5c2ffb6ad44c",
-        "CPV": "dd222ed67bce02",
+        "prefixHash": "c14dbc2b7cae547123228a88006eb0e0750a1ec3",
+        "CPV": "960830707aef93",
         "NU": 0,
         "BN": 5228
       },
-      "prevHash": "0xaf90cb4a7dd8d813f7982bc55f199b98b9ed9ee7c7ab74aa826689d3c00b569f",
-      "mainchain": true
+      "prevHash": "0x84b9b9a4d118e6c62d46b98f9c5624d61f67c5b4a73cde276e48d839d6984ad9",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   }
 ]

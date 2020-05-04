@@ -4,7 +4,7 @@ const MongoUrl = "mongodb://localhost:27017/";
 const ArmadilloDB = "armadillo";
 const ArmadilloMainchain = "mainchain";
 const ArmadilloStateTracker = "btc";
-const ArmadilloForks = "forks";
+const ArmadilloForks = "branches";
 
 let connectDB = async (_db) => {
     try {
@@ -146,7 +146,7 @@ let findBlocks = async (_db, _collection) => {
                 .toArray();
         }
         catch (e) {
-            console.error(e.message)
+            console.error("error: " + e.message)
         }
         finally {
             await db.connection.close();

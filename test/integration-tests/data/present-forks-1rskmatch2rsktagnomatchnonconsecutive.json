@@ -1,1 +1,76 @@
-[]
+[
+  {
+    "mainchainRangeWhereForkCouldHaveStarted": {
+      "startBlock": {
+        "height": 832,
+        "hash": "0x0677158e149aec4f3ea418d7d4a07d43704123935911b27130f61fdcbe248598",
+        "forkDetectionData": {
+          "prefixHash": "6fa9486f4193f9cc167892eb9c0b6259bc3ee583",
+          "CPV": "9784c79b7a99c1",
+          "NU": 0,
+          "BN": 832
+        },
+        "prevHash": "0x92dfe5c81255eb1f0787afa42ea9510b9b3abceea79ab9f886e95053e9dd6b98",
+        "mainchain": true,
+        "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
+      },
+      "endBlock": {
+        "height": 875,
+        "hash": "0xc933a67a243b68d57ea2186b2bb8d24e508da73b9f498f09429a669418c7f4d6",
+        "forkDetectionData": {
+          "prefixHash": "a4786399617fb7d641a44e588532dc97f986010d",
+          "CPV": "ad9784c79b7a99",
+          "NU": 0,
+          "BN": 875
+        },
+        "prevHash": "0xd5dbaafefd70e0041e982336409cda0cccbebc6033ba94239eeb556b90dfc63e",
+        "mainchain": true,
+        "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
+      }
+    },
+    "items": [
+      {
+        "btcInfo": {
+          "height": 8738,
+          "hash": "2085d8e402eba6147ddc24eab3aff0f98fe7ca17d95edbe7522334bd7dc558a1",
+          "guessedMiner": null
+        },
+        "rskForkInfo": {
+          "forkDetectionData": {
+            "prefixHash": "a478a1a1a17fb7d641a44e588532dc97f986010d",
+            "CPV": "ad9784c79b7a99",
+            "NU": 0,
+            "BN": 875
+          },
+          "rskBestBlockHeight": 7490
+        },
+        "time": "Wed Apr 22 2020 02:40:49 GMT-0300 (Uruguay Standard Time)"
+      },
+      {
+        "btcInfo": {
+          "height": 8741,
+          "hash": "1f133770cc22d16c64042e8c6cfecc3dc57e596d54dad5656d46d92b7fdd449f",
+          "guessedMiner": null
+        },
+        "rskForkInfo": {
+          "forkDetectionData": {
+            "prefixHash": "ffa2a1a1a1cdc6ca44c88a88907f71b339714f27",
+            "CPV": "ad9784c79b7a99",
+            "NU": 0,
+            "BN": 890
+          },
+          "rskBestBlockHeight": 7490
+        },
+        "time": "Wed Apr 22 2020 02:40:51 GMT-0300 (Uruguay Standard Time)"
+      }
+    ],
+    "firstDetected": {
+      "prefixHash": "a478a1a1a17fb7d641a44e588532dc97f986010d",
+      "CPV": "ad9784c79b7a99",
+      "NU": 0,
+      "BN": 875
+    },
+    "btcHeightLastTagFound": 8741,
+    "rskHeightLastTagFound": 890
+  }
+]

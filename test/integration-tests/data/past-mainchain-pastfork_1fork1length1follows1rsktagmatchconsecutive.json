@@ -2,247 +2,265 @@
   {
     "btcInfo": {
       "height": 8799,
-      "hash": "78e8539250fce9f3f5979dbf9a234f373583245936aafdf4c17fb050dafd3b47"
+      "hash": "78e8539250fce9f3f5979dbf9a234f373583245936aafdf4c17fb050dafd3b47",
+      "guessedMiner": null
     },
     "rskInfo": {
       "height": 7304,
-      "hash": "0x0faa3ec1654d67ac9370152b3443f368e1b95b700d818e6c005061989d867c79",
+      "hash": "0xc73b7255969b05fe060fdecb1ff7ad69c9f5758f250be0e158a5ca450a2218ce",
       "forkDetectionData": {
-        "prefixHash": "cba48dc00d43a7f46544611ab9da78195444b718",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "4aa7bb8de67d1baa54536222a328d8f1571d70f9",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7304
       },
-      "prevHash": "0x7e8ccc9d4f7579d63580f618304e529618aa14d87007103545d642dfb10d21c7",
-      "mainchain": true
+      "prevHash": "0xc98e662116cef98fe0b36d284dcfca11e5b216a6ef84b3e88861b33469bd7afb",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7305,
-      "hash": "0x29e8fae74601af69ec7d75f9996c4995877c7566b37f0f6d2e225d99672fbfa6",
+      "hash": "0xc2d6d7cac897978f31fb2a8113d4ecca0962286d6427a0705b5e43be7b81fc8a",
       "forkDetectionData": {
-        "prefixHash": "7a7bd5bcd827dcf9d4f30d5cc848a016c91ebc22",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "7a1bad5d8bf05b4971364dbc65a23a51db1dcdb9",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7305
       },
-      "prevHash": "0x0faa3ec1654d67ac9370152b3443f368e1b95b700d818e6c005061989d867c79",
-      "mainchain": true
+      "prevHash": "0xc73b7255969b05fe060fdecb1ff7ad69c9f5758f250be0e158a5ca450a2218ce",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7306,
-      "hash": "0xd774032be5130ecd24714453cb1f57d993bc14d901ba81bd7cae59295407c0b8",
+      "hash": "0x844fbaed24fc14252488cdf1f045560007850e2e90a910bf1548e53f20d39e82",
       "forkDetectionData": {
-        "prefixHash": "90f7793922fa75145447c7ed72cec6c98b26b1c7",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "76a6afb8fda2cda267ad881b2fccf4281f1771ba",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7306
       },
-      "prevHash": "0x29e8fae74601af69ec7d75f9996c4995877c7566b37f0f6d2e225d99672fbfa6",
-      "mainchain": true
+      "prevHash": "0xc2d6d7cac897978f31fb2a8113d4ecca0962286d6427a0705b5e43be7b81fc8a",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7307,
-      "hash": "0x339926d390c7a0dcdd3b13df2fb1f2d47125c5a3645082d57da9928a605d9f7f",
+      "hash": "0xbcabd222bc698d5dec66be473c69dc25d120bf6075f5fa6cddd0057b64a3912a",
       "forkDetectionData": {
-        "prefixHash": "f27a08af302b63c1800708d77a89b4825034c4a4",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "6b0b860155cd16e047a0eb86d570ae265a380ea4",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7307
       },
-      "prevHash": "0xd774032be5130ecd24714453cb1f57d993bc14d901ba81bd7cae59295407c0b8",
-      "mainchain": true
+      "prevHash": "0x844fbaed24fc14252488cdf1f045560007850e2e90a910bf1548e53f20d39e82",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7308,
-      "hash": "0xdaa688ff6a14202963f3a9dd2695673386603b247c39e708c57098e1d17c82de",
+      "hash": "0xa3eeefa47961545bd0cbbbc24abef6ba39c91a5b14e49c5106dfb49bce1c4941",
       "forkDetectionData": {
-        "prefixHash": "c84d791646e320eb13413fa2025c88a5f260c5f4",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "c7ade4c0a23c00770ec37f87d98c6e8ce3c90840",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7308
       },
-      "prevHash": "0x339926d390c7a0dcdd3b13df2fb1f2d47125c5a3645082d57da9928a605d9f7f",
-      "mainchain": true
+      "prevHash": "0xbcabd222bc698d5dec66be473c69dc25d120bf6075f5fa6cddd0057b64a3912a",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7309,
-      "hash": "0x392c08881232b139bacd13bbb8a2c5d419ffc5108d764add7668f3ca796bef1c",
+      "hash": "0x731355cb77798b0292d0b9675b212013cc46d2187b653ff9c6c8e8d79f6323a5",
       "forkDetectionData": {
-        "prefixHash": "678ee9952cf88ac5b1f28769e6bd8bb8db7304cc",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "16ea072a1c71755a9ff76d85d7a38c7985740daa",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7309
       },
-      "prevHash": "0xdaa688ff6a14202963f3a9dd2695673386603b247c39e708c57098e1d17c82de",
-      "mainchain": true
+      "prevHash": "0xa3eeefa47961545bd0cbbbc24abef6ba39c91a5b14e49c5106dfb49bce1c4941",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7310,
-      "hash": "0x71a9096ad254898b3e24100a0b294e93276272d4673f78d5b8bf6f791dcc3c9e",
+      "hash": "0x04c9895b0a85b0b0253086de06b1935463d4146aa62324379d8f59ea9fd35c09",
       "forkDetectionData": {
-        "prefixHash": "34752694dd68a46dfaaadb0d51e5772e0c805257",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "4ecaf869bebc2e58d202ffcd7c3981dea0f0364a",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7310
       },
-      "prevHash": "0x392c08881232b139bacd13bbb8a2c5d419ffc5108d764add7668f3ca796bef1c",
-      "mainchain": true
+      "prevHash": "0x731355cb77798b0292d0b9675b212013cc46d2187b653ff9c6c8e8d79f6323a5",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7311,
-      "hash": "0x2ab23a77376494b0684626d4b5966407dc4b10d8bfa5169346b4201d277802b8",
+      "hash": "0x29c51859e2bdb67ddc308b3837768c76d98036c82eb320c5980ec56db5d6189b",
       "forkDetectionData": {
-        "prefixHash": "b564fb754d54e8c39bcd26c247b94e3961dab0ac",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "f9ff4829d504ffdc95e307b3d0951d7b7b275ecb",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7311
       },
-      "prevHash": "0x71a9096ad254898b3e24100a0b294e93276272d4673f78d5b8bf6f791dcc3c9e",
-      "mainchain": true
+      "prevHash": "0x04c9895b0a85b0b0253086de06b1935463d4146aa62324379d8f59ea9fd35c09",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7312,
-      "hash": "0xa19835bc632c4076199480c641f72cbb243e3cf4dd58004522a4f60bb577fc4c",
+      "hash": "0xa16be8e6e6f44e9c76d6b7e76cbb175d556eca139f8dcc777e7724a1a1672c00",
       "forkDetectionData": {
-        "prefixHash": "77001615b418470a56638726eb7cfc98d24e9e8f",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "a68e1c57f7a584fb55e27f0817d6b2bbd1839257",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7312
       },
-      "prevHash": "0x2ab23a77376494b0684626d4b5966407dc4b10d8bfa5169346b4201d277802b8",
-      "mainchain": true
+      "prevHash": "0x29c51859e2bdb67ddc308b3837768c76d98036c82eb320c5980ec56db5d6189b",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7313,
-      "hash": "0x2b2e24ff44eb3302f0d59ef395d35ef4bd2b2a5cf8f303d4d4fe102e616e1940",
+      "hash": "0x964123fe5daaa9997cc93be1ff974c41945fef0f83146f4d2641d5aa578d5d63",
       "forkDetectionData": {
-        "prefixHash": "779d7868fa9103385d91c4ca8ddf8f7dfb66cdfc",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "ad91b3626b246e5abf93e81c74a7f91613ab1666",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7313
       },
-      "prevHash": "0xa19835bc632c4076199480c641f72cbb243e3cf4dd58004522a4f60bb577fc4c",
-      "mainchain": true
+      "prevHash": "0xa16be8e6e6f44e9c76d6b7e76cbb175d556eca139f8dcc777e7724a1a1672c00",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7314,
-      "hash": "0x0f58b50c2c67416608eb5b0384e69c09fc0bef564f080eb73d09f2a3b6ec02cd",
+      "hash": "0x5986321f307c12704a5d9fca5837f9906eedf6a2e237e7aa4e189df3a77af979",
       "forkDetectionData": {
-        "prefixHash": "993215e3ffc7de0e54b065be390180c4110d98db",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "3d4e7acd7fa038ade5c1459dd66b6d6403adc79b",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7314
       },
-      "prevHash": "0x2b2e24ff44eb3302f0d59ef395d35ef4bd2b2a5cf8f303d4d4fe102e616e1940",
-      "mainchain": true
+      "prevHash": "0x964123fe5daaa9997cc93be1ff974c41945fef0f83146f4d2641d5aa578d5d63",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7315,
-      "hash": "0xfd8dbf0a48d3d055d4b6f81e42b2b81aeddf1e96470105f83edeccfe77af3d61",
+      "hash": "0x44a468df3dc61ffbf87b9047e2c39ee88bd56ed1f2816e2ddc6e2958b63d2f5f",
       "forkDetectionData": {
-        "prefixHash": "2cf4a306692d103915a0e26b9ddcd063b19f4004",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "61700715ccc7e3cdf976fa66dcb76b896101c6b7",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7315
       },
-      "prevHash": "0x0f58b50c2c67416608eb5b0384e69c09fc0bef564f080eb73d09f2a3b6ec02cd",
-      "mainchain": true
+      "prevHash": "0x5986321f307c12704a5d9fca5837f9906eedf6a2e237e7aa4e189df3a77af979",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7316,
-      "hash": "0xf3e9980efe5bfa6713bd50691ad85ba76633e1bae33ff015ad8e5008a77620ed",
+      "hash": "0xd4459bb8bf5d77d3f71939b898d3a5a0694daba8f6cef1a1c8498745a972d381",
       "forkDetectionData": {
-        "prefixHash": "1aa8bdaecd1a0bf4638483afa45cd830da158b45",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "ae2e674ae01435e3c308dd07a056721ae8b3a511",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7316
       },
-      "prevHash": "0xfd8dbf0a48d3d055d4b6f81e42b2b81aeddf1e96470105f83edeccfe77af3d61",
-      "mainchain": true
+      "prevHash": "0x44a468df3dc61ffbf87b9047e2c39ee88bd56ed1f2816e2ddc6e2958b63d2f5f",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7317,
-      "hash": "0x0a0c903e03306e4c50621bfb24c229f21585ab2ad9c80fc3ab971c4179f05bf9",
+      "hash": "0x092012b268d5e17ac71ec542aec09def0315044284d723e88e6db17ded68f2c0",
       "forkDetectionData": {
-        "prefixHash": "26c4ede9bc58b1cfa4eae0f19296521b0821a8d8",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "0a8da5a95637d2e35d6437daa96af25d7edcb959",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7317
       },
-      "prevHash": "0xf3e9980efe5bfa6713bd50691ad85ba76633e1bae33ff015ad8e5008a77620ed",
-      "mainchain": true
+      "prevHash": "0xd4459bb8bf5d77d3f71939b898d3a5a0694daba8f6cef1a1c8498745a972d381",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": null,
     "rskInfo": {
       "height": 7318,
-      "hash": "0x1fde50995ab1aded09d81f42175cdc8dad3d2c4f60d54d5553ad05e76454c96a",
+      "hash": "0xaf353f4015c664a3916f64e8f9597be40db23174ba67487e768e06e42e4a3421",
       "forkDetectionData": {
-        "prefixHash": "c2f5b75559cd9aefeb4d8b452395feb30b377735",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "d465a99a2e25b6d7dded6c8f56afd47e2129b090",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7318
       },
-      "prevHash": "0x0a0c903e03306e4c50621bfb24c229f21585ab2ad9c80fc3ab971c4179f05bf9",
-      "mainchain": true
+      "prevHash": "0x092012b268d5e17ac71ec542aec09def0315044284d723e88e6db17ded68f2c0",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   },
   {
     "btcInfo": {
       "height": 8801,
-      "hash": "7fe91061af6b775ce9b9bc0f8b21f18b0b22df71aefc3bc3b6a601d4a03cc6ca"
+      "hash": "7fe91061af6b775ce9b9bc0f8b21f18b0b22df71aefc3bc3b6a601d4a03cc6ca",
+      "guessedMiner": null
     },
     "rskInfo": {
       "height": 7319,
-      "hash": "0xc06007d15aa5bae08d971ddddbe56bdef50e9e957ca8d851b9ffcb3b88573489",
+      "hash": "0x8d634afe690cc6474c23051bdb9215ef92d7eb7a12ef6b59870fbc78d412b944",
       "forkDetectionData": {
-        "prefixHash": "aae91cfb917f4026a1b483e2bae6b467b77d555e",
-        "CPV": "cabbfa349bbbdb",
+        "prefixHash": "7b119dbe97d99cdca5d0637dc505caaf1afc7062",
+        "CPV": "71e2e2e8f4f738",
         "NU": 0,
         "BN": 7319
       },
-      "prevHash": "0x1fde50995ab1aded09d81f42175cdc8dad3d2c4f60d54d5553ad05e76454c96a",
-      "mainchain": true
+      "prevHash": "0xaf353f4015c664a3916f64e8f9597be40db23174ba67487e768e06e42e4a3421",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   }
 ]
