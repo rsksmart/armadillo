@@ -1,70 +1,71 @@
 [
   {
-    "mainchainRangeForkCouldHaveStarted": {
+    "mainchainRangeWhereForkCouldHaveStarted": {
       "startBlock": {
         "height": 1,
-        "hash": "0x6c56e65f2f9349e97325d965aa31b5f8a8f9a46cf663e23ab9e9dd7bc4b19d0d",
+        "hash": "0xfb6ee58c902990e7ff284fbb6d1b9708d2e1b61784a7a1024afd020fee450f4a",
         "forkDetectionData": null,
         "prevHash": "0xf81e265becb438e4511f5029c4ad086543ffb993a3f14bd70588f1e3cc24f5c3",
-        "mainchain": true
+        "mainchain": true,
+        "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
       },
       "endBlock": {
-        "height": 7490,
-        "hash": "0x0251f1b93b92275aa1e30e0a993a25c7ab91f38778f18dce7757a60fb1338774",
+        "height": 6336,
+        "hash": "0x17adb680b4815b61c66f859d5d9bc354aad801daf52043ae7347c99c2919ad89",
         "forkDetectionData": {
-          "prefixHash": "65b005a0bc44c036463fe2faf3874ca16e7a3142",
-          "CPV": "9d4eeacabbfa34",
+          "prefixHash": "5452ec9153d74ea1c0e1bd0374ac671f067b8bc9",
+          "CPV": "cc74c15e36cc0e",
           "NU": 0,
-          "BN": 7490
+          "BN": 6336
         },
-        "prevHash": "0xe940156b2d51eb1b4bfa9c137d0748288e7e388eb282fc24f354518a44d02965",
-        "mainchain": true
+        "prevHash": "0xd88a94d734c554c6da26de898af5c5e99d18354219aa3c1cced182d5fe99c66c",
+        "mainchain": true,
+        "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
       }
     },
     "items": [
       {
         "btcInfo": {
           "height": 8790,
-          "hash": "17bc500a1a81d54d42441226b7ab3df7f8d6aef572d0b2c3611f3d2a5dbad2e0"
+          "hash": "17bc500a1a81d54d42441226b7ab3df7f8d6aef572d0b2c3611f3d2a5dbad2e0",
+          "guessedMiner": null
         },
-        "rskInfo": {
-          "height": 6754,
-          "hash": "",
+        "rskForkInfo": {
           "forkDetectionData": {
-            "prefixHash": "a602a1a1a18945889537674d06d00f7dad5ba035",
+            "prefixHash": "6246a1a1a1419c25b3853af459d6231214edd32a",
             "CPV": "a1b2c3d4e5f677",
             "NU": 0,
             "BN": 6754
           },
-          "prevHash": "",
-          "mainchain": false
-        }
+          "rskBestBlockHeight": 7490
+        },
+        "time": "Wed Apr 22 2020 11:43:27 GMT-0300 (Uruguay Standard Time)"
       },
       {
         "btcInfo": {
           "height": 8794,
-          "hash": "0d709ad2b2ed5eb5b9ba99fb48c6de941be14c81ec5224a2379f6c9bc5f4264f"
+          "hash": "0d709ad2b2ed5eb5b9ba99fb48c6de941be14c81ec5224a2379f6c9bc5f4264f",
+          "guessedMiner": null
         },
-        "rskInfo": {
-          "height": 6774,
-          "hash": "",
+        "rskForkInfo": {
           "forkDetectionData": {
-            "prefixHash": "606aa1a1a18ad2f0cdda7db1dd8dcd830c6befe2",
+            "prefixHash": "88b0a1a1a130a3cc67ad8fe12cf11cbe82bbafca",
             "CPV": "a1b2c3d4e5f677",
             "NU": 0,
             "BN": 6774
           },
-          "prevHash": "",
-          "mainchain": false
-        }
+          "rskBestBlockHeight": 7490
+        },
+        "time": "Wed Apr 22 2020 11:43:31 GMT-0300 (Uruguay Standard Time)"
       }
     ],
     "firstDetected": {
-      "prefixHash": "a602a1a1a18945889537674d06d00f7dad5ba035",
+      "prefixHash": "6246a1a1a1419c25b3853af459d6231214edd32a",
       "CPV": "a1b2c3d4e5f677",
       "NU": 0,
       "BN": 6754
     },
-    "btcHeightLastTagFound": 6754
+    "btcHeightLastTagFound": 8794,
+    "rskHeightLastTagFound": 6774
   }
 ]

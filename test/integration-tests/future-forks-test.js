@@ -17,8 +17,9 @@ const heightOfConsecutiveBTCwithFutureRSKtags0bCPVdiff = firstBtcBlock + 129;
 const heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff = firstBtcBlock + 133;
 const heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff = firstBtcBlock + 135;
 const dataInputPath = "test/integration-tests/data/";
-const forksPresentFilePrefix = dataInputPath + "future-forks-";
-const mainchainPresentFilePrefix = dataInputPath + "future-mainchain-";
+const forksFutureFilePrefix = dataInputPath + "future-forks-";
+const mainchainFutureFilePrefix = dataInputPath + "future-mainchain-";
+const needToSaveOutputData = false;
 const fileSuffix = ".json";
 describe("RSK Forks in the future tests", () => {
     describe("RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, end to end", () => {
@@ -28,27 +29,33 @@ describe("RSK Forks in the future tests", () => {
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1], 0, bestRskBlock);
             await utils.validateMainchain(1000, 1);
-            
+            const testId = "cpvmatch_length1forkconsecutive";
+            await utils.saveOutputData(needToSaveOutputData, forksFutureFilePrefix + testId + fileSuffix, mainchainFutureFilePrefix + testId + fileSuffix);
         }).timeout(timeoutTests);
-        it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match", async () => {
+        it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 3 bytes CPV match", async () => {
             assert.equal(await utils.getLastRSKHeight(utils.context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(btcApiRoute, heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff, 1, 2000, apiPoolingTime, loadingTime);
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1], 4, bestRskBlock);
             await utils.validateMainchain(1000, 1);
+            const testId = "cpv5b_length1forkconsecutive";
+            utils.saveOutputData(needToSaveOutputData, forksFutureFilePrefix + testId + fileSuffix, mainchainFutureFilePrefix + testId + fileSuffix);
         }).timeout(timeoutTests);
+
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 0 bytes CPV match", async () => {
             assert.equal(await utils.getLastRSKHeight(utils.context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
             const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks(btcApiRoute, heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff, 1, 2000, apiPoolingTime, loadingTime);
             const lastForksResponse = await utils.getForksFromHeight(0);
             await utils.setHeightInMockBTCApi(heightOfNoRskTags);
             //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+            await utils.validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1], 7, bestRskBlock);
             await utils.validateMainchain(1000, 1);
+            const testId = "cpv0b_length1forkconsecutive";
+            utils.saveOutputData(needToSaveOutputData, forksFutureFilePrefix + testId + fileSuffix, mainchainFutureFilePrefix + testId + fileSuffix);
         }).timeout(timeoutTests);
     });
     describe("RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, mongo input validation", () => {
@@ -83,20 +90,20 @@ describe("RSK Forks in the future tests", () => {
     describe("RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, mongo output validation", () => {
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match, mongo output validation", async () => {
             const testId = "cpvmatch_length1forkconsecutive";
-            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
-            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            const forksFile = forksFutureFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainFutureFilePrefix + testId + fileSuffix
             await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match, mongo output validation", async () => {
             const testId = "cpv5b_length1forkconsecutive";
-            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
-            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            const forksFile = forksFutureFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainFutureFilePrefix + testId + fileSuffix
             await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 0 bytes CPV match, mongo output validation", async () => {
             const testId = "cpv0b_length1forkconsecutive";
-            const forksFile = forksPresentFilePrefix + testId + fileSuffix;
-            const mainchainFile = mainchainPresentFilePrefix + testId + fileSuffix
+            const forksFile = forksFutureFilePrefix + testId + fileSuffix;
+            const mainchainFile = mainchainFutureFilePrefix + testId + fileSuffix
             await utils.validateMongoOutput(mainchainFile, forksFile);
         }).timeout(timeoutTests);
     });

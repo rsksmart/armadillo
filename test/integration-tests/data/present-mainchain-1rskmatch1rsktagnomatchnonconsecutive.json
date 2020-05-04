@@ -2,19 +2,21 @@
   {
     "btcInfo": {
       "height": 8736,
-      "hash": "3b29af5011887958d2d10ff04935635a5de582da6ec64aeafea6ec8962d9ed6e"
+      "hash": "3b29af5011887958d2d10ff04935635a5de582da6ec64aeafea6ec8962d9ed6e",
+      "guessedMiner": null
     },
     "rskInfo": {
       "height": 865,
-      "hash": "0x0a522932d1d42664829f03fe9a733ee7ce7b4998c2e5a00f75f1fe5f475623bc",
+      "hash": "0xe543c4e87fa3614157f7418efb6061c20a4cb039347152b490282c9fd94e6c65",
       "forkDetectionData": {
-        "prefixHash": "14486de209f9775eadf5fdbb67ffe840aea17d09",
-        "CPV": "bc3cc5bca3d7be",
+        "prefixHash": "60d91a5ecaa42208e511685caba810504b7166ed",
+        "CPV": "ad9784c79b7a99",
         "NU": 0,
         "BN": 865
       },
-      "prevHash": "0xf8605693ea5385dff95d5ca0900d0e9150b4ec61e5ca0c952528a59d650ada46",
-      "mainchain": true
+      "prevHash": "0x9a2681a05348c5e7bb2c61151161a920cbe4ee237c448824a2e00846a9d6a998",
+      "mainchain": true,
+      "miner": "0xec4ddeb4380ad69b3e509baad9f158cdf4e4681d"
     }
   }
 ]
