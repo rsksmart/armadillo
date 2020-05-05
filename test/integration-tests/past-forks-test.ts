@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const utils = require('./lib/utils');
+// const utils = require('./lib/utils');
 const mongo_utils = require('./lib/mongo-utils');
 const rskBlockHeightsWithBtcBlock = utils.rskBlockHeightsWithBtcBlock();
 const firstBtcBlock = 8704;
