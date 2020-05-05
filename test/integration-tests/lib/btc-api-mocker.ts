@@ -4,8 +4,8 @@ const btcApiURL = "http://localhost:5000/";
 const apiPoolingTime = 200;
 const loadingTime = 800;
 
-export async function mockBtcApiChangeRoute(route) {
-    let response = await fetch(`${btcApiURL}route/${route}`);
+export async function mockBtcApiChangeRoute() {
+    let response = await fetch(`${btcApiURL}route/raw`);
     return response;
 }
 
@@ -21,10 +21,8 @@ export async function getBtcApiBlockNumber(number) {
     return btcInfo;
 }
 
-export async function getNextBlockInMockBTCApi() {
-    await sleep(apiPoolingTime + loadingTime);
-    let result = await fetch(btcApiURL + "nextBlock");
-    return result;
+export async function moveToNextBlock() : Promise<void>{
+    await fetch(btcApiURL + "nextBlock");
 }
 
 export async function getBlockByHashInMockBTCApi(_hash) {
@@ -33,7 +31,7 @@ export async function getBlockByHashInMockBTCApi(_hash) {
     return result;
 }
 
-export async function setHeightInMockBTCApi(_height) {
-    let url = `${btcApiURL}height/${_height}`;
-    await fetch(url);
+export async function setHeightInMockBTCApi(_height) : Promise<void>{
+    //THIS SHOULD BE A POST
+    await fetch(`${btcApiURL}height/${_height}`);
 }
