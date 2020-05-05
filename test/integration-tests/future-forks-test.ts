@@ -1,11 +1,14 @@
 
 import { setHeightInMockBTCApi } from './lib/btc-api-mocker'
 import { findBlocks, armadilloDB, armadilloMainchain } from './lib/mongo-utils'
-import { validateForksCreated, validateMainchain, validateForksRskBlockMongoDB, validateMainchainRskMongoDB, validateMongoOutput } from './lib/validators';
+import { validateForksCreated, validateMainchain, validateForksRskBlockMongoDB, validateMainchainRskMongoDB, validateMongoOutput, validateFork } from './lib/validators';
 import { getLastRSKHeight } from './lib/rsk-operations';
 import { rskBlockHeightsWithBtcBlock } from './lib/configs';
 import { getBlockchainsAfterMovingXBlocks, getForksFromHeight, getDBForksAfterMovingXBlocks } from './lib/armadillo-operations';
 import assert = require('assert');
+import { Fork, ForkItem } from '../../src/common/forks';
+import { fork } from 'cluster';
+import { RskForkItemInfo } from '../../src/common/rsk-block';
 
 const btcApiRoute = "raw";
 const firstBtcBlock = 8704;
@@ -24,18 +27,39 @@ describe("RSK Forks in the future tests", () => {
     describe("RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, end to end", () => {
         it.only("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match", async () => {
             // assert.equal(await getLastRSKHeight(context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
-            
-            const blockchainsResponse = await getBlockchainsAfterMovingXBlocks(btcApiRoute, heightOfConsecutiveBTCwithFutureRSKtags0bCPVdiff, 1, 2000);
-            const lastForksResponse = await getForksFromHeight(0);
+            const blocksToMove = 1;
+            const initialHeight = heightOfConsecutiveBTCwithFutureRSKtags0bCPVdiff;
+            const blockchain = await getBlockchainsAfterMovingXBlocks(initialHeight, blocksToMove);
             await setHeightInMockBTCApi(heightOfNoRskTags);
-            //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
-            await validateForksCreated(blockchainsResponse, lastForksResponse, amountOfMainchainBlocksInFork, rskBlockHeightsWithBtcBlock, 2, [1]);
+
+            const cpvDiffExpected = 2;
+            const forksArrayWithLenghts = [1];
+
+            // await validateFork(blockchain.data.forks[0], forkExpected)
+
+            // var btcPart : BtcInfo = await this.getBlockByHashInMockBTCApi(mapEsperado); 
+            // var rskPart : RskForkItemInfo = 
+
+            // var expect = {
+            //     btc : {
+            //         height : 1000
+            //         hash: "sdadsdsa"
+            //     }
+            // }
+
+            // var forkFound =  xxxxx
+            // var forkExpected = xxxx
+            // fork.equal(forkExpected)
+            // fork.equal(forkExpected)
+
+            await validateForksCreated(blockchain, expect, cpvDiffExpected, forksArrayWithLenghts);
+           
             await validateMainchain(1000, 1);
-        })
+        });
 
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match", async () => {
             assert.equal(await getLastRSKHeight(context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
-            const blockchainsResponse = await getBlockchainsAfterMovingXBlocks(btcApiRoute, heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff, 1, 2000);
+            const blockchainsResponse = await getBlockchainsAfterMovingXBlocks(heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff, 1);
             const lastForksResponse = await getForksFromHeight(0);
             await setHeightInMockBTCApi(heightOfNoRskTags);
             //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)
@@ -44,7 +68,7 @@ describe("RSK Forks in the future tests", () => {
         })
         it("should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 0 bytes CPV match", async () => {
             assert.equal(await getLastRSKHeight(context), bestRskBlock, "Please check test data, best block of RSK needs to be " + bestRskBlock);
-            const blockchainsResponse = await getBlockchainsAfterMovingXBlocks(btcApiRoute, heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff, 1, 2000);
+            const blockchainsResponse = await getBlockchainsAfterMovingXBlocks(heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff, 1);
             const lastForksResponse = await getForksFromHeight(0);
             await setHeightInMockBTCApi(heightOfNoRskTags);
             //          validateForksCreated(blockchainsResponse, lastForksResponse, numberOfForksExpected, rskTagsMap, expectedMainchainBlocks)

@@ -26,7 +26,7 @@
 //         //Validate no response in monitor for mainchain
 //         //Wait until the monitor can read the new block (pooling every 5s)
 //         await sleep(apiPoolingTime);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         //Wait until the monitor can read the new block (pooling every 5s)
 //         await sleep(apiPoolingTime + loadingTime);
 //         await setHeightInMockBTCApi(heightOfNoRskTags);
@@ -40,7 +40,7 @@
 //         await deleteDB(armadilloDB);
 //         //Validate no response in monitor for mainchain
 //         //Wait until the monitor can read the new block (pooling every 5s)
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         //Wait until the monitor can read the new block (pooling every 5s)
 //         await sleep(apiPoolingTime + loadingTime);
 //         const mongoBlocks = await findBlocks(armadilloDB, armadilloMainchain);
@@ -53,7 +53,7 @@
 //         await setHeightInMockBTCApi(heightOfConsecutiveRskTags);
 //         await deleteDB(armadilloDB);
 //         await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         //Wait until the monitor can read the new block and process of getting 
 //         //the mainchain is completed (pooling every 5s)
 //         await sleep(apiPoolingTime + loadingTime);
@@ -69,7 +69,7 @@
 //         await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
 //         const blocksToAdvance = 1;
 //         for (let i = 0; i < blocksToAdvance; i++) {
-//             await getNextBlockInMockBTCApi();
+//             await moveToNextBlock();
 //         }
 //         //Wait until the monitor can read the new block and process of getting 
 //         //the mainchain is completed (pooling every 5s)
@@ -104,7 +104,7 @@
 //         await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
 //         const blocksToAdvance = 2;
 //         for (let i = 0; i < blocksToAdvance; i++) {
-//             await getNextBlockInMockBTCApi();
+//             await moveToNextBlock();
 //         }
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(10000);
@@ -119,7 +119,7 @@
 //         await deleteDB(ArmadilloDB);
 //         const blocksToAdvance = 2;
 //         for (let i = 0; i < blocksToAdvance; i++) {
-//             await getNextBlockInMockBTCApi();
+//             await moveToNextBlock();
 //         }
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(10000);
@@ -151,7 +151,7 @@
 //         await setBlockAsLastChecked(heightOfDistancedRskTags - 1);
 //         const blocksToAdvance = 4;
 //         for (let i = 0; i < blocksToAdvance; i++) {
-//             await getNextBlockInMockBTCApi();
+//             await moveToNextBlock();
 //         }
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(apiPoolingTime + loadingTime);
@@ -166,7 +166,7 @@
 //         await setBlockAsLastChecked(heightOfDistancedRskTags - 1);
 //         const blocksToAdvance = 4;
 //         for (let i = 0; i < blocksToAdvance; i++) {
-//             await getNextBlockInMockBTCApi();
+//             await moveToNextBlock();
 //         }
 //         await sleep(apiPoolingTime + loadingTime);
 //         const mongoBlocks = await findBlocks(armadilloDB, armadilloMainchain);
@@ -198,7 +198,7 @@
 //         await setBlockAsLastChecked(heightForSiblingRskTag - 1);
 //         const blocksToAdvance = 1;
 //         for (let i = 0; i < blocksToAdvance; i++) {
-//             await getNextBlockInMockBTCApi();
+//             await moveToNextBlock();
 //         }
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(apiPoolingTime + loadingTime);
@@ -214,10 +214,10 @@
 //         await deleteDB(armadilloDB);
 //         await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
 //         await sleep(apiPoolingTime + loadingTime);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         await sleep(loadingTime);
 //         const reorgBlockInfo = await fakeMainchainBlock(rskheightOfConsecutiveRskTags, true);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(loadingTime + apiPoolingTime);
 //         await setHeightInMockBTCApi(heightOfNoRskTags);
@@ -234,7 +234,7 @@
 //         await deleteDB(armadilloDB);
 //         await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
 //         await sleep(apiPoolingTime + loadingTime);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         await sleep(loadingTime);
 //         let reorgBlocks = {};
 //         let reorgBlockInfo = await fakeMainchainBlock(rskheightOfConsecutiveRskTags);
@@ -243,7 +243,7 @@
 //         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
 //         reorgBlockInfo = await fakeMainchainBlock(rskheightOfConsecutiveRskTags - 2);
 //         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(loadingTime + apiPoolingTime);
 //         await setHeightInMockBTCApi(heightOfNoRskTags);
@@ -258,12 +258,12 @@
 //         await deleteDB(armadilloDB);
 //         await setBlockAsLastChecked(heightForSiblingRskTag - 1);
 //         await sleep(apiPoolingTime + loadingTime);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         await sleep(loadingTime);
 //         // const reorgBlockInfo = await fakeMainchainBlock(rskHeightWithSibling, true);
         
 //         const reorgBlockInfo = await swapMainchainBlockWithSibling(rskHeightWithSibling);
-//         await getNextBlockInMockBTCApi();
+//         await moveToNextBlock();
 //         //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
 //         await sleep(loadingTime + apiPoolingTime);
 //         await setHeightInMockBTCApi(heightOfNoRskTags);
