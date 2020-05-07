@@ -39,13 +39,26 @@ export class ForkDetector {
         this.btcWatcher.stop();
     }
 
-    public start() {
+    public async start() {
         this.logger.info('Starting fork detector');
-        this.btcWatcher.start();
+        this.btcWatcher.start().catch(e => {
+            this.logger.error(e);
+            this.logger.warn("An error occurred in btcWatcher, Restarting btcWatcher service again")
+            this.btcWatcher.stop();
+            this.start();
+        });
     }
 
     // Main function, it's called every times a BTC block arrives
     public async onNewBlock(newBtcBlock: BtcBlock) {
+        try{
+            await this.processBlock(newBtcBlock);
+        } catch(e){
+            this.logger.error(e);
+        }
+    }
+
+    public async processBlock(newBtcBlock: BtcBlock){
         this.logger.info("<< -------------- NEW BTC BLOCK ------------------ >>");
 
         if (!newBtcBlock.hasRskTag()) {
