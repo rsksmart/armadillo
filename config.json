@@ -12,13 +12,13 @@
         "lastBtcBlockDetectedCheckpoint": 613800
     },
     "btcApi": {
-        "host": "Please set the mongo's host",
+        "host": "Please set the btc api host",
         "port": 5000
     },
     "store": {
         "auth": {
-            "user": "Please set the mongo's user db",
-            "password": "Please set the mongo's password db"
+            "user": "Please set the user mongo for authentication",
+            "password": "Please set the mongo password for authentication"
         },
         "port": "27017",
         "host": "localhost",
