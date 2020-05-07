@@ -30,7 +30,11 @@ export class MongoStore {
 
     public async disconnect(): Promise<void> {
         this.isConnected = false;
-        return this.mongoClient.close()
+
+        if(this.mongoClient != null && this.mongoClient.isConnected()){
+            this.logger.info(`Closing mongo ${this.getName()}`);
+            this.mongoClient.close();
+        }
     }
 
     private sleep(ms) {
@@ -46,7 +50,7 @@ export class MongoStore {
     }
 
     public getName(): string {
-        return this.mongoConfig.databaseName + ' db';
+        return `${this.mongoConfig.databaseName} ${this.mongoConfig.collectionName} db`;
     }
 
     private async tryToConnection(): Promise<void> {
@@ -59,13 +63,13 @@ export class MongoStore {
         }
 
         if (connectionAttempt > 3) {
-            this.logger.debug("mongo db connection FAILED !!");
+            this.logger.debug(`Mongo  ${this.getName()} connection FAILED !!`);
             process.exit();
         }
 
         if (this.isConnected && !this.messageConnectedWasSend) {
             this.messageConnectedWasSend = true; //I'm not proud of the use of this value
-            this.logger.debug("mongo " + this.mongoConfig.databaseName + " for " + this.mongoConfig.collectionName + " is connected");
+            this.logger.debug(`Mongo  ${this.getName()} is connected`);
         }
     }
 
