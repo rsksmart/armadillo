@@ -189,7 +189,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
 
         const items: Item[] = await this.armadilloApi.getLastBtcBlocksBetweenHeight(start, end);
 
-        return items.length / blocksToAccountFor;
+        return items.length / blocksToAccountFor * 100;
     }
 
     async getBtcMainchainHashrateDuringFork(fork: Fork) : Promise<number> {
@@ -203,7 +203,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         // average number of rsk blocks for each btc block is 20 on average
         const expectedBtcBlocks: number = (end - start) / this.BTC_TO_RSK_AVERAGE_RATIO;
 
-        return items.length / expectedBtcBlocks;
+        return items.length / expectedBtcBlocks * 100;
     }
 
     async getBtcForkBlockPercentageOverMergeMiningBlocks(fork: Fork) : Promise<number> {
@@ -222,7 +222,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         const attackerBlockCount: number = fork.items.length;
         const honestBlockCount: number = honestBlocks.length;
 
-        return attackerBlockCount / (attackerBlockCount + honestBlockCount);
+        return attackerBlockCount / (attackerBlockCount + honestBlockCount) * 100;
     }
 
     getEstimatedTimeFor4000Blocks(fork: Fork) : Date {
