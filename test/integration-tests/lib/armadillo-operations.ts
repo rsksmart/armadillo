@@ -2,8 +2,9 @@ import { armadilloApiURL, apiPoolingTime, loadingTime } from "./configs";
 import { findOneMainchainBlock, updateOneMainchainBlock, deleteDB, armadilloDB, findBlocks, armadilloForks, updateLastCheckedBtcBlock } from "./mongo-utils";
 import { scrumbleHash } from "./utils";
 import { getSiblingFromRsk } from "./rsk-operations";
-import { setHeightInMockBTCApi, mockBtcApiChangeRoute, moveToNextBlock } from "./btc-api-mocker";
+import { setHeightInMockBTCApi, mockBtcApiChangeRoute, moveToNextBlock, getBtcApiBlockNumber } from "./btc-api-mocker";
 import { sleep } from "../../../src/util/helper";
+import fetch from 'node-fetch'
 
 export async function getMainchainBlocks(number) {
     let response = await fetch(armadilloApiURL + "mainchain/getLastBlocks/" + number);
@@ -62,18 +63,18 @@ async function moveXBlocks(blocksToMove: number) {
 }
 
 export async function getBlockchainsAfterMovingXBlocks(initialHeight: number, blocksToMove: number) {
-    setUpInitialHeight(initialHeight);
+    await setUpInitialHeight(initialHeight);
     await moveXBlocks(blocksToMove);
     return await getBlockchains();
 }
 
-export async function getDBForksAfterMovingXBlocks(btcApiRoute: string, initialHeight: number, blocksToMove: number) {
+export async function getDBForksAfterMovingXBlocks(initialHeight: number, blocksToMove: number) {
     setUpInitialHeight(initialHeight);
     await moveXBlocks(blocksToMove);
     return await findBlocks(armadilloDB, armadilloForks);
 }
 
 export async function setLastBlockDetected(blockNumber) {
-    const btcBlock = await this.getBtcApiBlockNumber(blockNumber);
+    const btcBlock = await getBtcApiBlockNumber(blockNumber);
     await updateLastCheckedBtcBlock(btcBlock);
 }

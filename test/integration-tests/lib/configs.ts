@@ -4,7 +4,10 @@ export const CURL_DEFAULT_HTTP_VERSION = "	1.1";
 export const timeoutTests = 5 * 60 * 1000;//5 minutes
 export const apiPoolingTime = 200;
 export const loadingTime = 800;
-
+export const DEFAULT_CONFIG_PATH = "./config-test.json";
+export const dataInputPath = "test/integration-tests/data/";
+export const fileSuffix = ".json";
+export const bestRskBlock = 7490;
 export const config = {
     "rskd": {
         "url": "localhost",
