@@ -14,7 +14,7 @@ export function validateMergeMinedBlockResponse(response) {
     expect(response.result).to.have.property('blockHash');
     expect(response.result).to.have.property('blockIncludedHeight');
 }
-async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainInFork, inForkedBlock, firstForkItemHeight, cpvDiff, bestBlockHeight, startOrEndBlockMainchain) {
+export async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock,mainchainInFork=false, inForkedBlock=false, firstForkItemHeight=0, cpvDiff=0, bestBlockHeight=0, startOrEndBlockMainchain="") {
     if (!inForkedBlock && (mainchainInFork === undefined || mainchainInFork)) {
         let height = "0x" + armadilloBlock.rskInfo.height.toString(16);
         let rskBlock = JSON.parse((await getRskBlockByNumber(height, context)).toString());
@@ -50,7 +50,7 @@ async function validateRskBlockNodeVsArmadilloMonitor(armadilloBlock, mainchainI
     }
 }
 
-export async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap, mainchainInFork, controlBtcInfo) {
+export async function validateBtcBlockNodeVsArmadilloMonitor(armadilloBlock, btcRskMap, mainchainInFork, controlBtcInfo = false) {
     if (!mainchainInFork && controlBtcInfo) {
         const shouldHaveBtcInfo = Object.values(btcRskMap).includes(armadilloBlock.rskInfo.height);
         if (!shouldHaveBtcInfo) {
@@ -183,11 +183,12 @@ export async function validateMainchain(nbrOfMainchainBlocksToFetch, lengthOfExp
     }
 }
 
-export async function validateForksCreated(blockchain, rskTagsMap, cpvDiff, forksArrayWithLengths) {
+export async function validateForksCreated(blockchain, rskTagsMap, cpvDiff, forksArrayWithLengths, bestBlockHeight) {
     const forks : any[] = blockchain.data.forks;
     expect(forks.length).to.be.equal(forksArrayWithLengths.length);
 
-    for (const fork of forks) {
+    for (const forkPos of forks) {
+        const fork = forks[forkPos];
         expect(fork.items.length).to.be.equal(forksArrayWithLengths[forkPos]);
         let cpvDiffForFork = cpvDiff;
         
@@ -211,6 +212,35 @@ export async function validateForksCreated(blockchain, rskTagsMap, cpvDiff, fork
     }
 }
 
+export async function validateFork(blockchain, rskTagsMap, cpvDiff, forksArrayWithLengths) {
+    // const forks : any[] = blockchain.data.forks;
+    // expect(forks.length).to.be.equal(forksArrayWithLengths.length);
+
+    // for (const forkPos of forks) {
+    //     const fork = forks[forkPos];
+    //     expect(fork.items.length).to.be.equal(forksArrayWithLengths[forkPos]);
+    //     let cpvDiffForFork = cpvDiff;
+        
+    //     if (typeof (cpvDiff) === "object") {
+    //         cpvDiffForFork = cpvDiff[forkPos];
+    //     }
+
+    //     for (let pos in fork.items) {
+    //         expect(fork.items[pos]).not.to.be.null;//
+    //         fork.items[pos].src = "blockchains";
+    //         fork.items[pos].pos = pos;
+    //         let mainchainInFork = false;
+    //         let startOrEnd = "";
+
+    //         await validateBtcBlockNodeVsArmadilloMonitor(fork.items[pos], rskTagsMap, false);
+    //         await validateRskBlockNodeVsArmadilloMonitor(fork.items[pos], mainchainInFork, false, fork.firstDetected.BN, cpvDiffForFork, bestBlockHeight, startOrEnd);
+    //     }
+
+    //     await validateRskBlockNodeVsArmadilloMonitor({ rskInfo: fork.mainchainRangeWhereForkCouldHaveStarted.startBlock }, true, false, fork.firstDetected.BN, cpvDiffForFork, bestBlockHeight, "start");
+    //     await validateRskBlockNodeVsArmadilloMonitor({ rskInfo: fork.mainchainRangeWhereForkCouldHaveStarted.endBlock }, true, false, fork.firstDetected.BN, cpvDiffForFork, bestBlockHeight, "end");
+    // }
+}
+
 export async function validateMongoOutput(mainchainFile, forksFile) {
     const expectedResponseBlockchains = await mongoResponseToBlockchainsFromArmadilloApi(forksFile, mainchainFile);
     await insertToDbFromFile(forksFile, armadilloForks);
@@ -227,14 +257,14 @@ export async function validateMongoOutput(mainchainFile, forksFile) {
 }
 
 
-function getCPVStartHeightMainchain(forkItemHeight, cpvDiff) {
+export function getCPVStartHeightMainchain(forkItemHeight, cpvDiff) {
     if (cpvDiff === 7) {
         return 1;
     }
     return forkItemHeight - 1 - ((forkItemHeight - 1) % 64) - cpvDiff * 64;
 }
 
-function getCPVEndHeightMainchain(forkItemHeight, cpvDiff, bestBlockHeight) {
+export function getCPVEndHeightMainchain(forkItemHeight, cpvDiff, bestBlockHeight) {
     if (cpvDiff <= 0) {
         if (forkItemHeight <= bestBlockHeight) {
             return forkItemHeight;

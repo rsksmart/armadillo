@@ -2,12 +2,19 @@ import {curlHttpVersions, CURL_DEFAULT_HTTP_VERSION, config } from "./configs";
 import { sleep } from "../../../src/util/helper";
 import { getForkDetectionData } from "./armadillo-operations";
 import curl from 'node-libcurl';
+import Nod3 from 'nod3';
 import btclib from 'bitcoinjs-lib';
 import randomHex from 'randomhex';
+import { MonitorConfig } from "../../../src/config/monitor-config";
+const DEFAULT_CONFIG_PATH = './config.json';
+const monitorConfig = MonitorConfig.getMainConfig(DEFAULT_CONFIG_PATH);
+let nod3: any = new Nod3(
+    new Nod3.providers.HttpProvider(monitorConfig.rskApi.completeUrl)
+);
 
 export async function promiseRequest(options, body) {
     return new Promise((resolve, reject) => {
-        curl.setOpt(curl.option.URL, options.host);
+        curl.setOpt(curl.option.url, options.host);
         curl.setOpt(curl.option.PORT, options.port);
         curl.setOpt(curl.option.POST, 1);
         curl.setOpt(curl.option.HTTPHEADER, [options.headers.join('; ')]);
@@ -28,7 +35,7 @@ export async function promiseRequest(options, body) {
     });
 }
 
-export function rskdPromiseRequest(method, params, poolContext) {
+export function rskdPromiseRequest(method, params, poolContext): Promise<any> {
     const body = {
         jsonrpc: "2.0",
         method: method,
@@ -138,25 +145,29 @@ export async function prepareRskWork(poolContext, expectNewWork = false) {
     return work;
 }
 
-export async function getLastRSKHeight(context) {
-    let response = JSON.parse(await this.rskdPromiseRequest("eth_blockNumber", [], context));
-    return parseInt(response.result);
+export async function getLastRSKHeight() {
+    return await nod3.eth.blockNumber();
+    // let response = JSON.parse(await rskdPromiseRequest("eth_blockNumber", [], context));
+    // return parseInt(response.result);
 }
 
-export async function getRskBlockByNumber(blockNumber, context) {
-    return rskdPromiseRequest("eth_getBlockByNumber", [blockNumber, false], context);
+export async function getRskBlockByNumber(blockNumber, context?: any) {
+    return await nod3.rsk.getBlockByNumber([blockNumber, false]);
+    // return rskdPromiseRequest("eth_getBlockByNumber", [blockNumber, false], context);
 }
 
-export async function getRskBlockByHash(blockNumber, context) {
-    let response = await rskdPromiseRequest("eth_getBlockByHash", [blockNumber, false], context);
-    console.log("ACA HAY QUE ARREGLAR ALGO")
-    return response;
+export async function getRskBlockByHash(blockHash: any, context?:any) {
+    return await nod3.rsk.getBlockByHash([blockHash, false]);
+    // let response = await rskdPromiseRequest("eth_getBlockByHash", [blockNumber, false], context);
+    // console.log("ACA HAY QUE ARREGLAR ALGO")
+    // return response;
 }
 
-export async function getRskBlocksByNumber(blockNumber, context) {
-    let response = await rskdPromiseRequest("eth_getBlocksByNumber", [blockNumber], context);
-    console.log("ACA HAY QUE ARREGLAR ALGO")
-    return response;
+export async function getRskBlocksByNumber(blockNumber:any, context?:any) {
+    return await nod3.rsk.getBlocksByNumber([blockNumber]);
+    // let response = await rskdPromiseRequest("eth_getBlocksByNumber", [blockNumber], context);
+    // console.log("ACA HAY QUE ARREGLAR ALGO")
+    // return response;
 }
 
 export function getRskBlockHashOfSibling(blockArray) {
