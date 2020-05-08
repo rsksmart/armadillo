@@ -57,9 +57,9 @@ export default class ForkEmailBuilderImpl implements ForkEmailBuilder {
                 .replace('#btcGuessedMinedInfo', info.btcGuessedMinersNames.join(" | "))
                 .replace('#completeForkData', JSON.stringify(info.fork))
                 .replace('#nBlocksForBtcHashrateForRskMainchain', info.nBlocksForBtcHashrateForRskMainchain.toString())
-                .replace('#btcHashrateForRskMainchain', info.btcHashrateForRskMainchain.toFixed(2))
-                .replace('#btcHashrateForRskMainchainDuringFork', info.btcHashrateForRskMainchainDuringFork.toFixed(2))
-                .replace('#btcForkBlockPercentageOverMergeMiningBlocks', info.btcForkBlockPercentageOverMergeMiningBlocks.toFixed(2))
+                .replace('#btcHashrateForRskMainchain', parseFloat(info.btcHashrateForRskMainchain.toFixed(2)).toString())
+                .replace('#btcHashrateForRskMainchainDuringFork', parseFloat(info.btcHashrateForRskMainchainDuringFork.toFixed(2)).toString())
+                .replace('#btcForkBlockPercentageOverMergeMiningBlocks', parseFloat(info.btcForkBlockPercentageOverMergeMiningBlocks.toFixed(2)).toString())
                 .replace('#estimatedTimeFor4000Blocks', 
                     info.estimatedTimeFor4000Blocks.toString() === 'Invalid Date' ? 
                         'Not enough items to perform an estimation with' :
