@@ -8,10 +8,10 @@ import fetch from 'node-fetch'
 
 export async function getMainchainBlocks(number) {
     let response = await fetch(armadilloApiURL + "mainchain/getLastBlocks/" + number);
-    return  await response.json();
+    return await response.json();
 }
 
-export async function getBlockchains(number:number = 2000) {
+export async function getBlockchains(number: number = 2000) {
     let response = await fetch(armadilloApiURL + "blockchains/" + number);
     return response.json();
 }
@@ -49,16 +49,16 @@ export async function swapMainchainBlockWithSibling(rskBlockNumber) {
     return blockInfoMainchain;
 }
 
-async function setUpInitialHeight(initialHeight) : Promise<void>{
-  await setHeightInMockBTCApi(initialHeight);
-  await setLastBlockDetected(initialHeight - 1);
+export async function setUpInitialHeight(initialHeight): Promise<void> {
+    await setHeightInMockBTCApi(initialHeight);
+    await setLastBlockDetected(initialHeight - 1);
 }
 
-async function moveXBlocks(blocksToMove: number) {
+export async function moveXBlocks(blocksToMove: number) {
     for (let i = 0; i < blocksToMove; i++) {
         await moveToNextBlock();
     }
-   
+
     await sleep(loadingTime * 5);
 }
 
@@ -68,10 +68,9 @@ export async function getBlockchainsAfterMovingXBlocks(initialHeight: number, bl
     return await getBlockchains();
 }
 
-export async function getDBForksAfterMovingXBlocks(initialHeight: number, blocksToMove: number) {
-    setUpInitialHeight(initialHeight);
+export async function setUpInitialheightAndMoveXBlocks(initialHeight: number, blocksToMove: number) {
+    await setUpInitialHeight(initialHeight);
     await moveXBlocks(blocksToMove);
-    return await findBlocks(armadilloDB, armadilloForks);
 }
 
 export async function setLastBlockDetected(blockNumber) {
