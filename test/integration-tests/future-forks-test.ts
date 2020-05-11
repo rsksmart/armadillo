@@ -521,7 +521,6 @@ describe('RSK Forks in the future tests', () => {
             const blockchainFromAPI = await getBlockchains(
                 numberOfBtcWitnessBlocksToAsk
             )
-            console.log(blockchainFromAPI.data)
             const blockchain: BlockchainHistory = BlockchainHistory.fromObject(
                 blockchainFromAPI.data
             )
@@ -600,7 +599,6 @@ describe('RSK Forks in the future tests', () => {
             const blockchainFromAPI = await getBlockchains(
                 numberOfBtcWitnessBlocksToAsk
             )
-            console.log(blockchainFromAPI.data)
             const blockchain: BlockchainHistory = BlockchainHistory.fromObject(
                 blockchainFromAPI.data
             )
@@ -675,7 +673,6 @@ describe('RSK Forks in the future tests', () => {
             const blockchainFromAPI = await getBlockchains(
                 numberOfBtcWitnessBlocksToAsk
             )
-            console.log(blockchainFromAPI.data)
             const blockchain: BlockchainHistory = BlockchainHistory.fromObject(
                 blockchainFromAPI.data
             )
