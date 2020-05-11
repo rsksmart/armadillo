@@ -7,29 +7,18 @@
             "configFile": "./log-api-config.json"
         }
     },
-    "rskApi-prod": {
-        "completeUrl": "https://public-node.rsk.co/1.2.1",
-        "lastBtcBlockDetectedCheckpoint": 0
-    },
-    "rskApi-local": {
-        "completeUrl": "http://localhost:4444"
-    },
     "rskApi": {
         "completeUrl": "https://public-node.rsk.co/1.2.1",
         "lastBtcBlockDetectedCheckpoint": 613800
     },
     "btcApi": {
-        "host": "34.67.238.129",
-        "port": 5000
-    },
-    "btcApi-local-productive": {
-        "host": "34.67.238.129",
+        "host": "Please set the btc api host",
         "port": 5000
     },
     "store": {
         "auth": {
-            "user": "armadillo",
-            "password": "set this value"
+            "user": "Please set the user mongo for authentication",
+            "password": "Please set the mongo password for authentication"
         },
         "port": "27017",
         "host": "localhost",
