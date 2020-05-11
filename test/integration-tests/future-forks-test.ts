@@ -11,12 +11,10 @@ import { ForkService } from '../../src/services/fork-service'
 import { MainchainService } from '../../src/services/mainchain-service'
 import { RskApiService } from '../../src/services/rsk-api-service'
 import { MongoStore } from '../../src/storage/mongo-store'
-import { getBlockchainsAfterMovingXBlocks, moveXBlocks, setUpInitialHeight, getBlockchains } from './lib/armadillo-operations'
+import { getBlockchains, getBlockchainsAfterMovingXBlocks, moveXBlocks, setUpInitialHeight } from './lib/armadillo-operations'
 import { setHeightInMockBTCApi } from './lib/btc-api-mocker'
-import { bestRskBlock, dataInputPath, DEFAULT_CONFIG_PATH, fileSuffix } from './lib/configs'
+import { bestRskBlock, dataInputPath, DEFAULT_CONFIG_PATH } from './lib/configs'
 import { getEndHeightMainchainForCPVDiff, getStartHeightMainchainForCPVDiff } from './lib/cpv-helper'
-import { validateMongoOutput } from './lib/validators'
-import assert = require('assert')
 
 const firstBtcBlock: number = 8704
 
@@ -27,8 +25,6 @@ const heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff: number =
     firstBtcBlock + 133
 const heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff: number =
     firstBtcBlock + 135
-const forksPresentFilePrefix: string = dataInputPath + 'future-forks-'
-const mainchainPresentFilePrefix: string = dataInputPath + 'future-mainchain-'
 
 let btcApiService: HttpBtcApi
 let rskApiService: RskApiService
@@ -36,7 +32,6 @@ let mongoStoreForks: MongoStore
 let mongoStoreMainchain: MongoStore
 let forkService: ForkService
 let mainchainService: MainchainService
-let db
 describe('RSK Forks in the future tests', () => {
     before(async () => {
         // db = await connectDB(armadilloDB)
@@ -418,7 +413,7 @@ describe('RSK Forks in the future tests', () => {
             const start: RskBlockInfo = await rskApiService.getBlock(
                 heightStart
             )
-            start.forkDetectionData = null;
+            start.forkDetectionData = null
             const heightEnd: number = getEndHeightMainchainForCPVDiff(
                 btcWitnessBlock.rskTag.BN,
                 cpvDiffExpected,
@@ -452,13 +447,13 @@ describe('RSK Forks in the future tests', () => {
                 btcMainchain.btcInfo,
                 rskBlockMainchain
             )
-            expect(forks).to.be.eql([forkExpected]);
-            expect(mainchain).to.be.eql([itemExpected]);
+            expect(forks).to.be.eql([forkExpected])
+            expect(mainchain).to.be.eql([itemExpected])
         })
     })
 
-    describe('RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, mongo output validation', () => {
-        it('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match, mongo output validation', async () => {
+    describe.only('RSK no match at same height with matching CPV, RSK height in the future regarding BTC chain, mongo output validation', () => {
+        it.only('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, full CPV match, mongo output validation', async () => {
             const initialHeight: number = heightOfConsecutiveBTCwithFutureRSKtags0bCPVdiff
             let btcWitnessBlockHeight: number = initialHeight + 1
             const blocksToMove: number = 1
@@ -508,20 +503,35 @@ describe('RSK Forks in the future tests', () => {
                 btcMainchain.btcInfo,
                 rskBlockMainchain
             )
+
+            //Dump to Armadillo DB expected Mainchain and Fork elements
+            await forkService.save(forkExpected)
+            await mainchainService.save([itemExpected])
+            let forkExpectedJson = JSON.parse(JSON.stringify(forkExpected)) //Copy of the object forkExpected
+            forkExpectedJson.items[0]._id = undefined
+            forkExpected = Fork.fromObject(forkExpectedJson)
+            let itemExpectedJson = JSON.parse(JSON.stringify(itemExpected)) //Copy of the object forkExpected
+            itemExpectedJson._id = undefined
+            itemExpected = Item.fromObject(itemExpectedJson)
             const blockchainExpected: BlockchainHistory = new BlockchainHistory(
                 [itemExpected],
                 [forkExpected]
             )
-                //Dump to Armadillo DB expected Mainchain and Fork elements
-            await forkService.save(forkExpected);
-            await mainchainService.save([itemExpected]);
-            const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const numberOfBtcWitnessBlocksToAsk: number = 1000
+            const blockchainFromAPI = await getBlockchains(
+                numberOfBtcWitnessBlocksToAsk
+            )
             console.log(blockchainFromAPI.data)
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((blockchainFromAPI).data);
-            expect(blockchainExpected).to.be.eql(blockchain);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(
+                blockchainFromAPI.data
+            )
+            // writeFileSync("blockchainExpected.json", JSON.stringify(blockchainExpected,null,2));
+            // writeFileSync("blockchain.json", JSON.stringify(blockchain,null,2));
+            //After adding to database, object information gets the _id of the collection document in mongo, it need to be removed for comparision
+
+            expect(blockchainExpected).to.be.eql(blockchain)
         })
-        it('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match, mongo output validation', async () => {
+        it.only('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match, mongo output validation', async () => {
             const initialHeight: number = heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff
             let btcWitnessBlockHeight: number = initialHeight + 1
             const blocksToMove: number = 1
@@ -571,20 +581,32 @@ describe('RSK Forks in the future tests', () => {
                 btcMainchain.btcInfo,
                 rskBlockMainchain
             )
+            //Dump to Armadillo DB expected Mainchain and Fork elements
+            await forkService.save(forkExpected)
+            await mainchainService.save([itemExpected])
+            //After adding to database, object information gets the _id of the collection document in mongo, it need to be removed for comparision
+            let forkExpectedJson = JSON.parse(JSON.stringify(forkExpected)) //Copy of the object forkExpected
+            forkExpectedJson.items[0]._id = undefined
+            forkExpected = Fork.fromObject(forkExpectedJson)
+            let itemExpectedJson = JSON.parse(JSON.stringify(itemExpected)) //Copy of the object forkExpected
+            itemExpectedJson._id = undefined
+            itemExpected = Item.fromObject(itemExpectedJson)
+
             const blockchainExpected: BlockchainHistory = new BlockchainHistory(
                 [itemExpected],
                 [forkExpected]
             )
-                //Dump to Armadillo DB expected Mainchain and Fork elements
-            await forkService.save(forkExpected);
-            await mainchainService.save([itemExpected]);
-            const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const numberOfBtcWitnessBlocksToAsk: number = 1000
+            const blockchainFromAPI = await getBlockchains(
+                numberOfBtcWitnessBlocksToAsk
+            )
             console.log(blockchainFromAPI.data)
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((blockchainFromAPI).data);
-            expect(blockchainExpected).to.be.eql(blockchain);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(
+                blockchainFromAPI.data
+            )
+            expect(blockchainExpected).to.be.eql(blockchain)
         })
-        it('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 0 bytes CPV match, mongo output validation', async () => {
+        it.only('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 0 bytes CPV match, mongo output validation', async () => {
             const initialHeight: number = heightOfConsecutiveBTCwithFutureRSKtags7bCPVdiff
             let btcWitnessBlockHeight: number = initialHeight + 1
             const blocksToMove: number = 1
@@ -601,7 +623,7 @@ describe('RSK Forks in the future tests', () => {
             const start: RskBlockInfo = await rskApiService.getBlock(
                 heightStart
             )
-            start.forkDetectionData = null;
+            start.forkDetectionData = null
             const heightEnd: number = getEndHeightMainchainForCPVDiff(
                 btcWitnessBlock.rskTag.BN,
                 cpvDiffExpected,
@@ -635,18 +657,29 @@ describe('RSK Forks in the future tests', () => {
                 btcMainchain.btcInfo,
                 rskBlockMainchain
             )
+            //Dump to Armadillo DB expected Mainchain and Fork elements
+            await forkService.save(forkExpected)
+            await mainchainService.save([itemExpected])
+            //After adding to database, object information gets the _id of the collection document in mongo, it need to be removed for comparision
+            let forkExpectedJson = JSON.parse(JSON.stringify(forkExpected)) //Copy of the object forkExpected
+            forkExpectedJson.items[0]._id = undefined
+            forkExpected = Fork.fromObject(forkExpectedJson)
+            let itemExpectedJson = JSON.parse(JSON.stringify(itemExpected)) //Copy of the object forkExpected
+            itemExpectedJson._id = undefined
+            itemExpected = Item.fromObject(itemExpectedJson)
             const blockchainExpected: BlockchainHistory = new BlockchainHistory(
                 [itemExpected],
                 [forkExpected]
             )
-                //Dump to Armadillo DB expected Mainchain and Fork elements
-            await forkService.save(forkExpected);
-            await mainchainService.save([itemExpected]);
-            const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const numberOfBtcWitnessBlocksToAsk: number = 1000
+            const blockchainFromAPI = await getBlockchains(
+                numberOfBtcWitnessBlocksToAsk
+            )
             console.log(blockchainFromAPI.data)
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((blockchainFromAPI).data);
-            expect(blockchainExpected).to.be.eql(blockchain);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(
+                blockchainFromAPI.data
+            )
+            expect(blockchainExpected).to.be.eql(blockchain)
         })
     })
 })
