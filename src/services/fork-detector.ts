@@ -54,7 +54,7 @@ export class ForkDetector {
         try{
             await this.processBlock(newBtcBlock);
         } catch(e){
-            this.logger.error(e);
+            this.logger.error(`Error processing new btc block: ${e}`);
         }
     }
 

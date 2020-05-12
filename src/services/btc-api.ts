@@ -1,6 +1,7 @@
 import { BtcApiConfig } from '../config/btc-api-config';
 import { get } from '../util/http';
 import { BtcBlock } from '../common/btc-block';
+import { retry3Times } from '../util/helper';
  
 interface PlainBtcHeader {
     height: number;
@@ -36,18 +37,19 @@ export class HttpBtcApi {
     }
 
     private async getBestBlockHeader() : Promise<PlainBtcHeader> {
-        const response: any = await get(this.baseUrl() + '/block/getBestBlock');
+        const response: any = await retry3Times(get, [this.baseUrl() + '/block/getBestBlock']);
 
         return response.block.header;
     }
 
     private async getBlockHeader(n: number) : Promise<PlainBtcHeader> {
-        const response: any = await get(this.baseUrl() + '/block/getBlock/' + n);
+        const response: any = await retry3Times(get, [this.baseUrl() + '/block/getBlock/' + n]);
+
         return response.block.header;
     }
 
     private async getCoinbase(hash: string) : Promise<any> {
-        const response: any = await get(this.baseUrl() + '/block/getCoinbase/' + hash);
+        const response: any = await retry3Times(get, [this.baseUrl() + '/block/getCoinbase/' + hash]);
 
         return response.coinbase;
     }
