@@ -251,7 +251,7 @@ describe('Forks tests', () => {
       expect(addForkItem.calledOnce).to.be.true;
     });
 
-    it("Tag repeted arrive, should not create a new fork, because it is already a fork, tag exists in fork", async () => {
+    it("Tag repeted arrive, should create a new fork, because it is already a fork, tag exists in fork", async () => {
       let rangeForkInMainchain = new RangeForkInMainchain(rskBlock111, rskBlock111);
       let item1 = new ForkItem(btcBlock5.btcInfo, RskForkItemInfo.fromForkDetectionData(btcBlock5.rskTag, rskBlock111.height), Date());
       let forkFirstSaved = new Fork(rangeForkInMainchain, [item1]);
@@ -285,7 +285,7 @@ describe('Forks tests', () => {
       await forkDetector.onNewBlock(btcBlock5);
 
       //Validations
-      expect(saveFork.calledOnce).to.be.true;
+      expect(saveFork.calledTwice).to.be.true;
       expect(addForkItem.notCalled).to.be.true;
     });
   });
