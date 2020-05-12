@@ -246,10 +246,6 @@ export class ForkDetector {
         return this.forkService.getForksDetectedFromRskHeight(minimunRskHeightToSearch);
     }
 
-    private tagIsInAFork(forks: Fork[], item: ForkItem): boolean {
-        return forks[0].getForkItems().some(x => x.rskForkInfo.forkDetectionData.equals(item.rskForkInfo.forkDetectionData));
-    }
-
     private newItemCanBeAddedInFork(forks: Fork[], item: ForkItem) {
         return forks[0].getLastDetected().rskForkInfo.forkDetectionData.BN < item.rskForkInfo.forkDetectionData.BN;
     }
@@ -280,12 +276,6 @@ export class ForkDetector {
 
         if (forks.length > 1) {
             this.logger.info("FORK: More forks that we expect, found:", forks.length, "", "with CPV:", rskForkItem.forkDetectionData.CPV);
-        }
-
-        //If rskTag is repeted
-        if (forks.length > 0 && this.tagIsInAFork(forks, item)) {
-            this.logger.info("FORK: Tag repeated")
-            return;
         }
 
         // TODO: For now, we get the first fork, there is a minimun change to get more than 1 item that match, but what happens if we find more?
