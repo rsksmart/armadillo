@@ -47,6 +47,7 @@
     "bitcoinjs-lib": "^3.2.0",
     "deep-diff": "^1.0.2",
     "express": "^4.17.1",
+    "express-promise-router": "^3.0.3",
     "log4js": "^3.0.6",
     "mongodb": "^3.1.13",
     "node-fetch": "^2.6.0",
