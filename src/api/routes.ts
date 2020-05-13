@@ -1,4 +1,5 @@
-import * as express from "express"
+import PromiseRouter from "express-promise-router"
+import express from "express"
 import { MainchainService } from "../services/mainchain-service";
 import ForkController from "./controllers/fork-controller";
 import { MongoStore } from "../storage/mongo-store";
@@ -7,7 +8,7 @@ import { MainchainController } from "./controllers/mainchain-controller";
 import { ForkService } from "../services/fork-service";
 
 export function routersConfig(forkStore: MongoStore, mainchainStore: MongoStore, config: any): express.Router {
-        const router: express.Router = express.Router();
+        const router: express.Router = PromiseRouter();
         const mainchainService: MainchainService = new MainchainService(mainchainStore);
         const forkService: ForkService = new ForkService(forkStore);
         const forkController: ForkController = new ForkController(forkService);
