@@ -521,7 +521,6 @@ describe('RSK Forks in the past tests', () => {
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [fork1Expected, fork2Expected]);
             expect([itemExpected]).to.be.eql(mainchain);
             expect([fork1Expected, fork2Expected]).to.be.eql(forks);
         });
@@ -615,6 +614,8 @@ describe('RSK Forks in the past tests', () => {
                 mainchainExpected.push(new Item(null, rskBlockMainchain));
             }
             mainchainExpected.push(itemExpected2);
+            expect(mainchainExpected).to.be.eql(mainchain);
+            expect([forkExpected]).to.be.eql(forks);
         });
 
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following non consecutive BTC block, mongo input validation', async () => {
@@ -700,9 +701,7 @@ describe('RSK Forks in the past tests', () => {
             const initialHeight: number = heightOfConsecutiveRSKnoMatchPastSameBranch;
             const btcWitnessBlockHeight: number = initialHeight + 1;
             const btcWitnessBlockHeight2: number = initialHeight + 2;
-            const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
             // Prepare expected fork
             const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
