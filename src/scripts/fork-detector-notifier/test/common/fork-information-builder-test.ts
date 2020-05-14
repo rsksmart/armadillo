@@ -58,8 +58,8 @@ describe('ForkInformationBuilder', () => {
         const endBlock: RskBlockInfo = new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000002"))
         const range: RangeForkInMainchain = new RangeForkInMainchain(startBlock, endBlock);
         const fork: Fork = new Fork(range, [
-            new ForkItem(new BtcHeaderInfo(1000, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110)),
-            new ForkItem(new BtcHeaderInfo(1001, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110))
+            new ForkItem(new BtcHeaderInfo(1000, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110), Date()),
+            new ForkItem(new BtcHeaderInfo(1001, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110), Date())
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
@@ -82,14 +82,14 @@ describe('ForkInformationBuilder', () => {
         const endBlock: RskBlockInfo = new RskBlockInfo(1100, '', '', true, '', new ForkDetectionData(PREFIX + CPV + NU + "00000002"))
         const range: RangeForkInMainchain = new RangeForkInMainchain(startBlock, endBlock);
         const fork: Fork = new Fork(range, [
-            new ForkItem(new BtcHeaderInfo(1000, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110)),
-            new ForkItem(new BtcHeaderInfo(1001, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110))
+            new ForkItem(new BtcHeaderInfo(1000, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110), Date()),
+            new ForkItem(new BtcHeaderInfo(1001, '', ''), new RskForkItemInfo(endBlock.forkDetectionData, 1110), Date())
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
         expect(forkInfo.nBlocksForBtcHashrateForRskMainchain).to.equal(144);
-        expect(forkInfo.btcHashrateForRskMainchain).to.equal(0.25);
+        expect(forkInfo.btcHashrateForRskMainchain).to.equal(25);
     });
 
     it("builds btcHashrateForRskMainchainDuringFork field", async () => {
@@ -112,14 +112,15 @@ describe('ForkInformationBuilder', () => {
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // last anomalous rsk block is at height 2000
                     1200
-                )
+                ),
+                Date()
             )
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
         // the estimated amount of btc blocks is 50 (1 btc/20 rsk), so we expect 50 btc blocks between the rsk 1000-2000 period
-        expect(forkInfo.btcHashrateForRskMainchainDuringFork).to.equal(0.10);
+        expect(forkInfo.btcHashrateForRskMainchainDuringFork).to.equal(10);
     })
 
     it("builds btcForkBlockPercentageOverMergeMiningBlocks field for fork with start with cpv matches", async () => {
@@ -143,21 +144,23 @@ describe('ForkInformationBuilder', () => {
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
                     2000
-                )
+                ),
+                Date()
             ),
             new ForkItem(
                 new BtcHeaderInfo(1002, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
                     2020
-                )
+                ),
+                Date()
             )
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
         // expected: 2 / (2 + 3) = 2 / 5 = 0.4
-        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(0.4);
+        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(40);
     })
 
     it("builds btcForkBlockPercentageOverMergeMiningBlocks field for fork with start with no cpv matches", async () => { 
@@ -183,14 +186,15 @@ describe('ForkInformationBuilder', () => {
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
                     2029
-                )
+                ),
+                Date()
             )
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
         // expected: 1 / (1 + 3) = 1 / 4 = 0.25
-        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(0.25);
+        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(25);
     })
 
     it("builds btcForkBlockPercentageOverMergeMiningBlocks field when there are no blocks used for rsk mainchain", async () => {
@@ -214,21 +218,23 @@ describe('ForkInformationBuilder', () => {
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
                     2000
-                )
+                ),
+                Date()
             ),
             new ForkItem(
                 new BtcHeaderInfo(1002, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
                     2020
-                )
+                ),
+                Date()
             )
         ]);
 
         const forkInfo: ForkInformation = await infoBuilder.build(fork);
 
         // expected: 2 / (2 + 0) = 2 / 2 = 1
-        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(1);
+        expect(forkInfo.btcForkBlockPercentageOverMergeMiningBlocks).to.equal(100);
     })
 
     it("builds getDistanceToBestBlock field when cpv match (start block height != 1)", async () => { 
@@ -251,14 +257,16 @@ describe('ForkInformationBuilder', () => {
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
                     2100
-                )
+                ),
+                Date()
             ),
             new ForkItem(
                 new BtcHeaderInfo(1002, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
                     2120
-                )
+                ),
+                Date()
             )
         ]);
 
@@ -286,14 +294,16 @@ describe('ForkInformationBuilder', () => {
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007d0"), // rsk block is at height 2000
                     2000
-                )
+                ),
+                Date()
             ),
             new ForkItem(
                 new BtcHeaderInfo(1002, '', ''),
                 new RskForkItemInfo(
                     new ForkDetectionData(PREFIX + CPV + NU + "000007e4"), // last anomalous rsk block is at height 2020
                     2200
-                )
+                ),
+                Date()
             )
         ]);
 
