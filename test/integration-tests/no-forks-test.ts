@@ -1,25 +1,24 @@
-import { mockBtcApiChangeRoute, setHeightInMockBTCApi, moveToNextBlock } from './lib/btc-api-mocker';
-import { deleteDB, armadilloDB, findBlocks, armadilloMainchain, insertDocuments } from './lib/mongo-utils';
-import { sleep, copy } from '../../src/util/helper';
-import { apiPoolingTime, loadingTime, DEFAULT_CONFIG_PATH } from './lib/configs';
-import { validateMainchain, validateMainchainRskMongoDB } from './lib/validators';
-import { getMainchainBlocks, fakeMainchainBlock, swapMainchainBlockWithSibling, getBlockchainsAfterMovingXBlocks, moveXBlocks, getBlockchains } from './lib/armadillo-operations';
-import { HttpBtcApi } from '../../src/services/btc-api';
-import { RskApiService } from '../../src/services/rsk-api-service';
-import { MongoStore } from '../../src/storage/mongo-store';
-import { ForkService } from '../../src/services/fork-service';
-import { MainchainService } from '../../src/services/mainchain-service';
-import { BtcService } from '../../src/services/btc-service';
 import { readFileSync } from 'fs';
-import { BtcApiConfig } from '../../src/config/btc-api-config';
-import { RskApiConfig } from '../../src/config/rsk-api-config';
 import { BlockchainHistory } from '../../src/api/common/models';
 import { BtcBlock } from '../../src/common/btc-block';
 import { Fork, Item } from '../../src/common/forks';
 import { RskBlockInfo } from '../../src/common/rsk-block';
+import { BtcApiConfig } from '../../src/config/btc-api-config';
+import { RskApiConfig } from '../../src/config/rsk-api-config';
+import { HttpBtcApi } from '../../src/services/btc-api';
+import { BtcService } from '../../src/services/btc-service';
+import { ForkService } from '../../src/services/fork-service';
+import { MainchainService } from '../../src/services/mainchain-service';
+import { RskApiService } from '../../src/services/rsk-api-service';
+import { MongoStore } from '../../src/storage/mongo-store';
+import { copy, sleep } from '../../src/util/helper';
+import { fakeMainchainBlock, getBlockchains, getBlockchainsAfterMovingXBlocks, moveXBlocks, swapMainchainBlockWithSibling } from './lib/armadillo-operations';
+import { moveToNextBlock, setHeightInMockBTCApi } from './lib/btc-api-mocker';
+import { apiPoolingTime, DEFAULT_CONFIG_PATH, loadingTime } from './lib/configs';
+import { armadilloDB, deleteDB } from './lib/mongo-utils';
+import { validateMainchain } from './lib/validators';
+import { expect } from 'chai';
 
-const fs = require('fs');
-const expect = require('chai').expect;
 const firstBtcBlock = 8704;
 const heightOfNoRskTags = firstBtcBlock + 0;
 const heightOfConsecutiveRskTags = firstBtcBlock + 3;
@@ -27,10 +26,6 @@ const rskheightOfConsecutiveRskTags = 470;
 const heightOfDistancedRskTags = firstBtcBlock + 5;
 const heightForSiblingRskTag = firstBtcBlock + 137;
 const rskHeightWithSibling = 6480;
-const dataInputPath = 'test/integration-tests/data/';
-const consecutive2RskBlocks = 'testInput_consecutive2RSKtags.json';
-const consecutive3RskBlocks = 'testInput_consecutive3RSKtags.json';
-const jump3BtcBlocksToRskBlocks = 'testInput_RskJumpOf3btcBlocks.json';
 let btcApiService: HttpBtcApi;
 let rskApiService: RskApiService;
 let mongoStoreForks: MongoStore;
@@ -41,13 +36,11 @@ let mainchainService: MainchainService;
 let btcService: BtcService;
 describe('RSK no forks tests', () => {
     before(async () => {
-        // db = await connectDB(armadilloDB)
-        let mainConfig = JSON.parse(readFileSync(DEFAULT_CONFIG_PATH).toString());
+        const mainConfig = JSON.parse(readFileSync(DEFAULT_CONFIG_PATH).toString());
         const mongoConfigForks = mainConfig.store;
         mongoConfigForks.collectionName = mainConfig.store.collections.forks;
         mongoStoreForks = new MongoStore(mongoConfigForks);
         forkService = new ForkService(mongoStoreForks);
-
         await forkService.connect();
         const mongoConfigMainchain = mainConfig.store;
         mongoConfigMainchain.collectionName = mainConfig.store.collections.mainchain;
@@ -73,7 +66,7 @@ describe('RSK no forks tests', () => {
     afterEach(async () => {
         await setHeightInMockBTCApi(heightOfNoRskTags);
     });
-    it.only("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
+    it("should not generate any mainchain if BTC doesn't present RSK tags, end to end", async () => {
         const initialHeight: number = heightOfNoRskTags + 1;
         const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
         btcService.save(firstToCheckBtc);
@@ -83,7 +76,7 @@ describe('RSK no forks tests', () => {
         const blockchainExpected: BlockchainHistory = new BlockchainHistory([], []);
         expect(blockchain).to.be.eql(blockchainExpected);
     });
-    it.only("should not generate any mainchain if BTC doesn't present RSK tags, mongo input validation", async () => {
+    it("should not generate any mainchain if BTC doesn't present RSK tags, mongo input validation", async () => {
         const initialHeight: number = heightOfNoRskTags + 1;
         const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
         const blocksToMove: number = 1;
@@ -95,7 +88,7 @@ describe('RSK no forks tests', () => {
         expect([]).to.be.eql(mainchain);
         expect([]).to.be.eql(forks);
     });
-    it.only('should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end', async () => {
+    it('should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, end to end', async () => {
         const initialHeight: number = heightOfConsecutiveRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
         const blocksToMove: number = 1;
@@ -122,7 +115,7 @@ describe('RSK no forks tests', () => {
         const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
         expect(blockchain).to.be.eql(blockchainExpected);
     });
-    it.only('should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation', async () => {
+    it('should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo input validation', async () => {
         const initialHeight: number = heightOfConsecutiveRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
         const blocksToMove: number = 1;
@@ -150,7 +143,7 @@ describe('RSK no forks tests', () => {
         expect(mainchainExpected).to.be.eql(mainchain);
         expect([]).to.be.eql(forks);
     });
-    it.only('should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation', async () => {
+    it('should generate a mainchain connection between 2 consecutive BTC blocks with RSK tags, mongo output validation', async () => {
         const initialHeight: number = heightOfConsecutiveRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
         // mainchain validation
@@ -175,7 +168,7 @@ describe('RSK no forks tests', () => {
         const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
         expect(blockchainExpected).to.be.eql(blockchain);
     });
-    it.only('should generate a mainchain connection among 3 consecutive BTC blocks with RSK tags, end to end', async () => {
+    it('should generate a mainchain connection among 3 consecutive BTC blocks with RSK tags, end to end', async () => {
         const initialHeight: number = heightOfConsecutiveRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
         const btcWitnessBlockHeightMainchain3: number = initialHeight + 2;
@@ -212,7 +205,7 @@ describe('RSK no forks tests', () => {
         const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
         expect(blockchain).to.be.eql(blockchainExpected);
     });
-    it.only('should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo input validation', async () => {
+    it('should generate a mainchain connection among 3 consecutive BTC blocks with RSK, mongo input validation', async () => {
         const initialHeight: number = heightOfConsecutiveRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
         const btcWitnessBlockHeightMainchain3: number = initialHeight + 2;
@@ -250,7 +243,7 @@ describe('RSK no forks tests', () => {
         expect(mainchainExpected).to.be.eql(mainchain);
         expect([]).to.be.eql(forks);
     });
-    it.only('should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, end to end', async () => {
+    it('should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, end to end', async () => {
         const initialHeight: number = heightOfDistancedRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 4;
         const blocksToMove: number = 4;
@@ -277,7 +270,7 @@ describe('RSK no forks tests', () => {
         const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
         expect(blockchain).to.be.eql(blockchainExpected);
     });
-    it.only('should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo input validation', async () => {
+    it('should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo input validation', async () => {
         const initialHeight: number = heightOfDistancedRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 4;
         const blocksToMove: number = 4;
@@ -306,7 +299,7 @@ describe('RSK no forks tests', () => {
         expect([]).to.be.eql(forks);
     });
 
-    it.only('should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation', async () => {
+    it('should generate a mainchain connection between 2 BTC blocks with RSK tags, separated by 3 without RSK tags, mongo output validation', async () => {
         const initialHeight: number = heightOfDistancedRskTags;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 4;
         // mainchain validation
@@ -331,7 +324,7 @@ describe('RSK no forks tests', () => {
         const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
         expect(blockchainExpected).to.be.eql(blockchain);
     });
-    it.only('should generate a mainchain connection between 2 BTC blocks with RSK tags, second RSK tag is of a sibling block, end to end', async () => {
+    it('should generate a mainchain connection between 2 BTC blocks with RSK tags, second RSK tag is of a sibling block, end to end', async () => {
         const initialHeight: number = heightForSiblingRskTag;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
         // mainchain validation
@@ -366,10 +359,10 @@ describe('RSK no forks tests', () => {
         await sleep(loadingTime);
         // const reorgBlockInfo = await fakeMainchainBlock(rskheightOfConsecutiveRskTags, true);
         await moveToNextBlock();
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
+        // Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
         await sleep(loadingTime + apiPoolingTime);
         await setHeightInMockBTCApi(heightOfNoRskTags);
-        //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
+        // validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         let reorgBlocks = {};
         // reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
         await validateMainchain(2, 41, reorgBlocks);
@@ -391,10 +384,10 @@ describe('RSK no forks tests', () => {
         reorgBlockInfo = await fakeMainchainBlock(rskheightOfConsecutiveRskTags - 2);
         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
         await moveToNextBlock();
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
+        // Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
         await sleep(loadingTime + apiPoolingTime);
         await setHeightInMockBTCApi(heightOfNoRskTags);
-        //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
+        // validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         await validateMainchain(2, 41, reorgBlocks);
         await validateMainchain(100, 41, reorgBlocks);
     });
@@ -410,10 +403,10 @@ describe('RSK no forks tests', () => {
 
         const reorgBlockInfo = await swapMainchainBlockWithSibling(rskHeightWithSibling);
         await moveToNextBlock();
-        //Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
+        // Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
         await sleep(loadingTime + apiPoolingTime);
         await setHeightInMockBTCApi(heightOfNoRskTags);
-        //validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
+        // validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
         let reorgBlocks = {};
         reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
         await validateMainchain(2, 41, reorgBlocks);
