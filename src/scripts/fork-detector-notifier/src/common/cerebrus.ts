@@ -47,11 +47,10 @@ export class Cerebrus {
             return;
         }
 
-        this.logger.info(`Forks detected, sending notifications to ${this.config.recipients.join(', ')}`);
-
         for (let fork of forks) {
             const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
             const defconLevel: DefconLevel = this.findActiveDefconLevel(forkInfo);
+            this.logger.info(`Fork detected, sending notifications to ${defconLevel.getRecipients().join(', ')}`);
             await this.alertSender.sendAlert(forkInfo, defconLevel);
         }
 
