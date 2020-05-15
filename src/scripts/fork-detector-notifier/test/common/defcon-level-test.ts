@@ -29,10 +29,8 @@ function buildInfo(forkLengthRskBlocks: number, forkHashrate : number, bestBlock
         fork: new Fork(null, [
             new ForkItem(
                 new BtcHeaderInfo(1, '', ''),
-                new RskForkItemInfo(
-                    new ForkDetectionData(PREFIX + CPV + NU + "00000001"),
-                    2
-                )
+                new RskForkItemInfo(new ForkDetectionData(PREFIX + CPV + NU + "00000001"), 2),
+                Date()
             )
         ]),
         nBlocksForBtcHashrateForRskMainchain: 1,
