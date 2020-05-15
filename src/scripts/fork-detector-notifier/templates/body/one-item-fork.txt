@@ -1,6 +1,6 @@
 ◘ Fork started in: #forkTime
 
-◘ Detected height #startingRskHeight at BTC height #startingBtcHeight
+◘ First detected RSK block at #startingRskHeight at BTC height #startingBtcHeight
 
 ◘ Miner name which mined BTC block: #btcGuessMined
 
@@ -12,7 +12,7 @@
     ◘ Difference in blocks between end and start: #diferenceInBlocksBetweenEndAndStart
     ◘ Distance to last jump: #distanceCPVtoPrevJump
 
-◘ BTC blocks used for RSK merged mining over the last #nBlocksForBtcHashrateForRskMainchain BTC blocks: #btcHashrateForRskMainchain% 
+◘ BTC Hashrate mining RSK over the last #nBlocksForBtcHashrateForRskMainchain BTC blocks: #btcHashrateForRskMainchain% 
 
 ◘ Fork data complete:
 

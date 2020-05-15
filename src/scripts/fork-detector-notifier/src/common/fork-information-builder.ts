@@ -121,7 +121,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
     }
 
     getForkLengthInRskBlocks(fork: Fork): number {
-        const consideredStartBlock: RskBlockInfo = this.consideredStartFork(fork);
+        const consideredStartBlock: RskBlockInfo = fork.consideredStartRskBlock();
         return Math.abs(fork.getLastDetected().rskForkInfo.forkDetectionData.BN - consideredStartBlock.height);
     }
 
@@ -190,31 +190,44 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
     }
 
     async getBtcMainchainHashrateDuringFork(fork: Fork) : Promise<number> {
-        // earliest possible start of the fork
-        const start: number = this.consideredStartFork(fork).height;
-        // height of the fork's last rsk block not found in rsk
-        const end: number = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+        let start: number = fork.consideredStartRskBlock().height;
+        let end: number = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+        let forkLength = end - start;
+        let bestBlock = fork.getLastDetected().rskForkInfo.rskBestBlockHeight;
+        
+        //This is a FUTURE CASE
+        if(end > bestBlock){
+            start = bestBlock - forkLength
+            end = bestBlock;
+        }
 
-        //TODO: this will not work correctly in future case
-        const items: Item[] = await this.armadilloApi.getBtcBlocksBetweenRskHeight(start, end);
+        const honestBlocks: Item[] = await this.armadilloApi.getBtcBlocksBetweenRskHeight(start, end);
 
         // average number of rsk blocks for each btc block is 20 on average
         const expectedBtcBlocks: number = (end - start) / this.BTC_TO_RSK_AVERAGE_RATIO;
 
-        return expectedBtcBlocks > 0 ? items.length / expectedBtcBlocks * 100 : 0;
+        return expectedBtcBlocks > 0 ? honestBlocks.length / expectedBtcBlocks * 100 : 0;
     }
 
     async getBtcForkBlockPercentageOverMergeMiningBlocks(fork: Fork) : Promise<number> {
-        const consideredStartHeigth: number = this.consideredStartFork(fork).height;
-        const lastDetectedHeight: number = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+        let start: number = fork.consideredStartRskBlock().height;
+        let end: number = fork.getLastDetected().rskForkInfo.forkDetectionData.BN;
+        let forkLength = end - start;
+        let bestBlock = fork.getLastDetected().rskForkInfo.rskBestBlockHeight;
 
-        //TODO: this will not work correctly in future case
-        const honestBlocks: Item[] = await this.armadilloApi.getBtcBlocksBetweenRskHeight(consideredStartHeigth, lastDetectedHeight);
+        //This is a FUTURE CASE
+        if(end > bestBlock){
+            start = bestBlock - forkLength
+            end = bestBlock;
+        }
+
+        let honestBlocks = await this.armadilloApi.getBtcBlocksBetweenRskHeight(start, end);
 
         const attackerBlockCount: number = fork.items.length;
         const honestBlockCount: number = honestBlocks.length;
 
-        return attackerBlockCount / (attackerBlockCount + honestBlockCount) * 100;
+        let totalMergedMinedblocks = attackerBlockCount + honestBlockCount
+        return attackerBlockCount / totalMergedMinedblocks * 100;
     }
 
     getEstimatedTimeFor4000Blocks(fork: Fork) : Date {
@@ -238,11 +251,5 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
         const estimatedTimestamp: number = timePerBlock * 4000 + firstDetectedTime.getTime();
 
         return new Date(estimatedTimestamp);
-    }
-
-    private consideredStartFork(fork: Fork) {
-        const startRange: RangeForkInMainchain = fork.mainchainRangeWhereForkCouldHaveStarted;
-        const consideredStartBlock: RskBlockInfo = startRange.startBlock.height > 1 ? startRange.startBlock : startRange.endBlock;
-        return consideredStartBlock;
     }
 }
