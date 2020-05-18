@@ -36,8 +36,7 @@ let mainchainService: MainchainService;
 let btcService: BtcService;
 describe('RSK Forks in the past tests', () => {
     before(async () => {
-        // db = await connectDB(armadilloDB)
-        let mainConfig = JSON.parse(readFileSync(DEFAULT_CONFIG_PATH).toString());
+        const mainConfig = JSON.parse(readFileSync(DEFAULT_CONFIG_PATH).toString());
         const mongoConfigForks = mainConfig.store;
         mongoConfigForks.collectionName = mainConfig.store.collections.forks;
         mongoStoreForks = new MongoStore(mongoConfigForks);
@@ -83,7 +82,6 @@ describe('RSK Forks in the past tests', () => {
             // adding same time to remove from comparision.
             const timeExpected = blockchain.forks[0].getForkItems()[0].time;
             // Prepare expected fork
-
             const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
@@ -116,8 +114,8 @@ describe('RSK Forks in the past tests', () => {
             const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
             // Get actual fork
             const fork: Fork = blockchain.forks[0];
-            const timeExpected = fork.getForkItems()[0].time; // adding same time to remove from comparision.
-            const timeExpected2 = fork.getForkItems()[1].time;
+            const timeExpected = fork.getForkItems()[1].time; // adding same time to remove from comparision.
+            const timeExpected2 = fork.getForkItems()[0].time;
             // Prepare expected fork
 
             const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
@@ -416,8 +414,8 @@ describe('RSK Forks in the past tests', () => {
             await moveXBlocks(blocksToMove, btcService);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
-            const timeExpected: string = forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
-            const timeExpected2: string = forks[0].getForkItems()[1].time;
+            const timeExpected: string = forks[0].getForkItems()[1].time; // adding same time to remove from comparision.
+            const timeExpected2: string = forks[0].getForkItems()[0].time;
             // Prepare expected fork
 
             const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
