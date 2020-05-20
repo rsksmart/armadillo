@@ -11,21 +11,21 @@ import { MainchainService } from '../../src/services/mainchain-service';
 import { RskApiService } from '../../src/services/rsk-api-service';
 import { MongoStore } from '../../src/storage/mongo-store';
 import { getBlockchainsAfterMovingXBlocks, moveXBlocks, getBlockchains } from './lib/armadillo-operations';
-import { setHeightInMockBTCApi } from './lib/btc-api-mocker';
+import { setHeightInMockBTCApi, getFirstBlockNumber } from './lib/btc-api-mocker';
 import { bestRskBlock, dataInputPath, DEFAULT_CONFIG_PATH, timeoutTests } from './lib/configs';
 import { getEndHeightMainchainForCPVDiff, getStartHeightMainchainForCPVDiff } from './lib/cpv-helper';
 import { copy } from '../../src/util/helper';
 import { expect } from 'chai';
 import { readFileSync } from 'fs';
-const firstBtcBlock = 8704;
-const heightOfNoRskTags = firstBtcBlock + 0;
-const heightOfConsecutiveRSKnoMatchPastSameBranch = firstBtcBlock + 92;
-const heightOfNonConsecutiveRSKnoMatchPastSameBranch = firstBtcBlock + 97;
-const heightOfConsecutiveRSKnoMatchPastDiffBranch = firstBtcBlock + 115;
-const heightOfNonConsecutiveRSKnoMatchPastDiffBranch = firstBtcBlock + 119;
-const heightOfConsecutiveRSKnoMatchPastFollowingMatch = firstBtcBlock + 95;
-const heightOfNonConsecutiveRSKnoMatchPastFollowingMatch = firstBtcBlock + 107;
 
+const heightOfNoRskTags = 0;
+const heightOfConsecutiveRSKnoMatchPastSameBranch = 92;
+const heightOfNonConsecutiveRSKnoMatchPastSameBranch = 97;
+const heightOfConsecutiveRSKnoMatchPastDiffBranch = 115;
+const heightOfNonConsecutiveRSKnoMatchPastDiffBranch = 119;
+const heightOfConsecutiveRSKnoMatchPastFollowingMatch = 95;
+const heightOfNonConsecutiveRSKnoMatchPastFollowingMatch = 107;
+let firstBtcBlock = 0;
 let btcApiService: HttpBtcApi;
 let rskApiService: RskApiService;
 let mongoStoreForks: MongoStore;
@@ -55,6 +55,7 @@ describe('RSK Forks in the past tests', () => {
         await btcService.connect();
         btcApiService = new HttpBtcApi(BtcApiConfig.fromObject(mainConfig.btcApi));
         rskApiService = new RskApiService(RskApiConfig.fromObject(mainConfig.rskApi));
+        firstBtcBlock = await getFirstBlockNumber();
     });
     after(async () => {
         await mainchainService.disconnect();
@@ -73,7 +74,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight: number = initialHeight + 1;
             const blocksToMove: number = 1;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -82,7 +83,7 @@ describe('RSK Forks in the past tests', () => {
             // adding same time to remove from comparision.
             const timeExpected = blockchain.forks[0].getForkItems()[0].time;
             // Prepare expected fork
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -94,7 +95,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -107,7 +108,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight2: number = initialHeight + 2;
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -118,13 +119,13 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected2 = fork.getForkItems()[0].time;
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
             const end: RskBlockInfo = await rskApiService.getBlock(heightEnd);
             const range: RangeForkInMainchain = new RangeForkInMainchain(start, end);
-            const btcWitnessBlock2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight2);
+            const btcWitnessBlock2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight2);
 
             const rskForkItemInfo: RskForkItemInfo = new RskForkItemInfo(btcWitnessBlock.rskTag, bestRskBlock);
             const rskForkItemInfo2: RskForkItemInfo = new RskForkItemInfo(btcWitnessBlock2.rskTag, bestRskBlock);
@@ -134,7 +135,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem2: ForkItem = new ForkItem(btcWitnessBlock2.btcInfo, rskForkItemInfo2, timeExpected2);
             const forkExpected: Fork = new Fork(range, [forkItem, forkItem2]);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -147,7 +148,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight: number = initialHeight + 3;
             const blocksToMove: number = 3;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -157,7 +158,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -169,7 +170,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -184,7 +185,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 7;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -194,8 +195,8 @@ describe('RSK Forks in the past tests', () => {
             const timeExpectedFork2 = blockchain.forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
 
             // Prepare expected forks
-            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork1);
-            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork2);
+            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork1);
+            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork2);
             const heightStartFork1: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1);
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
@@ -218,7 +219,7 @@ describe('RSK Forks in the past tests', () => {
             const fork1Expected: Fork = new Fork(rangeFork1, forkItemFork1);
             const fork2Expected: Fork = new Fork(rangeFork2, forkItemFork2);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -233,7 +234,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 8;
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 7;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -243,8 +244,8 @@ describe('RSK Forks in the past tests', () => {
             const timeExpectedFork2 = blockchain.forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
 
             // Prepare expected forks
-            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork1);
-            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork2);
+            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork1);
+            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork2);
             const heightStartFork1: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1);
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
@@ -267,7 +268,7 @@ describe('RSK Forks in the past tests', () => {
             const fork1Expected: Fork = new Fork(rangeFork1, forkItemFork1);
             const fork2Expected: Fork = new Fork(rangeFork2, forkItemFork2);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -281,7 +282,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightMainchain2: number = initialHeight + 2;
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -291,7 +292,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -303,11 +304,11 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const btcMainchain2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightMainchain2);
+            const btcMainchain2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain2);
             btcMainchain2.btcInfo.guessedMiner = null;
             const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
             const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
@@ -327,7 +328,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightMainchain2: number = initialHeight + 8;
             const blocksToMove: number = 8;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -337,7 +338,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -349,11 +350,11 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const btcMainchain2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightMainchain2);
+            const btcMainchain2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain2);
             btcMainchain2.btcInfo.guessedMiner = null;
             const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
             const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
@@ -374,7 +375,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight: number = initialHeight + 1;
             const blocksToMove: number = 1;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             await moveXBlocks(blocksToMove, btcService);
@@ -383,7 +384,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected: string = forks[0].getForkItems()[0].time;
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -395,7 +396,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -408,7 +409,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight2: number = initialHeight + 2;
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             await moveXBlocks(blocksToMove, btcService);
@@ -418,13 +419,13 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected2: string = forks[0].getForkItems()[0].time;
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
             const end: RskBlockInfo = await rskApiService.getBlock(heightEnd);
             const range: RangeForkInMainchain = new RangeForkInMainchain(start, end);
-            const btcWitnessBlock2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight2);
+            const btcWitnessBlock2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight2);
 
             const rskForkItemInfo: RskForkItemInfo = new RskForkItemInfo(btcWitnessBlock.rskTag, bestRskBlock);
             const rskForkItemInfo2: RskForkItemInfo = new RskForkItemInfo(btcWitnessBlock2.rskTag, bestRskBlock);
@@ -434,7 +435,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem2: ForkItem = new ForkItem(btcWitnessBlock2.btcInfo, rskForkItemInfo2, timeExpected2);
             const forkExpected: Fork = new Fork(range, [forkItem, forkItem2]);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -446,7 +447,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight: number = initialHeight + 3;
             const blocksToMove: number = 3;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             await moveXBlocks(blocksToMove, btcService);
@@ -456,7 +457,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected: string = forks[0].getForkItems()[0].time;
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -468,7 +469,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -482,7 +483,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 7;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             await moveXBlocks(blocksToMove, btcService);
@@ -491,8 +492,8 @@ describe('RSK Forks in the past tests', () => {
             const timeExpectedFork1: string = forks[0].getForkItems()[0].time;
             const timeExpectedFork2: string = forks[1].getForkItems()[0].time;
             // Prepare expected forks
-            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork1);
-            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork2);
+            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork1);
+            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork2);
             const heightStartFork1: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1);
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
@@ -515,7 +516,7 @@ describe('RSK Forks in the past tests', () => {
             const fork1Expected: Fork = new Fork(rangeFork1, forkItemFork1);
             const fork2Expected: Fork = new Fork(rangeFork2, forkItemFork2);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -529,7 +530,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 8;
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 7;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             await moveXBlocks(blocksToMove, btcService);
@@ -539,8 +540,8 @@ describe('RSK Forks in the past tests', () => {
             const timeExpectedFork1: string = forks[0].getForkItems()[0].time;
             const timeExpectedFork2: string = forks[1].getForkItems()[0].time;
             // Prepare expected forks
-            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork1);
-            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork2);
+            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork1);
+            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork2);
             const heightStartFork1: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1);
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
@@ -563,7 +564,7 @@ describe('RSK Forks in the past tests', () => {
             const fork1Expected: Fork = new Fork(rangeFork1, forkItemFork1);
             const fork2Expected: Fork = new Fork(rangeFork2, forkItemFork2);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -576,7 +577,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightMainchain2: number = initialHeight + 2;
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -586,7 +587,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected: string = forks[0].getForkItems()[0].time;
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -598,11 +599,11 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const btcMainchain2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightMainchain2);
+            const btcMainchain2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain2);
             btcMainchain2.btcInfo.guessedMiner = null;
             const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
             const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
@@ -622,7 +623,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightMainchain2: number = initialHeight + 8;
             const blocksToMove: number = 8;
             const cpvDiffExpected: number = 0;
-            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(initialHeight - 1);
+            const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
@@ -632,7 +633,7 @@ describe('RSK Forks in the past tests', () => {
             const timeExpected: string = forks[0].getForkItems()[0].time;
             // Prepare expected fork
 
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -644,11 +645,11 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, timeExpected);
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const btcMainchain2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightMainchain2);
+            const btcMainchain2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain2);
             btcMainchain2.btcInfo.guessedMiner = null;
             const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
             const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
@@ -669,7 +670,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight: number = initialHeight + 1;
             const cpvDiffExpected: number = 0;
             // Prepare expected fork
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -681,7 +682,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, Date());
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -701,13 +702,13 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeight2: number = initialHeight + 2;
             const cpvDiffExpected: number = 0;
             // Prepare expected fork
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
             const end: RskBlockInfo = await rskApiService.getBlock(heightEnd);
             const range: RangeForkInMainchain = new RangeForkInMainchain(start, end);
-            const btcWitnessBlock2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight2);
+            const btcWitnessBlock2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight2);
 
             const rskForkItemInfo: RskForkItemInfo = new RskForkItemInfo(btcWitnessBlock.rskTag, bestRskBlock);
             const rskForkItemInfo2: RskForkItemInfo = new RskForkItemInfo(btcWitnessBlock2.rskTag, bestRskBlock);
@@ -717,7 +718,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem2: ForkItem = new ForkItem(btcWitnessBlock2.btcInfo, rskForkItemInfo2, Date());
             const forkExpected: Fork = new Fork(range, [forkItem, forkItem2]);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -737,7 +738,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 3;
             const cpvDiffExpected: number = 0;
             // Prepare expected fork
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -749,7 +750,7 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, Date());
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -771,8 +772,8 @@ describe('RSK Forks in the past tests', () => {
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 7;
             // Prepare expected forks
-            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork1);
-            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork2);
+            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork1);
+            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork2);
             const heightStartFork1: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1);
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
@@ -795,7 +796,7 @@ describe('RSK Forks in the past tests', () => {
             const fork1Expected: Fork = new Fork(rangeFork1, forkItemFork1);
             const fork2Expected: Fork = new Fork(rangeFork2, forkItemFork2);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -818,8 +819,8 @@ describe('RSK Forks in the past tests', () => {
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 7;
             // Prepare expected forks
-            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork1);
-            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightFork2);
+            const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork1);
+            const btcWitnessBlockFork2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightFork2);
             const heightStartFork1: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1);
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
@@ -842,7 +843,7 @@ describe('RSK Forks in the past tests', () => {
             const fork1Expected: Fork = new Fork(rangeFork1, forkItemFork1);
             const fork2Expected: Fork = new Fork(rangeFork2, forkItemFork2);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             const rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
@@ -864,7 +865,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
             // Prepare expected fork
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -876,11 +877,11 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, Date());
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const btcMainchain2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightMainchain2);
+            const btcMainchain2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain2);
             btcMainchain2.btcInfo.guessedMiner = null;
             const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
             const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
@@ -907,7 +908,7 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 8;
             const cpvDiffExpected: number = 0;
             // Prepare expected fork
-            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeight);
+            const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
@@ -919,11 +920,11 @@ describe('RSK Forks in the past tests', () => {
             const forkItem: ForkItem = new ForkItem(btcWitnessBlock.btcInfo, rskForkItemInfo, Date());
             const forkExpected: Fork = new Fork(range, forkItem);
             // mainchain validation
-            const btcMainchain: BtcBlock = await btcApiService.getBlock(initialHeight);
+            const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
             btcMainchain.btcInfo.guessedMiner = null;
             let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
             const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
-            const btcMainchain2: BtcBlock = await btcApiService.getBlock(btcWitnessBlockHeightMainchain2);
+            const btcMainchain2: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain2);
             btcMainchain2.btcInfo.guessedMiner = null;
             const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
             const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
