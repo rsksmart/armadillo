@@ -23,8 +23,9 @@ export class BlockchainController {
     var mainchain: Item[] = await this.mainchainService.getLastBtcBlocksDetectedInChainCompleteWithRSK(n);
 
     let btcHeightToGetForksFrom = 0;
-
-    if (mainchain.length > 0) {
+    // TODO mainchainWithBtcInfo declaration and secondary condition in if statement should be removed but it's necessary for the integration tests.
+    const mainchainWithBtcInfo: Item[] = mainchain.filter(x => x.btcInfo != null);
+    if (mainchain.length > 0 && mainchainWithBtcInfo.length === n) {
       btcHeightToGetForksFrom = mainchain[mainchain.length - 1].btcInfo.height;
     }
 
