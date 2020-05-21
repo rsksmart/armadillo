@@ -1,7 +1,7 @@
 import { RskBlockInfo, RskForkItemInfo } from "../common/rsk-block";
 import { BtcBlock } from "../common/btc-block";
 import { ForkDetectionData } from "../common/fork-detection-data";
-import { Fork, ForkItem, Item } from "../common/forks";
+import { Fork, ForkItem, Item, RangeForkInMainchain } from "../common/forks";
 import { BtcWatcher, BTCEvents } from "./btc-watcher";
 import { getLogger, Logger } from "log4js";
 import { MainchainService } from "./mainchain-service";
@@ -81,7 +81,7 @@ export class ForkDetector {
         //     return await this.blockSuccessfullyProcessed(newBtcBlock);
         // }
 
-        let rskBestBlockAtTheFirstMoment = await this.rskApiService.getBestBlock();
+        let rskBestBlockAtTheFirstMoment : RskBlockInfo = await this.rskApiService.getBestBlock();
         await this.waitForMinimumRskHeight(newBtcBlock.rskTag.BN);
        
         let rskBlocksAtNewRskTagHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(newBtcBlock.rskTag.BN);
@@ -89,7 +89,7 @@ export class ForkDetector {
         
         if (rskBlockMatchInHeight) {
             // New tag is in mainchain
-            let ok = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
+            let ok : boolean = await this.tryToAddInMainchain(newBtcBlock, rskBlocksAtNewRskTagHeight);
 
             if (!ok) {
                 this.logger.error("trying to add block in mainchain")
@@ -171,8 +171,8 @@ export class ForkDetector {
         // Rebuilding the chain between last tag find up to the new tag height, to have the complete mainchain
         let prevRskHashToMatch: string = rskBestBlockInMainchain.rskInfo.hash;
         let itemsToSaveInMainchain: Item[] = [];
-        let searchFromHeight = rskBestBlockInMainchain.rskInfo.height + 1;
-        let searchToHeight = rskBlockInMainchain.height;
+        let searchFromHeight : number = rskBestBlockInMainchain.rskInfo.height + 1;
+        let searchToHeight : number = rskBlockInMainchain.height;
 
         this.logger.info("Getting all RSK blocks from height", searchFromHeight, "to height", searchToHeight)
 
@@ -239,7 +239,7 @@ export class ForkDetector {
 
     private async getPossibleForks(blockHeight: number): Promise<Fork[]> {
         //No necesitamos los forks si no los ultimos "nodos" que se agregaron de cada forks
-        let minimunRskHeightToSearch = this.getHeightforPossibleForks(blockHeight);
+        let minimunRskHeightToSearch : number = this.getHeightforPossibleForks(blockHeight);
 
         //connect to the database to get possible forks, 
         //No deberiamos traer todo, solo hasta un maximo hacia atras
@@ -251,7 +251,7 @@ export class ForkDetector {
     }
 
     private async addOrCreateFork(btcBlock: BtcBlock, rskBestBlock: RskBlockInfo) {
-        let rskBlocksSameHeight;
+        let rskBlocksSameHeight: RskBlockInfo;
 
         //Rsktag is comming pointing in a future rsk height, for armadillo monitor this is a fork
         //TODO: check when a future case is a posible case or a miner is messing up.
@@ -286,7 +286,7 @@ export class ForkDetector {
 
             await this.forkService.addForkItem(forks[0].getFirstDetected().rskForkInfo.forkDetectionData.prefixHash, item);
         } else {
-            let mainchainRangeWhereForkCouldHaveStarted = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskForkItem.forkDetectionData, rskBlocksSameHeight);
+            let mainchainRangeWhereForkCouldHaveStarted : RangeForkInMainchain = await this.rskApiService.getRangeForkWhenItCouldHaveStarted(rskForkItem.forkDetectionData, rskBlocksSameHeight.forkDetectionData);
 
             this.logger.info('FORK: Creating fork for RSKTAG', rskForkItem.forkDetectionData.toString(), 'found in block', btcBlock.btcInfo.hash);
 
