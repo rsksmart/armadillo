@@ -7,9 +7,9 @@
     "start-api": "ts-node ./src/api-runner.ts",
     "start-monitor": "ts-node ./src/monitor-runner.ts",
     "lint": "tslint -t stylish -c tslint.json 'src/**/*.ts' & tslint -t stylish -c tslint.json 'test/**/*.ts'",
-    "test": "cross-env TS_NODE_FILES=true  mocha -exit --timeout 5000 -r ts-node/register -colors test/**/*.ts",
+    "test": "cross-env TS_NODE_FILES=true  mocha -exit --timeout 5000 -r ts-node/register -colors test/{api,common,monitor}/*.ts",
     "test-js": "cross-env TS_NODE_FILES=true  mocha -exit --timeout 5000 -r ts-node/register -colors test/**/*.js",
-    "test-integration": "cross-env TS_NODE_FILES=true mocha  -exit --timeout 50000 -r ts-node/register -colors test/integration-tests/*.ts",
+    "test-integration": "cross-env TS_NODE_FILES=true mocha  -exit --timeout 10000 -r ts-node/register -colors test/integration-tests/*.ts",
     "coverage-js": "nyc npm run test-js",
     "coverage": "nyc npm run test",
     "build": "tsc -p tsconfig.json"
