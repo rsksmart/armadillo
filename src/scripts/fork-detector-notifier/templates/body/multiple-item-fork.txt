@@ -25,7 +25,7 @@
 
 ◘ BTC Hashrate mining RSK during the fork: #btcHashrateForRskMainchainDuringFork%
 
-◘ Hipothetic Hashrate attack: #btcForkBlockPercentageOverMergeMiningBlocks%
+◘ Hypothetical Hashrate attack: #btcForkBlockPercentageOverMergeMiningBlocks%
 
 ◘ Estimated time for 4000 blocks: #estimatedTimeFor4000Blocks
 
