@@ -11,18 +11,8 @@ import { RskBlockInfo } from '../../../src/common/rsk-block';
 import { MainchainService } from '../../../src/services/mainchain-service';
 import { Item } from '../../../src/common/forks';
 
-export async function getMainchainBlocks(number) {
-    let response = await fetch(armadilloApiURL + 'mainchain/getLastBlocks/' + number);
-    return await response.json();
-}
-
 export async function getBlockchains(number: number = 2000) {
-    let response = await fetch(armadilloApiURL + 'blockchains/' + number);
-    return response.json();
-}
-
-export async function getForksFromHeight(number) {
-    let response = await fetch(armadilloApiURL + 'forks/getLastForks/' + number);
+    const response = await fetch(armadilloApiURL + 'blockchains/' + number);
     return response.json();
 }
 
@@ -30,24 +20,24 @@ export function getForkDetectionData(rskTag) {
     return {
         prefixHash: rskTag.substring(2, 42),
         CPV: rskTag.substring(42, 56),
-        NU: parseInt('0x' + rskTag.substring(56, 58)),
-        BN: parseInt('0x' + rskTag.substring(58)),
+        NU: parseInt('0x' + rskTag.substring(56, 58), 16),
+        BN: parseInt('0x' + rskTag.substring(58), 16),
     };
 }
 
 export async function fakeMainchainBlock(rskBlockNumber: number, mainchainService: MainchainService): Promise<void> {
-    let blockInfo: Item = await mainchainService.getBlock(rskBlockNumber);
-    let prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
-    let rskHash = scrumbleHash(blockInfo.rskInfo.hash);
+    const blockInfo: Item = await mainchainService.getBlock(rskBlockNumber);
+    const prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
+    const rskHash = scrumbleHash(blockInfo.rskInfo.hash);
     blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
     blockInfo.rskInfo.hash = rskHash;
     mainchainService.changeBlockInMainchain(rskBlockNumber, blockInfo);
 }
 
 export async function swapMainchainBlockWithSibling(rskBlockNumber) {
-    let blockInfoMainchain = await findOneMainchainBlock(rskBlockNumber, true);
-    let blockInfoSibling = await getSiblingFromRsk(rskBlockNumber);
-    
+    const blockInfoMainchain = await findOneMainchainBlock(rskBlockNumber, true);
+    const blockInfoSibling = await getSiblingFromRsk(rskBlockNumber);
+
     await updateOneMainchainBlock(rskBlockNumber, true, blockInfoSibling);
     await updateOneMainchainBlock(rskBlockNumber, false, blockInfoMainchain);
     return blockInfoMainchain;
@@ -56,9 +46,10 @@ export async function swapMainchainBlockWithSibling(rskBlockNumber) {
 export async function moveXBlocks(blocksToMove: number, btcService: BtcService): Promise<void> {
     for (let i = 0; i < blocksToMove; i++) {
         await moveToNextBlock();
-        let bestBlock = await getBtcApiLastBlock();
+        const bestBlock = await getBtcApiLastBlock();
         let btcLastCheckedBlock: BtcBlock = await btcService.getLastBlockDetected();
-        while (!btcLastCheckedBlock || btcLastCheckedBlock.btcInfo.height != bestBlock.height) {
+
+        while (!btcLastCheckedBlock || btcLastCheckedBlock.btcInfo.height !== bestBlock.height) {
             await sleep(100);
             btcLastCheckedBlock = await btcService.getLastBlockDetected();
         }
