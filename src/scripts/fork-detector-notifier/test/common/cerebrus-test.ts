@@ -45,8 +45,9 @@ function createForkWithItems(nItems: number) : Fork[] {
         items.push(
             new ForkItem(
                 new BtcHeaderInfo(randInt(10000), '', ''), 
-                new RskForkItemInfo(new ForkDetectionData(randomBytes(32).toString('hex')), randInt(10000)))
-        )
+                new RskForkItemInfo(new ForkDetectionData(randomBytes(32).toString('hex')), randInt(10000)),
+                Date())
+                )
     }
 
     return [
