@@ -35,7 +35,7 @@ const HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = 70;
 const HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther = 63;
 const HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther = 67;
 const HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk = 66;
-const HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = 66;
+const HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk = 75;
 const HNoMatchRSK8CPVDiffConsecutive = 52; // TO DO correct data for this to be a 2 byte cpv diff
 const HNoMatchRSK8CPVDiffNonConsecutive = 57;
 const HMatchRSK8CPVDiffConsecutive = 51;
@@ -57,7 +57,7 @@ let mongoStoreBtc: MongoStore;
 let forkService: ForkService;
 let mainchainService: MainchainService;
 let btcService: BtcService;
-describe.only('RSK Forks in the present tests', () => {
+describe('RSK Forks in the present tests', () => {
     before(async () => {
         const mainConfig = JSON.parse(readFileSync(DEFAULT_CONFIG_PATH).toString());
         const mongoConfigForks = mainConfig.store;
@@ -88,6 +88,7 @@ describe.only('RSK Forks in the present tests', () => {
         // await deleteDB(db) // Esto borra producción, hay que connectar el monitor y la api que ejecutan a la de test.
         await forkService.deleteAll();
         await mainchainService.deleteAll();
+        await btcService.deleteAll();
     });
     afterEach(async () => {
         await setHeightInMockBTCApi(heightOfNoRskTags);
@@ -95,9 +96,10 @@ describe.only('RSK Forks in the present tests', () => {
         btcService.save(firstToCheckBtc);
         await forkService.deleteAll();
         await mainchainService.deleteAll();
+        await btcService.deleteAll();
     });
     describe('RSK Forks in the present - end to end tests', () => {
-        // TODO CPV 0 E2E
+
         describe('RSK no match at same height with matching CPV', () => {
             // test 1 - end to end
             it('should not create branch for BTC block matching RSK tag, end to end', async () => {
@@ -489,11 +491,11 @@ describe.only('RSK Forks in the present tests', () => {
                 expect(blockchain).to.be.eql(blockchainExpected);
             });
         });
-        // TODO CPV 2 E2E
+
         describe('RSK no match at same height with difference in 2 bytes in CPV', () => {
-            // TODO CPV 2 - Same fork E2E
+
             describe('No matching RSK tags match CPV among each other', () => {
-                // test 12 - end to end - KNOWN ISSUE IN ARMADILLO
+                // test 12 - end to end
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -527,7 +529,7 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // test 13 - end to end - KNOWN ISSUE IN ARMADILLO
+                // test 13 - end to end
                 it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -547,7 +549,6 @@ describe.only('RSK Forks in the present tests', () => {
                     const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeight);
                     const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
                     const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
-                    if (cpvDiffExpected === 7) start.forkDetectionData = null;
                     const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
                     const end: RskBlockInfo = await rskApiService.getBlock(heightEnd);
                     const range: RangeForkInMainchain = new RangeForkInMainchain(start, end);
@@ -563,7 +564,7 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
                 // test 14 - end to end
-                it.only('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
+                it('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeight2: number = initialHeight + 1;
@@ -584,7 +585,6 @@ describe.only('RSK Forks in the present tests', () => {
                     const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeight);
                     const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
                     const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
-                    if (cpvDiffExpected === 7) start.forkDetectionData = null;
                     const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock); // Rename función para que sea más sencilla.
                     const end: RskBlockInfo = await rskApiService.getBlock(heightEnd);
                     const range: RangeForkInMainchain = new RangeForkInMainchain(start, end);
@@ -603,14 +603,14 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 15 - end to end - review test data
-                it.skip('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
+                // test 15 - end to end
+                it('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeight2: number = initialHeight + 3;
                     const btcWitnessBlockHeight3: number = initialHeight + 5;
                     const blocksToMove: number = 5;
-                    const cpvDiffExpected: number = 0;
+                    const cpvDiffExpected: number = 2;
                     const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBlock + initialHeight - 1);
                     btcService.save(firstToCheckBtc);
                     await setHeightInMockBTCApi(initialHeight);
@@ -643,8 +643,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 16 - end to end - fix test data
-                it.skip('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, end to end', async () => {
+                // test 16 - end to end
+                it('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, end to end', async () => {
                     // const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks('TO REMOVE', HMatchRSK2CPVDiffConsecutive, 2, 2000, apiPoolingTime, loadingTime);
                     const initialHeight: number = HMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
@@ -678,8 +678,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected, 'Known issue with CPV difference, to review and remove this message.');
                 });
-                // TODO test 17 - end to end - fix data
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 BTC block with 2 bytes difference CPV no match RSK tagswith no matching RSK tag, end to end', async () => {
+                // test 17 - end to end
+                it('should create branch for first BTC block with matching RSK tag, following 2 BTC block with 2 bytes difference CPV no match RSK tagswith no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcWitnessBlockHeight2: number = initialHeight + 4;
@@ -717,8 +717,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 18 - end to end
-                it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, end to end', async () => {
+                // test 18 - end to end
+                it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, end to end', async () => {
                     // const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks('TO REMOVE', HNoMatch2CPVDiffConsecutiveMatches, 1, 2000, apiPoolingTime, loadingTime);
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveMatches;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -753,8 +753,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 19 - end to end
-                it.skip('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, end to end', async () => {
+                // test 19 - end to end
+                it('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveMatches;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 2;
@@ -789,10 +789,10 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
             });
-            // TODO CPV 2 - diff forks E2E
+
             describe('No matching RSK tags no match CPV among each other', () => {
-                // TODO test 20 - end to end - fix data
-                it.skip('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
+                // test 20 - end to end
+                it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2: number = initialHeight + 1;
@@ -834,8 +834,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 21 - end to end - fix data
-                it.skip('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
+                // test 21 - end to end
+                it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2: number = initialHeight + 3;
@@ -877,8 +877,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 22 - end to end - fix data
-                it.skip('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
+                // test 22 - end to end
+                it('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2item1: number = initialHeight + 1;
@@ -925,8 +925,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 23 - end to end - fix data
-                it.skip('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
+                // test 23 - end to end
+                it('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2item1: number = initialHeight + 3;
@@ -941,8 +941,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
 
                     const timeExpectedFork1 = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item2 = blockchain.forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item1 = blockchain.forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item2 = blockchain.forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item1 = blockchain.forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
 
                     // Prepare expected forks
                     const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeightFork1);
@@ -973,8 +973,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 24 - end to end - fix data
-                it.skip('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, end to end', async () => {
+                // test 24 - end to end
+                it('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcMainchainBlockHeight: number = initialHeight;
@@ -1008,8 +1008,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 25 - end to end - fix data
-                it.skip('should create branch for first BTC block with matching RSK tag, following non consecutive BTC block with no matching RSK tag, end to end', async () => {
+                // test 25 - end to end
+                it('should create branch for first BTC block with matching RSK tag, following non consecutive BTC block with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeight: number = initialHeight + 3;
                     const btcMainchainBlockHeight: number = initialHeight;
@@ -1043,8 +1043,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 26 - end to end - fix data
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block with no matching RSK tag, end to end', async () => {
+                // test 26 - end to end
+                it('should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcMainchainBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeightFork1: number = initialHeight + 1;
@@ -1090,8 +1090,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 27 - end to end - fix data
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, end to end', async () => {
+                // test 27 - end to end
+                it('should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcMainchainBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeightFork1: number = initialHeight + 3;
@@ -1137,8 +1137,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 28 - end to end - fix data
-                it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, end to end', async () => {
+                // test 28 - end to end
+                it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 1;
@@ -1172,8 +1172,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 29 - end to end - fix data
-                it.skip('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, end to end', async () => {
+                // test 29 - end to end
+                it('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 2;
@@ -1209,9 +1209,9 @@ describe.only('RSK Forks in the present tests', () => {
                 });
             });
         });
-        // TODO CPV 7 E2E
+
         describe('RSK no match at same height with no match CPV', () => {
-            // TODO CPV 7 - Same fork E2E
+
             describe('No matching RSK tags match CPV among each other', () => {
                 // test 30 - end to end
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
@@ -1259,7 +1259,7 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([], [fork1Expected, fork2Expected]);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // test 31 - end to end - review data
+                // test 31 - end to end
                 it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, end to end', async () => {
                     const initialHeight: number = HNoMatchRSK8CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -1630,7 +1630,7 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
             });
-            // TODO CPV 7 - diff fork E2E
+
             describe('No matching RSK tags no match CPV among each other', () => {
                 // test 40 - end to end
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, end to end', async () => {
@@ -2272,7 +2272,7 @@ describe.only('RSK Forks in the present tests', () => {
                 expect([itemExpected]).to.be.eql(mainchain);
                 expect([forkExpected]).to.be.eql(forks);
             });
-            // test 11 - mongo input - review execution
+            // test 11 - mongo input
             it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo input validation', async () => {
                 const initialHeight: number = HNoMatchRSKWithFollowingMatch;
                 const btcMainchainBlockHeight: number = initialHeight + 1;
@@ -2311,7 +2311,7 @@ describe.only('RSK Forks in the present tests', () => {
         });
         describe('RSK no match at same height with difference in 2 bytes in CPV, mongo input validation', () => {
             describe('No matching RSK tags match CPV among each other', () => {
-                // test 12 - mongo input - KNOWN ISSUE IN ARMADILLO
+                // test 12 - mongo input
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -2344,7 +2344,7 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // test 13 - mongo input - KNOWN ISSUE IN ARMADILLO
+                // test 13 - mongo input
                 it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -2377,14 +2377,14 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 14 - mongo input - review data
-                it.only('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
+                // test 14 - mongo input
+                it('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeight2: number = initialHeight + 1;
                     const btcWitnessBlockHeight3: number = initialHeight + 2;
                     const blocksToMove: number = 2;
-                    const cpvDiffExpected: number = 0;
+                    const cpvDiffExpected: number = 2;
                     const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBlock + initialHeight - 1);
                     btcService.save(firstToCheckBtc);
                     await setHeightInMockBTCApi(initialHeight);
@@ -2416,14 +2416,14 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 15 - mongo input - review data
-                it.skip('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
+                // test 15 - mongo input
+                it('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeight2: number = initialHeight + 3;
                     const btcWitnessBlockHeight3: number = initialHeight + 5;
                     const blocksToMove: number = 5;
-                    const cpvDiffExpected: number = 0;
+                    const cpvDiffExpected: number = 2;
                     const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBlock + initialHeight - 1);
                     btcService.save(firstToCheckBtc);
                     await setHeightInMockBTCApi(initialHeight);
@@ -2455,8 +2455,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 16 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
+                // test 16 - mongo input
+                it('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const blocksToMove: number = 1;
@@ -2489,8 +2489,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 17 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 BTC block with 2 bytes difference CPV no match RSK tagswith no matching RSK tag, mongo input validation', async () => {
+                // test 17 - mongo input
+                it('should create branch for first BTC block with matching RSK tag, following 2 BTC block with 2 bytes difference CPV no match RSK tagswith no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcWitnessBlockHeight2: number = initialHeight + 4;
@@ -2528,8 +2528,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 18 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo input validation', async () => {
+                // test 18 - mongo input
+                it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveMatches;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 1;
@@ -2563,8 +2563,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 19 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo input validation', async () => {
+                // test 19 - mongo input
+                it('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveMatches;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 2;
@@ -2600,8 +2600,8 @@ describe.only('RSK Forks in the present tests', () => {
                 });
             });
             describe('No matching RSK tags no match CPV among each other', () => {
-                // TODO test 20 - mongo input - Review execution
-                it.skip('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
+                // test 20 - mongo input
+                it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2: number = initialHeight + 1;
@@ -2643,8 +2643,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([fork1Expected, fork2Expected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 21 - mongo input - Review execution
-                it.skip('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
+                // test 21 - mongo input
+                it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2: number = initialHeight + 3;
@@ -2686,8 +2686,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([fork1Expected, fork2Expected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 22 - mongo input - Review execution
-                it.skip('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
+                // test 22 - mongo input
+                it('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2item1: number = initialHeight + 1;
@@ -2703,8 +2703,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const forks: Fork[] = await forkService.getAll();
                     const mainchain: Item[] = await mainchainService.getAll();
                     const timeExpectedFork1 = forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item2 = forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item1 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item2 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item1 = forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
 
                     // Prepare expected forks
                     const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeightFork1);
@@ -2735,8 +2735,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([fork1Expected, fork2Expected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 23 - mongo input - Review execution
-                it.skip('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
+                // test 23 - mongo input
+                it('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2item1: number = initialHeight + 3;
@@ -2752,8 +2752,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const forks: Fork[] = await forkService.getAll();
                     const mainchain: Item[] = await mainchainService.getAll();
                     const timeExpectedFork1 = forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item2 = forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item1 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item2 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item1 = forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
 
                     // Prepare expected forks
                     const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeightFork1);
@@ -2784,8 +2784,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([fork1Expected, fork2Expected]);
                     expect(mainchain).to.be.eql([]);
                 });
-                // TODO test 24 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
+                // test 24 - mongo input
+                it('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcMainchainBlockHeight: number = initialHeight;
@@ -2819,8 +2819,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 25 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with matching RSK tag, following non consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
+                // test 25 - mongo input
+                it('should create branch for first BTC block with matching RSK tag, following non consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeight: number = initialHeight + 3;
                     const btcMainchainBlockHeight: number = initialHeight;
@@ -2854,8 +2854,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 26 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
+                // test 26 - mongo input
+                it('should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcMainchainBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeightFork1: number = initialHeight + 1;
@@ -2903,8 +2903,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([fork1Expected, fork2Expected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 27 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
+                // test 27 - mongo input
+                it('should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcMainchainBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeightFork1: number = initialHeight + 3;
@@ -2951,8 +2951,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([fork1Expected, fork2Expected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 28 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo input validation', async () => {
+                // test 28 - mongo input
+                it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 1;
@@ -2986,8 +2986,8 @@ describe.only('RSK Forks in the present tests', () => {
                     expect(forks).to.be.eql([forkExpected]);
                     expect(mainchain).to.be.eql([itemExpected]);
                 });
-                // TODO test 29 - mongo input - Review execution
-                it.skip('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo input validation', async () => {
+                // test 29 - mongo input
+                it('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo input validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 2;
@@ -3025,7 +3025,7 @@ describe.only('RSK Forks in the present tests', () => {
         });
         describe('RSK no match at same height with no match CPV, mongo input validation', () => {
             describe('No matching RSK tags match CPV among each other', () => {
-                // test 30 - mongo input - review data
+                // test 30 - mongo input
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo input validation', async () => {
                     // const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks('TO REMOVE', HNoMatchRSK8CPVDiffConsecutive, 1, 2000, apiPoolingTime, loadingTime);
                     const initialHeight: number = HNoMatchRSK8CPVDiffConsecutive;
@@ -3449,8 +3449,8 @@ describe.only('RSK Forks in the present tests', () => {
                     await moveXBlocks(blocksToMove, btcService);
                     const forks: Fork[] = await forkService.getAll();
                     const mainchain: Item[] = await mainchainService.getAll();
-                    const timeExpectedFork1 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2 = forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork1 = forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
 
                     // Prepare expected forks
                     const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeightFork1);
@@ -3541,8 +3541,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const forks: Fork[] = await forkService.getAll();
                     const mainchain: Item[] = await mainchainService.getAll();
                     const timeExpectedFork1 = forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item2 = forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
-                    const timeExpectedFork2item1 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item2 = forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
+                    const timeExpectedFork2item1 = forks[1].getForkItems()[1].time; // adding same time to remove from comparision.
 
                     // Prepare expected forks
                     const btcWitnessBlockFork1: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeightFork1);
@@ -4037,8 +4037,7 @@ describe.only('RSK Forks in the present tests', () => {
                 expect(blockchain).to.be.eql(blockchainExpected);
             });
             // test 11 - mongo output
-            it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation', async () => {
-                // const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks('TO REMOVE', HNoMatchRSKWithFollowingMatch, 1, 2000, apiPoolingTime, loadingTime);
+            it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation', async () => {
                 const initialHeight: number = HNoMatchRSKWithFollowingMatch;
                 const btcMainchainBlockHeight: number = initialHeight + 1;
                 const btcWitnessBlockHeight: number = initialHeight;
@@ -4071,7 +4070,7 @@ describe.only('RSK Forks in the present tests', () => {
         });
         describe('RSK no match at same height with difference in 2 bytes in CPV, mongo output validation', () => {
             describe('No matching RSK tags match CPV among each other, mongo output validation', () => {
-                // test 12 - mongo output - KNOWN ISSUE IN ARMADILLO
+                // test 12 - mongo output
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -4100,7 +4099,7 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchainExpected).to.be.eql(blockchain);
                 });
-                // test 13 - mongo output - KNOWN ISSUE IN ARMADILLO
+                // test 13 - mongo output
                 it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -4129,7 +4128,7 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchainExpected).to.be.eql(blockchain);
                 });
-                // TODO test 14 - mongo output - review data
+                // test 14 - mongo output
                 it('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
@@ -4163,13 +4162,13 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchainExpected).to.be.eql(blockchain);
                 });
-                // TODO test 15 - mongo output - review data
+                // test 15 - mongo output
                 it('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatchRSK2CPVDiffNonConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeight2: number = initialHeight + 3;
                     const btcWitnessBlockHeight3: number = initialHeight + 5;
-                    const cpvDiffExpected: number = 0;
+                    const cpvDiffExpected: number = 2;
                     // Prepare expected fork
                     const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBlock + btcWitnessBlockHeight);
                     const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected); // Rename función para que sea más sencilla.
@@ -4196,8 +4195,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchainExpected).to.be.eql(blockchain);
                 });
-                // TODO test 16 - mongo output - Review data
-                it.skip('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
+                // test 16 - mongo output
+                it('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const cpvDiffExpected: number = 2;
@@ -4224,10 +4223,10 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     const blockchainFromAPI = await getBlockchains();
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
-                    expect(blockchain).to.be.eql(blockchainExpected, 'Known issue with CPV difference, to review and remove this message.');
+                    expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 17 - mongo output - Review data
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 BTC block with 2 bytes difference CPV no match RSK tagswith no matching RSK tag, mongo output validation', async () => {
+                // test 17 - mongo output
+                it('should create branch for first BTC block with matching RSK tag, following 2 BTC block with 2 bytes difference CPV no match RSK tagswith no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HMatchRSK2CPVDiffConsecutive;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcWitnessBlockHeight2: number = initialHeight + 4;
@@ -4254,14 +4253,14 @@ describe.only('RSK Forks in the present tests', () => {
                     const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
                     // Dump to Armadillo DB expected Mainchain and Fork elements
                     await forkService.save(copy(forkExpected));
-                    await forkService.save(copy([itemExpected]));
+                    await mainchainService.save(copy([itemExpected]));
                     const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
                     const blockchainFromAPI = await getBlockchains();
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 18 - mongo output - Review data
-                it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation', async () => {
+                // test 18 - mongo output
+                it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveMatches;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 1;
@@ -4291,8 +4290,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 19 - mongo output - Review data
-                it.skip('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo output validation', async () => {
+                // test 19 - mongo output
+                it('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveMatches;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 2;
@@ -4325,8 +4324,8 @@ describe.only('RSK Forks in the present tests', () => {
                 });
             });
             describe('No matching RSK tags no match CPV among each other, mongo output validation', () => {
-                // TODO test 20 - mongo output - Review data
-                it.skip('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
+                // test 20 - mongo output
+                it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2: number = initialHeight + 1;
@@ -4363,8 +4362,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 21 - mongo output - Review data
-                it.skip('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
+                // test 21 - mongo output
+                it('should create branch for first 2 non consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2: number = initialHeight + 3;
@@ -4402,8 +4401,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 22 - mongo output - Review data
-                it.skip('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
+                // test 22 - mongo output
+                it('should create branch for first 3 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2item1: number = initialHeight + 1;
@@ -4445,8 +4444,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 23 - mongo output - Review data
-                it.skip('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
+                // test 23 - mongo output
+                it('should create branch for first 3 non consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeightFork1: number = initialHeight;
                     const btcWitnessBlockHeightFork2item1: number = initialHeight + 3;
@@ -4488,8 +4487,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 24 - mongo output - Review data
-                it.skip('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
+                // test 24 - mongo output
+                it('should create branch for first BTC block with matching RSK tag, following consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcMainchainBlockHeight: number = initialHeight;
@@ -4520,8 +4519,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 25 - mongo output - Review data
-                it.skip('should create branch for first BTC block with matching RSK tag, following non consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
+                // test 25 - mongo output
+                it('should create branch for first BTC block with matching RSK tag, following non consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcWitnessBlockHeight: number = initialHeight + 1;
                     const btcMainchainBlockHeight: number = initialHeight;
@@ -4552,8 +4551,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 26 - mongo output - Review data
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
+                // test 26 - mongo output
+                it('should create branch for first BTC block with matching RSK tag, following 2 consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffConsecutiveRskBlocksDontMatchEachOther;
                     const btcMainchainBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeightFork1: number = initialHeight + 1;
@@ -4598,8 +4597,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 27 - mongo output - Review data
-                it.skip('should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
+                // test 27 - mongo output
+                it('should create branch for first BTC block with matching RSK tag, following 2 non consecutive BTC block with no matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HMatch2CPVDiffNonConsecutiveRskBlocksDontMatchEachOther;
                     const btcMainchainBlockHeight: number = initialHeight;
                     const btcWitnessBlockHeightFork1: number = initialHeight + 3;
@@ -4645,8 +4644,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 28 - mongo output - Review data
-                it.skip('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation', async () => {
+                // test 28 - mongo output
+                it('should create branch for first BTC block with no matching RSK tag, following consecutive BTC block with matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffConsecutiveRskBlocksFollowingMatchesRsk;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 1;
@@ -4677,8 +4676,8 @@ describe.only('RSK Forks in the present tests', () => {
                     const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
                     expect(blockchain).to.be.eql(blockchainExpected);
                 });
-                // TODO test 29 - mongo output - Review data
-                it.skip('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo output validation', async () => {
+                // test 29 - mongo output
+                it('should create branch for first BTC block with no matching RSK tag, following non consecutive BTC block with matching RSK tag, mongo output validation', async () => {
                     const initialHeight: number = HNoMatch2CPVDiffNonConsecutiveRskBlocksFollowingMatchesRsk;
                     const btcWitnessBlockHeight: number = initialHeight;
                     const btcMainchainBlockHeight: number = initialHeight + 2;
@@ -4713,7 +4712,7 @@ describe.only('RSK Forks in the present tests', () => {
         });
         describe('RSK no match at same height with no match CPV, mongo output validation', () => {
             describe('No matching RSK tags match CPV among each other, mongo output validation', () => {
-                // test 30 - mongo output - review test data
+                // test 30 - mongo output
                 it('should create branch for first 2 consecutive BTC blocks with no matching RSK tag, mongo output validation', async () => {
                     // const blockchainsResponse = await utils.getBlockchainsAfterMovingXBlocks('TO REMOVE', HNoMatchRSK8CPVDiffConsecutive, 1, 2000, apiPoolingTime, loadingTime);
                     const initialHeight: number = HNoMatchRSK8CPVDiffConsecutive;

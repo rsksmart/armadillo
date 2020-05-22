@@ -184,7 +184,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightFork2: number = initialHeight + 2;
             const blocksToMove: number = 2;
             const cpvDiffExpectedFork1: number = 0;
-            const cpvDiffExpectedFork2: number = 7;
+            const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
@@ -201,7 +201,6 @@ describe('RSK Forks in the past tests', () => {
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
             const startFork2: RskBlockInfo = await rskApiService.getBlock(heightStartFork2);
-            startFork2.forkDetectionData = null;
             const heightEndFork1: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1, bestRskBlock);
             const heightEndFork2: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2, bestRskBlock);
             const endFork1: RskBlockInfo = await rskApiService.getBlock(heightEndFork1);
@@ -226,14 +225,14 @@ describe('RSK Forks in the past tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [fork1Expected, fork2Expected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // 5ta prueba
+        // TODO 5ta prueba
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following non consecutive BTC block', async () => {
             const initialHeight: number = heightOfNonConsecutiveRSKnoMatchPastDiffBranch;
             const btcWitnessBlockHeightFork1: number = initialHeight + 5;
             const btcWitnessBlockHeightFork2: number = initialHeight + 8;
             const blocksToMove: number = 8;
             const cpvDiffExpectedFork1: number = 0;
-            const cpvDiffExpectedFork2: number = 7;
+            const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
@@ -250,7 +249,6 @@ describe('RSK Forks in the past tests', () => {
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
             const startFork2: RskBlockInfo = await rskApiService.getBlock(heightStartFork2);
-            startFork2.forkDetectionData = null;
             const heightEndFork1: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1, bestRskBlock);
             const heightEndFork2: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2, bestRskBlock);
             const endFork1: RskBlockInfo = await rskApiService.getBlock(heightEndFork1);
@@ -482,7 +480,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightFork2: number = initialHeight + 2;
             const blocksToMove: number = 2;
             const cpvDiffExpectedFork1: number = 0;
-            const cpvDiffExpectedFork2: number = 7;
+            const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
@@ -498,7 +496,6 @@ describe('RSK Forks in the past tests', () => {
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
             const startFork2: RskBlockInfo = await rskApiService.getBlock(heightStartFork2);
-            startFork2.forkDetectionData = null;
             const heightEndFork1: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1, bestRskBlock);
             const heightEndFork2: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2, bestRskBlock);
             const endFork1: RskBlockInfo = await rskApiService.getBlock(heightEndFork1);
@@ -529,7 +526,7 @@ describe('RSK Forks in the past tests', () => {
             const btcWitnessBlockHeightFork2: number = initialHeight + 8;
             const blocksToMove: number = 8;
             const cpvDiffExpectedFork1: number = 0;
-            const cpvDiffExpectedFork2: number = 7;
+            const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             btcService.save(firstToCheckBtc);
             await setHeightInMockBTCApi(initialHeight);
@@ -546,7 +543,6 @@ describe('RSK Forks in the past tests', () => {
             const heightStartFork2: number = getStartHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2);
             const startFork1: RskBlockInfo = await rskApiService.getBlock(heightStartFork1);
             const startFork2: RskBlockInfo = await rskApiService.getBlock(heightStartFork2);
-            startFork2.forkDetectionData = null;
             const heightEndFork1: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork1.rskTag.BN, cpvDiffExpectedFork1, bestRskBlock);
             const heightEndFork2: number = getEndHeightMainchainForCPVDiff(btcWitnessBlockFork2.rskTag.BN, cpvDiffExpectedFork2, bestRskBlock);
             const endFork1: RskBlockInfo = await rskApiService.getBlock(heightEndFork1);
