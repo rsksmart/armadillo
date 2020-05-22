@@ -23,7 +23,7 @@
         "forkLengthThreshold": 515,
         "hashrateThreshold": 0.5,
         "distanceToBestBlockThreshold": 6000,
-        "btcBlocksThreshold": 2,
+        "btcBlocksThreshold": 3,
         "recipients": ["mining@iovlabs.org", "security@iovlabs-to-complete.org"]
     }
 ]
