@@ -43,92 +43,11 @@ function buildInfo(params : any) : ForkInformation {
 }
 
 describe("DefconLevel", () => {
-    it("Active for ForkInformation (distance and fork hashrate over threshold)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 10000000, 1, []);
+    it("active when all criteria are met", async () => {
+        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 6000, 2, []);
         
         const forkInformation: ForkInformation = buildInfo({
             forkLengthRskBlocks: 550,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.51
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.true;
-    })
-
-    it("Active for ForkInformation (distance and fork hashrate equal to threshold)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 10000000, 1, []);
-        
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 550,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.5
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.true;
-    })
-
-    it("Inactive for ForkInformation (distance over threshold but fork hashrate not)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 10000000, 1, []);
-        
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 500,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.4
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.false;
-    })
-
-    it("Inactive for ForkInformation (fork hashrate over threshold but distance not)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5,  10000000, 1, []);
-        
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 490,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.6
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.false;
-    })
-
-    it("Inactive for ForkInformation (both distance and fork hashrate below thresholds)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 10000000, 1, []);
-        
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 490,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.45
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.false;
-    })
-
-    it("Inactive for ForkInformation (distance to best block above threshold)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.51, 6000, 1, []);
-        
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 500,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.51,
-            bestBlockInRskInThatMoment: 100000,
-            endingRskHeight: 2000
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.false;
-    })
-
-    it("Active for ForkInformation (distance to best block below threshold)", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.51, 6000, 1, []);
-        
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 500,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.51,
-            bestBlockInRskInThatMoment: 10000,
-            endingRskHeight: 9000
-        });
-
-        expect(level.activeFor(forkInformation)).to.be.true;
-    })
-
-    it("Active for ForkInformation (fork item count above threshold", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'Urgent', 500, 0.51, 6000, 2, []);
-
-        const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 500,
             btcForkBlockPercentageOverMergeMiningBlocks: 0.51,
             bestBlockInRskInThatMoment: 10000,
             endingRskHeight: 9000,
@@ -138,15 +57,71 @@ describe("DefconLevel", () => {
         expect(level.activeFor(forkInformation)).to.be.true;
     })
 
-    it("Active for ForkInformation (fork item count above threshold", async () => {
-        const level: DefconLevel = new DefconLevel(1, 'Urgent', 500, 0.51, 6000, 3, []);
+    it("inactive when no criteria are met", async () => {
+        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 6000, 2, []);
+        
+        const forkInformation: ForkInformation = buildInfo({
+            forkLengthRskBlocks: 1,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0,
+            bestBlockInRskInThatMoment: 1000000,
+            endingRskHeight: 1,
+            forkBTCitemsLength: 1
+        });
+
+        expect(level.activeFor(forkInformation)).to.be.false;
+    })
+
+    it("inactive when fork length criteria is not met", async () => {
+        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 6000, 2, []);
 
         const forkInformation: ForkInformation = buildInfo({
-            forkLengthRskBlocks: 500,
+            forkLengthRskBlocks: 450,
             btcForkBlockPercentageOverMergeMiningBlocks: 0.51,
             bestBlockInRskInThatMoment: 10000,
             endingRskHeight: 9000,
             forkBTCitemsLength: 2
+        });
+
+        expect(level.activeFor(forkInformation)).to.be.false;
+    })
+
+    it("inactive when hashrate criteria is not met", async () => {
+        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 6000, 2, []);
+
+        const forkInformation: ForkInformation = buildInfo({
+            forkLengthRskBlocks: 550,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.45,
+            bestBlockInRskInThatMoment: 10000,
+            endingRskHeight: 9000,
+            forkBTCitemsLength: 2
+        });
+
+        expect(level.activeFor(forkInformation)).to.be.false;
+    })
+
+    it("inactive when distance to best block criteria is not met", async () => {
+        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 6000, 2, []);
+
+        const forkInformation: ForkInformation = buildInfo({
+            forkLengthRskBlocks: 550,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.5,
+            bestBlockInRskInThatMoment: 10000,
+            endingRskHeight: 1000,
+            forkBTCitemsLength: 2
+        });
+
+        expect(level.activeFor(forkInformation)).to.be.false;
+    })
+
+    it("inactive when btc block count criteria is not met", async () => {
+        const level: DefconLevel = new DefconLevel(1, 'URGENT', 500, 0.5, 6000, 2, []);
+
+        const forkInformation: ForkInformation = buildInfo({
+            forkLengthRskBlocks: 550,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.5,
+            bestBlockInRskInThatMoment: 10000,
+            endingRskHeight: 9000,
+            forkBTCitemsLength: 1
         });
 
         expect(level.activeFor(forkInformation)).to.be.false;
