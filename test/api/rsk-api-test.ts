@@ -6,7 +6,7 @@ import { ForkDetectionData } from "../../src/common/fork-detection-data";
 import sinon from "sinon";
 import { expect } from "chai";
 import { RangeForkInMainchain } from "../../src/common/forks";
-import { ArmadilloApiImpl } from "../../src/scripts/fork-detector-notifier/src/common/armadillo-api";
+import { numberToHex } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const NU = "00";
@@ -349,17 +349,17 @@ describe("Rsk Service api tests, getRangeForkWhenItCouldHaveStarted method", () 
 
   describe("Present cases:", () => {
     it("CPV match 7 bytes", async () => {
-      const blockSameHeight = new RskBlockInfo(4992, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + "00001380"));
-      let block4928 = new RskBlockInfo(4928, "", "", true, "", null);
+      const blockSameHeight = new RskBlockInfo(5000, "", "", true, "", new ForkDetectionData(PREFIX + "77665544332211" + NU + numberToHex(5000)));
+      let block4992 = new RskBlockInfo(4992, "", "", true, "", null);
 
       const getBlockStub = sinon.stub(rskApiService, <any>'getBlock');
-      getBlockStub.withArgs(block4928.height).returns(block4928);
+      getBlockStub.withArgs(block4992.height).returns(block4992);
       getBlockStub.withArgs(blockSameHeight.height).returns(blockSameHeight);
 
       sinon.stub(rskApiService, <any>'getBestBlock').returns(blockSameHeight);
 
-      let rangeReturn: RangeForkInMainchain = await rskApiService.getRangeForkWhenItCouldHaveStarted(new ForkDetectionData(PREFIX + "77665544332211" + NU + "00001388"), blockSameHeight.forkDetectionData);
-      let rangeExpected = new RangeForkInMainchain(block4928, blockSameHeight);
+      let rangeReturn: RangeForkInMainchain = await rskApiService.getRangeForkWhenItCouldHaveStarted(new ForkDetectionData(PREFIX + "77665544332211" + NU + numberToHex(5000)), blockSameHeight.forkDetectionData);
+      let rangeExpected = new RangeForkInMainchain(block4992, blockSameHeight);
 
       //Validations
       expect(rangeReturn).to.deep.equal(rangeExpected);
