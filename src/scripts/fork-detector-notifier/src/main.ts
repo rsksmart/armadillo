@@ -37,7 +37,8 @@ async function main() {
 function loadDefconLevels() : DefconLevel[] {
     const levels: any[] = require('./defcon-levels.json');
 
-    return levels.map(l => new DefconLevel(l.level, l.name, l.forkLengthThreshold, l.hashrateThreshold, l.distanceToBestBlockThreshold, l.recipients))
+    return levels.map(l => new DefconLevel(l.level, l.name, l.forkLengthThreshold, l.hashrateThreshold,
+                                        l.btcBlocksThreshold, l.distanceToBestBlockThreshold, l.recipients))
 }
 
 main();
