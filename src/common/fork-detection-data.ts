@@ -57,7 +57,7 @@ export class ForkDetectionData {
         const CPVLENGTH = 7;
         let cpvSplit = this.hexToBytes(this.CPV);
         let cpvToCheckSplit = this.hexToBytes(cpvToCheck);
-        
+
         for (var j = 0; j < cpvToCheckSplit.length; j++) {
             if (cpvSplit[0] == cpvToCheckSplit[j]) {
                 if (cpvSplit.slice(0, CPVLENGTH - j).toString() == cpvToCheckSplit.slice(j, CPVLENGTH).toString()) {
@@ -70,18 +70,18 @@ export class ForkDetectionData {
     }
 
     public getNumberOfBytesThatCPVMatch(forkDetectionDataToCompare: ForkDetectionData): number {
-        let height = Math.floor(this.BN / 64); 
-        let heightToCompare = Math.floor(forkDetectionDataToCompare.BN / 64);
+        let height = Math.floor((this.BN - 1) / 64);
+        let heightToCompare = Math.floor((forkDetectionDataToCompare.BN - 1) / 64);
         let difference = Math.abs(height - heightToCompare);
-        
-        if(difference > 7){
+
+        if (difference > 7) {
             return 0;
         }
 
         let cpv;
         let cpvToCheckSpplited;
 
-        if(height < heightToCompare) {
+        if (height < heightToCompare) {
             cpv = this.CPV.slice(0, this.CPV.length - 2 * difference);
             cpvToCheckSpplited = forkDetectionDataToCompare.CPV.slice(2 * difference);
         } else {
@@ -89,9 +89,9 @@ export class ForkDetectionData {
             cpvToCheckSpplited = this.CPV.slice(2 * difference);
         }
 
-        for(let i = 0; i < cpv.length; i = i + 2){
+        for (let i = 0; i < cpv.length; i = i + 2) {
             var cpvSliced = cpv.slice(i);
-            if(cpvSliced == cpvToCheckSpplited.slice(i)){
+            if (cpvSliced === cpvToCheckSpplited.slice(i)) {
                 return cpvSliced.length / 2;
             }
         }
