@@ -10,6 +10,7 @@ import sinon from "sinon";
 import { RskBlockInfo, RskForkItemInfo } from "../../src/common/rsk-block";
 import { RskApiService } from "../../src/services/rsk-api-service";
 import { RskApiConfig } from "../../src/config/rsk-api-config";
+import { numberToHex } from "../../src/util/helper";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
@@ -199,5 +200,141 @@ describe('Detection data equals', () => {
 
     const result: boolean = data.equals(otherData);
     expect(result).to.be.false;
+  });
+})
+
+
+describe('getNumberOfBytesThatCPVMatch method', () => {
+  describe('PRESENT', () => {
+    it('match 7 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(7);
+    });
+
+    it('match 4 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "00112244556677" + NU + numberToHex(1000));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(4);
+    });
+
+    it('match 0 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556611" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "00112244556677" + NU + numberToHex(1000));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(0);
+    });
+  });
+
+  describe('FUTURE', () => {
+    it('match 0 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556611" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556611" + NU + numberToHex(2024));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(0);
+
+    });
+
+    it('match 0 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU +numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "00000000000022" + NU + numberToHex(1400));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(0);
+    });
+
+    it('match 1 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "00000000000011" + NU + numberToHex(1345));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(1);
+    });
+
+    it('match 5 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "00001122334455" + NU + numberToHex(1089)); 
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(5);
+    });
+
+    it('match 6 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "00112233445566" + NU + numberToHex(1025));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(6);
+    });
+
+    it('match 7 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1023));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(7);
+    });
+
+    it('match 7 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1001));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(7);
+    });
+  });
+
+  describe('PAST', () => {
+    it('match 0 bytes', () => {
+      //height different is 6 bytes but cpv is bad form for that height
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU +numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(632));
+
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(0);
+    });
+
+    it('match 0 bytes', () => {
+      //height different is 7 bytes but cpv is bad form for that height.
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(552));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(0);
+    });
+
+    it('match 1 bytes', () => {
+
+      //height different is 6 bytes and cpv is well form.
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(1000));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "77000000000000" + NU + numberToHex(577));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(1);
+    });
+
+    it('match 5 bytes', () => {
+      //height different is 2 bytes and cpv is well form.
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(448));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "33445566770000" + NU + numberToHex(320));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(5);
+    });
+
+    it('match 6 bytes', () => {
+      const fdd1: ForkDetectionData = new ForkDetectionData(PREFIX + "11223344556677" + NU + numberToHex(448));
+      const fdd2: ForkDetectionData = new ForkDetectionData(PREFIX + "33445566770000" + NU + numberToHex(320));
+      let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
+
+      expect(matchBytes).to.be.equals(5);
+    });
   });
 })
