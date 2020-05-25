@@ -142,7 +142,6 @@ describe('RSK Forks in the past tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // 3ra prueba
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following non consecutive BTC block', async () => {
             const initialHeight: number = heightOfNonConsecutiveRSKnoMatchPastSameBranch;
             const btcWitnessBlockHeight: number = initialHeight + 3;
@@ -177,7 +176,6 @@ describe('RSK Forks in the past tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // 4ta prueba
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following consecutive BTC block', async () => {
             const initialHeight: number = heightOfConsecutiveRSKnoMatchPastDiffBranch;
             const btcWitnessBlockHeightFork1: number = initialHeight + 1;
@@ -225,7 +223,6 @@ describe('RSK Forks in the past tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [fork1Expected, fork2Expected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // TODO 5ta prueba
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following non consecutive BTC block', async () => {
             const initialHeight: number = heightOfNonConsecutiveRSKnoMatchPastDiffBranch;
             const btcWitnessBlockHeightFork1: number = initialHeight + 5;
@@ -273,7 +270,6 @@ describe('RSK Forks in the past tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [fork1Expected, fork2Expected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // 6ta prueba
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following consecutive BTC block', async () => {
             const initialHeight: number = heightOfConsecutiveRSKnoMatchPastFollowingMatch;
             const btcWitnessBlockHeight: number = initialHeight + 1;
@@ -319,7 +315,6 @@ describe('RSK Forks in the past tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, [forkExpected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // 7ma prueba
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following non consecutive BTC block', async () => {
             const initialHeight: number = heightOfNonConsecutiveRSKnoMatchPastFollowingMatch;
             const btcWitnessBlockHeight: number = initialHeight + 3;

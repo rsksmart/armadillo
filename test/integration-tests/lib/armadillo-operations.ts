@@ -10,6 +10,7 @@ import { BtcHeaderInfo, BtcBlock } from '../../../src/common/btc-block';
 import { RskBlockInfo } from '../../../src/common/rsk-block';
 import { MainchainService } from '../../../src/services/mainchain-service';
 import { Item } from '../../../src/common/forks';
+import { RskApiService } from '../../../src/services/rsk-api-service';
 
 export async function getBlockchains(number: number = 2000) {
     const response = await fetch(armadilloApiURL + 'blockchains/' + number);
@@ -29,18 +30,22 @@ export async function fakeMainchainBlock(rskBlockNumber: number, mainchainServic
     const blockInfo: Item = await mainchainService.getBlock(rskBlockNumber);
     const prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
     const rskHash = scrumbleHash(blockInfo.rskInfo.hash);
+    console.log("======== rskBN", rskBlockNumber);
+    console.log("expected hash ", blockInfo.rskInfo.hash);
+    console.log("scrumbled hash", rskHash);
     blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
     blockInfo.rskInfo.hash = rskHash;
     mainchainService.changeBlockInMainchain(rskBlockNumber, blockInfo);
 }
 
-export async function swapMainchainBlockWithSibling(rskBlockNumber) {
-    const blockInfoMainchain = await findOneMainchainBlock(rskBlockNumber, true);
-    const blockInfoSibling = await getSiblingFromRsk(rskBlockNumber);
-
-    await updateOneMainchainBlock(rskBlockNumber, true, blockInfoSibling);
-    await updateOneMainchainBlock(rskBlockNumber, false, blockInfoMainchain);
-    return blockInfoMainchain;
+export async function swapMainchainBlockWithSibling(rskBlockNumber: number, mainchainService: MainchainService, rskApiService: RskApiService): Promise<Item> {
+    const block: Item = await mainchainService.getBlock(rskBlockNumber);
+    const blocksAtHeight: RskBlockInfo[] = await rskApiService.getBlocksByNumber(rskBlockNumber);
+    const siblingHash: string = blocksAtHeight.filter((x: RskBlockInfo) => x.mainchain === false)[0].hash;
+    const siblingRskBlockInfo: RskBlockInfo = await rskApiService.getBlockByHash(siblingHash);
+    const siblingItem: Item = new Item(block.btcInfo, siblingRskBlockInfo);
+    mainchainService.changeBlockInMainchain(rskBlockNumber, siblingItem);
+    return siblingItem;
 }
 
 export async function moveXBlocks(blocksToMove: number, btcService: BtcService): Promise<void> {
