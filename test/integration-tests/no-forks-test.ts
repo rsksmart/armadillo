@@ -19,13 +19,12 @@ import { armadilloDB, deleteDB } from './lib/mongo-utils';
 import { validateMainchain } from './lib/validators';
 import { expect } from 'chai';
 
-
 const heightOfNoRskTags = 0;
 const heightOfConsecutiveRskTags = 3;
 const rskheightOfConsecutiveRskTags = 470;
 const heightOfDistancedRskTags = 5;
-const heightForSiblingRskTag = 137;
-const rskHeightWithSibling = 6480;
+const heightForSiblingRskTag = 140;
+const rskHeightWithSibling = 6510;
 let btcApiService: HttpBtcApi;
 let rskApiService: RskApiService;
 let mongoStoreForks: MongoStore;
@@ -326,35 +325,16 @@ describe('RSK no forks tests', () => {
         const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
         expect(blockchainExpected).to.be.eql(blockchain);
     });
-    it.skip('should generate a mainchain connection between 2 BTC blocks with RSK tags, second RSK tag is of a sibling block, end to end', async () => {});
-
-    it.skip('should generate a mainchain connection between 3 BTC blocks with RSK tags, a reorganization of lenght 1 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end', async () => {
-        await setHeightInMockBTCApi(heightOfConsecutiveRskTags);
-        await deleteDB(armadilloDB);
-        // await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
-        await sleep(apiPoolingTime + loadingTime);
-        await moveToNextBlock();
-        await sleep(loadingTime);
-        // const reorgBlockInfo = await fakeMainchainBlock(rskheightOfConsecutiveRskTags, true);
-        await moveToNextBlock();
-        // Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await sleep(loadingTime + apiPoolingTime);
-        await setHeightInMockBTCApi(heightOfNoRskTags);
-        // validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
-        let reorgBlocks = {};
-        // reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
-        await validateMainchain(2, 41, reorgBlocks);
-        await validateMainchain(100, 41, reorgBlocks);
-
-        const initialHeight: number = heightOfConsecutiveRskTags;
+    // TODO differentiate rskTag of sibling and mainchain block
+    it('should generate a mainchain connection between 2 BTC blocks with RSK tags, second RSK tag is of a sibling block, end to end', async () => {
+        const initialHeight: number = heightForSiblingRskTag;
         const btcWitnessBlockHeightMainchain2: number = initialHeight + 1;
-        const btcWitnessBlockHeightMainchain3: number = initialHeight + 2;
-        const blocksToMove: number = 2;
+        const blocksToMove: number = 1;
         const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
         btcService.save(firstToCheckBtc);
         await setHeightInMockBTCApi(initialHeight);
-        // get actual blockchain
-        const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+        await moveXBlocks(blocksToMove, btcService);
+        const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchains()).data);
         // mainchain validation
         const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
         btcMainchain.btcInfo.guessedMiner = null;
@@ -364,16 +344,7 @@ describe('RSK no forks tests', () => {
         btcMainchain2.btcInfo.guessedMiner = null;
         const rskBlockMainchain2: RskBlockInfo = await rskApiService.getBlock(btcMainchain2.rskTag.BN);
         const itemExpected2: Item = new Item(btcMainchain2.btcInfo, rskBlockMainchain2);
-        const btcMainchain3: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain3);
-        btcMainchain3.btcInfo.guessedMiner = null;
-        const rskBlockMainchain3: RskBlockInfo = await rskApiService.getBlock(btcMainchain3.rskTag.BN);
-        const itemExpected3: Item = new Item(btcMainchain3.btcInfo, rskBlockMainchain3);
-        const mainchain: Item[] = [itemExpected3];
-        for (let i = itemExpected3.rskInfo.height - 1; i > itemExpected2.rskInfo.height; i--) {
-            rskBlockMainchain = await rskApiService.getBlock(i);
-            mainchain.push(new Item(null, rskBlockMainchain));
-        }
-        mainchain.push(itemExpected2);
+        const mainchain: Item[] = [itemExpected2];
         for (let i = itemExpected2.rskInfo.height - 1; i > itemExpected.rskInfo.height; i--) {
             rskBlockMainchain = await rskApiService.getBlock(i);
             mainchain.push(new Item(null, rskBlockMainchain));
@@ -381,46 +352,103 @@ describe('RSK no forks tests', () => {
         mainchain.push(itemExpected);
         const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
         expect(blockchain).to.be.eql(blockchainExpected);
-
+    });
+    it('should generate a mainchain connection between 3 BTC blocks with RSK tags, a reorganization of lenght 1 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end', async () => {
+        const initialHeight: number = heightOfConsecutiveRskTags;
+        const btcWitnessBlockHeightMainchain3: number = initialHeight + 2;
+        const blocksToMove1: number = 2;
+        const blocksToMove2: number = 1;
+        const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
+        btcService.save(firstToCheckBtc);
+        await setHeightInMockBTCApi(initialHeight);
+        // get actual blockchain
+        await moveXBlocks(blocksToMove1, btcService);
+        fakeMainchainBlock(rskheightOfConsecutiveRskTags, mainchainService);
+        await moveXBlocks(blocksToMove2, btcService);
+        const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchains()).data);
+        // mainchain validation
+        const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
+        btcMainchain.btcInfo.guessedMiner = null;
+        let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
+        const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
+        const btcMainchain3: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain3);
+        btcMainchain3.btcInfo.guessedMiner = null;
+        const rskBlockMainchain3: RskBlockInfo = await rskApiService.getBlock(btcMainchain3.rskTag.BN);
+        const itemExpected3: Item = new Item(btcMainchain3.btcInfo, rskBlockMainchain3);
+        const mainchain: Item[] = [itemExpected3];
+        for (let i = itemExpected3.rskInfo.height - 1; i > itemExpected.rskInfo.height; i--) {
+            rskBlockMainchain = await rskApiService.getBlock(i);
+            mainchain.push(new Item(null, rskBlockMainchain));
+        }
+        mainchain.push(itemExpected);
+        const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
+        expect(blockchain).to.be.eql(blockchainExpected);
     });
 
-    it.skip('should generate a mainchain connection between 3 BTC blocks with RSK tags, a reorganization of lenght 3 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end', async () => {
-        await setHeightInMockBTCApi(heightOfConsecutiveRskTags);
-        await deleteDB(armadilloDB);
-        // await setBlockAsLastChecked(heightOfConsecutiveRskTags - 1);
-        await sleep(apiPoolingTime + loadingTime);
-        await moveToNextBlock();
-        await sleep(loadingTime);
-        await fakeMainchainBlock(rskheightOfConsecutiveRskTags, mainchainService);
-        await fakeMainchainBlock(rskheightOfConsecutiveRskTags - 1, mainchainService);
-        await fakeMainchainBlock(rskheightOfConsecutiveRskTags - 2, mainchainService);
-        await moveToNextBlock();
-        // Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await sleep(loadingTime + apiPoolingTime);
-        await setHeightInMockBTCApi(heightOfNoRskTags);
-        // validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
-        await validateMainchain(2, 41);
-        await validateMainchain(100, 41);
+    // TODO Review there is a bug in the armadillo code aparently, to be investigated
+    it('should generate a mainchain connection between 3 BTC blocks with RSK tags, a reorganization of lenght 3 in RSK happens in between the second and third btc checkpoint, the monitor rebuilds mainchain to consider reorganization, end to end', async () => {
+        const initialHeight: number = heightOfConsecutiveRskTags;
+        const btcWitnessBlockHeightMainchain3: number = initialHeight + 2;
+        const blocksToMove1: number = 2;
+        const blocksToMove2: number = 1;
+        const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
+        btcService.save(firstToCheckBtc);
+        await setHeightInMockBTCApi(initialHeight);
+        // get actual blockchain
+        await moveXBlocks(blocksToMove1, btcService);
+        fakeMainchainBlock(rskheightOfConsecutiveRskTags - 2, mainchainService);
+        fakeMainchainBlock(rskheightOfConsecutiveRskTags - 1, mainchainService);
+        fakeMainchainBlock(rskheightOfConsecutiveRskTags, mainchainService);
+        await moveXBlocks(blocksToMove2, btcService);
+        const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchains()).data);
+        // mainchain validation
+        const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
+        btcMainchain.btcInfo.guessedMiner = null;
+        let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
+        const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
+        const btcMainchain3: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain3);
+        btcMainchain3.btcInfo.guessedMiner = null;
+        const rskBlockMainchain3: RskBlockInfo = await rskApiService.getBlock(btcMainchain3.rskTag.BN);
+        const itemExpected3: Item = new Item(btcMainchain3.btcInfo, rskBlockMainchain3);
+        const mainchain: Item[] = [itemExpected3];
+        for (let i = itemExpected3.rskInfo.height - 1; i > itemExpected.rskInfo.height; i--) {
+            rskBlockMainchain = await rskApiService.getBlock(i);
+            mainchain.push(new Item(null, rskBlockMainchain));
+        }
+        mainchain.push(itemExpected);
+        const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
+        expect(blockchain).to.be.eql(blockchainExpected);
     });
-
-    it.skip('should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint, it goes as a sibling, end to end', async () => {
-        await setHeightInMockBTCApi(heightForSiblingRskTag);
-        await deleteDB(armadilloDB);
-        // await setBlockAsLastChecked(heightForSiblingRskTag - 1);
-        await sleep(apiPoolingTime + loadingTime);
-        await moveToNextBlock();
-        await sleep(loadingTime);
-        // const reorgBlockInfo = await fakeMainchainBlock(rskHeightWithSibling, true);
-
-        const reorgBlockInfo = await swapMainchainBlockWithSibling(rskHeightWithSibling);
-        await moveToNextBlock();
-        // Wait until the monitor can read the new block and process of getting the mainchain is completed (pooling every 5s)
-        await sleep(loadingTime + apiPoolingTime);
-        await setHeightInMockBTCApi(heightOfNoRskTags);
-        // validateMainchain(nbrOfMainchainBlocksToFetch,lengthOfExpectedMainchain)
-        let reorgBlocks = {};
-        reorgBlocks[reorgBlockInfo.rskInfo.height] = reorgBlockInfo;
-        await validateMainchain(2, 41, reorgBlocks);
-        await validateMainchain(100, 41, reorgBlocks);
+    // TODO differentiate rskTag of sibling and mainchain block, reorg test
+    it.only('should generate a mainchain connection between 3 BTC blocks with RSK tags, reorganization happens on second btc checkpoint, it goes as a sibling, end to end', async () => {
+        const initialHeight: number = heightForSiblingRskTag;
+        const btcWitnessBlockHeightMainchain3: number = initialHeight + 2;
+        const blocksToMove1: number = 2;
+        const blocksToMove2: number = 1;
+        const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
+        btcService.save(firstToCheckBtc);
+        await setHeightInMockBTCApi(initialHeight);
+        // get actual blockchain
+        await moveXBlocks(blocksToMove1, btcService);
+        swapMainchainBlockWithSibling(rskHeightWithSibling, mainchainService, rskApiService);
+        await moveXBlocks(blocksToMove2, btcService);
+        const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchains()).data);
+        // mainchain validation
+        const btcMainchain: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight);
+        btcMainchain.btcInfo.guessedMiner = null;
+        let rskBlockMainchain: RskBlockInfo = await rskApiService.getBlock(btcMainchain.rskTag.BN);
+        const itemExpected: Item = new Item(btcMainchain.btcInfo, rskBlockMainchain);
+        const btcMainchain3: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeightMainchain3);
+        btcMainchain3.btcInfo.guessedMiner = null;
+        const rskBlockMainchain3: RskBlockInfo = await rskApiService.getBlock(btcMainchain3.rskTag.BN);
+        const itemExpected3: Item = new Item(btcMainchain3.btcInfo, rskBlockMainchain3);
+        const mainchain: Item[] = [itemExpected3];
+        for (let i = itemExpected3.rskInfo.height - 1; i > itemExpected.rskInfo.height; i--) {
+            rskBlockMainchain = await rskApiService.getBlock(i);
+            mainchain.push(new Item(null, rskBlockMainchain));
+        }
+        mainchain.push(itemExpected);
+        const blockchainExpected: BlockchainHistory = new BlockchainHistory(mainchain, []);
+        expect(blockchain).to.be.eql(blockchainExpected);
     });
 });
