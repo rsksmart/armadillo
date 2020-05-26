@@ -1,3 +1,5 @@
+import { expect } from 'chai';
+import { readFileSync } from 'fs';
 import { BlockchainHistory } from '../../src/api/common/models';
 import { BtcBlock } from '../../src/common/btc-block';
 import { Fork, ForkItem, Item, RangeForkInMainchain } from '../../src/common/forks';
@@ -10,13 +12,11 @@ import { ForkService } from '../../src/services/fork-service';
 import { MainchainService } from '../../src/services/mainchain-service';
 import { RskApiService } from '../../src/services/rsk-api-service';
 import { MongoStore } from '../../src/storage/mongo-store';
-import { getBlockchainsAfterMovingXBlocks, moveXBlocks, getBlockchains } from './lib/armadillo-operations';
-import { setHeightInMockBTCApi, getFirstBlockNumber } from './lib/btc-api-mocker';
-import { bestRskBlock, dataInputPath, DEFAULT_CONFIG_PATH, timeoutTests } from './lib/configs';
-import { getEndHeightMainchainForCPVDiff, getStartHeightMainchainForCPVDiff } from './lib/cpv-helper';
 import { copy } from '../../src/util/helper';
-import { expect } from 'chai';
-import { readFileSync } from 'fs';
+import { ArmadilloOperations } from './lib/armadillo-operations';
+import { bestRskBlock, DEFAULT_CONFIG_PATH } from './lib/configs';
+import { getEndHeightMainchainForCPVDiff, getStartHeightMainchainForCPVDiff } from './lib/cpv-helper';
+import { BtcApiMocker } from './lib/btc-api-mocker';
 
 const heightOfNoRskTags = 0;
 const heightOfConsecutiveRSKnoMatchPastSameBranch = 92;
@@ -34,6 +34,8 @@ let mongoStoreBtc: MongoStore;
 let forkService: ForkService;
 let mainchainService: MainchainService;
 let btcService: BtcService;
+let btcApiMocker: BtcApiMocker;
+let armadilloOperations: ArmadilloOperations;
 describe('RSK Forks in the past tests', () => {
     before(async () => {
         const mainConfig = JSON.parse(readFileSync(DEFAULT_CONFIG_PATH).toString());
@@ -55,7 +57,9 @@ describe('RSK Forks in the past tests', () => {
         await btcService.connect();
         btcApiService = new HttpBtcApi(BtcApiConfig.fromObject(mainConfig.btcApi));
         rskApiService = new RskApiService(RskApiConfig.fromObject(mainConfig.rskApi));
-        firstBtcBlock = await getFirstBlockNumber();
+        btcApiMocker = new BtcApiMocker(mainConfig.btcApi, btcService);
+        armadilloOperations = new ArmadilloOperations(mainchainService, rskApiService, mainConfig.forkApi);
+        firstBtcBlock = await btcApiMocker.getFirstBlockNumber();
     });
     after(async () => {
         await mainchainService.disconnect();
@@ -66,7 +70,7 @@ describe('RSK Forks in the past tests', () => {
         await mainchainService.deleteAll();
     });
     afterEach(async () => {
-        await setHeightInMockBTCApi(heightOfNoRskTags);
+        await btcApiMocker.setHeightInMockBTCApi(heightOfNoRskTags);
     });
     describe('RSK no match at same height with matching CPV, RSK height in the past regarding BTC chain', () => {
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found', async () => {
@@ -75,10 +79,11 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 1;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
             // Get actual fork
             // adding same time to remove from comparision.
             const timeExpected = blockchain.forks[0].getForkItems()[0].time;
@@ -109,10 +114,11 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
             // Get actual fork
             const fork: Fork = blockchain.forks[0];
             const timeExpected = fork.getForkItems()[1].time; // adding same time to remove from comparision.
@@ -148,10 +154,11 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 3;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
             // Get actual fork
             const fork: Fork = blockchain.forks[0];
             const timeExpected = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
@@ -184,10 +191,11 @@ describe('RSK Forks in the past tests', () => {
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
 
             const timeExpectedFork1 = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
             const timeExpectedFork2 = blockchain.forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
@@ -231,10 +239,11 @@ describe('RSK Forks in the past tests', () => {
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
 
             const timeExpectedFork1 = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
             const timeExpectedFork2 = blockchain.forks[1].getForkItems()[0].time; // adding same time to remove from comparision.
@@ -277,10 +286,11 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
             // Get actual fork
             const fork: Fork = blockchain.forks[0];
             const timeExpected = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
@@ -322,10 +332,11 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 8;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await getBlockchainsAfterMovingXBlocks(blocksToMove, btcService)).data);
+            await btcApiMocker.moveXBlocks(blocksToMove);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject((await armadilloOperations.getBlockchains()));
             // Get actual fork
             const fork: Fork = blockchain.forks[0];
             const timeExpected = blockchain.forks[0].getForkItems()[0].time; // adding same time to remove from comparision.
@@ -369,9 +380,9 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 1;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
-            await moveXBlocks(blocksToMove, btcService);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
+            await btcApiMocker.moveXBlocks(blocksToMove);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
             const timeExpected: string = forks[0].getForkItems()[0].time;
@@ -403,9 +414,9 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
-            await moveXBlocks(blocksToMove, btcService);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
+            await btcApiMocker.moveXBlocks(blocksToMove);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
             const timeExpected: string = forks[0].getForkItems()[1].time; // adding same time to remove from comparision.
@@ -441,9 +452,9 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 3;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
-            await moveXBlocks(blocksToMove, btcService);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
+            await btcApiMocker.moveXBlocks(blocksToMove);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
             // adding same time to remove from comparision.
@@ -477,9 +488,9 @@ describe('RSK Forks in the past tests', () => {
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
-            await moveXBlocks(blocksToMove, btcService);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
+            await btcApiMocker.moveXBlocks(blocksToMove);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
             const timeExpectedFork1: string = forks[0].getForkItems()[0].time;
@@ -523,9 +534,9 @@ describe('RSK Forks in the past tests', () => {
             const cpvDiffExpectedFork1: number = 0;
             const cpvDiffExpectedFork2: number = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
-            await moveXBlocks(blocksToMove, btcService);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
+            await btcApiMocker.moveXBlocks(blocksToMove);
 
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
@@ -569,10 +580,10 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 2;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            await moveXBlocks(blocksToMove, btcService);
+            await btcApiMocker.moveXBlocks(blocksToMove);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
             const timeExpected: string = forks[0].getForkItems()[0].time;
@@ -615,10 +626,10 @@ describe('RSK Forks in the past tests', () => {
             const blocksToMove: number = 8;
             const cpvDiffExpected: number = 0;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
-            btcService.save(firstToCheckBtc);
-            await setHeightInMockBTCApi(initialHeight);
+            await btcService.save(firstToCheckBtc);
+            await btcApiMocker.setHeightInMockBTCApi(initialHeight);
             // get actual blockchain
-            await moveXBlocks(blocksToMove, btcService);
+            await btcApiMocker.moveXBlocks(blocksToMove);
             const forks: Fork[] = await forkService.getAll();
             const mainchain: Item[] = await mainchainService.getAll();
             const timeExpected: string = forks[0].getForkItems()[0].time;
@@ -683,8 +694,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy([itemExpected]));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchainExpected).to.be.eql(blockchain);
         });
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following consecutive BTC block, mongo output validation', async () => {
@@ -719,8 +730,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy([itemExpected]));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of same branch in the following non consecutive BTC block, mongo output validation', async () => {
@@ -751,8 +762,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy([itemExpected]));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchainExpected).to.be.eql(blockchain);
         });
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following consecutive BTC block, mongo output validation', async () => {
@@ -798,8 +809,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy([itemExpected]));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchainExpected).to.be.eql(blockchain);
         });
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a not match of different branch in the following non consecutive BTC block, mongo output validation', async () => {
@@ -845,8 +856,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy([itemExpected]));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchainExpected).to.be.eql(blockchain);
         });
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following consecutive BTC block, mongo output validation', async () => {
@@ -888,8 +899,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy(mainchain));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchainExpected).to.be.eql(blockchain);
         });
         it('should detect a past fork with the first RSK tag in BTC that height is lesser than previous RSK tag found and there is a RSK tag match in the following non consecutive BTC block, mongo output validation', async () => {
@@ -931,8 +942,8 @@ describe('RSK Forks in the past tests', () => {
             await mainchainService.save(copy(mainchain));
 
             const numberOfBtcWitnessBlocksToAsk: number = 1000;
-            const blockchainFromAPI = await getBlockchains(numberOfBtcWitnessBlocksToAsk);
-            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI.data);
+            const blockchainFromAPI = await armadilloOperations.getBlockchains(numberOfBtcWitnessBlocksToAsk);
+            const blockchain: BlockchainHistory = BlockchainHistory.fromObject(blockchainFromAPI);
             expect(blockchainExpected).to.be.eql(blockchain);
         });
     });
