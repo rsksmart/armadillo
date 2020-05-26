@@ -1,11 +1,11 @@
-export function getStartHeightMainchainForCPVDiff(forkItemHeight, cpvDiff) {
+export function getStartHeightMainchainForCPVDiff(forkItemHeight: number, cpvDiff: number): number {
     if (cpvDiff === 7) {
         return 1;
     }
     return forkItemHeight - 1 - ((forkItemHeight - 1) % 64) - cpvDiff * 64;
 }
 
-export function getEndHeightMainchainForCPVDiff(forkItemHeight, cpvDiff, bestBlockHeight) {
+export function getEndHeightMainchainForCPVDiff(forkItemHeight: number, cpvDiff: number, bestBlockHeight): number {
     if (cpvDiff <= 0) {
         if (forkItemHeight <= bestBlockHeight) {
             return forkItemHeight;
@@ -13,7 +13,7 @@ export function getEndHeightMainchainForCPVDiff(forkItemHeight, cpvDiff, bestBlo
             return bestBlockHeight;
         }
     } else {
-        let endCandidate = forkItemHeight - ((forkItemHeight - 1) % 64) - (cpvDiff - 1) * 64 - 1;
+        const endCandidate = forkItemHeight - ((forkItemHeight - 1) % 64) - (cpvDiff - 1) * 64 - 1;
         if (endCandidate > bestBlockHeight) {
             return bestBlockHeight;
         } else {
