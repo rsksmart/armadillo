@@ -30,16 +30,21 @@ export class MailAlertSender implements AlertSender {
             }
         };
 
+
         const email: ForkEmail = await this.emailBuilder.build(forkInfo, defconLevel);
 
         const transport = nodemailer.createTransport(options);
         
-        let info = await transport.sendMail({
+        let emailConf = {
             from: this.config.sender,
             to: defconLevel.getRecipients(),
             subject: email.subject,
             text: email.body
-        });
+        }
+
+        this.logger.info(`Email configuration: ${emailConf}`)
+
+        let info = await transport.sendMail(emailConf);
 
         this.logger.info(`Sent message: ${info.messageId}`)
         this.logger.debug(`Subject: ${email.subject}`)

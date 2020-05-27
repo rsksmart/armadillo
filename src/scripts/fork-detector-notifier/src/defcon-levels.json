@@ -11,7 +11,7 @@
         "name": "urgent",
         "level": 1,
         "forkLengthThreshold": 1,
-        "hashrateThreshold": 0.5,
+        "hashrateThreshold": 50,
         "distanceToBestBlockThreshold": 6000,
         "recipients": ["mining@iovlabs.org"]
     },
@@ -19,7 +19,7 @@
         "name": "action-required",
         "level": 2,
         "forkLengthThreshold": 515,
-        "hashrateThreshold": 0.5,
+        "hashrateThreshold": 50,
         "distanceToBestBlockThreshold": 6000,
         "recipients": ["mining@iovlabs.org", "security@iovlabs-to-complete.org"]
     }
