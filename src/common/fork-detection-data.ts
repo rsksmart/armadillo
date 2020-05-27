@@ -30,7 +30,18 @@ export class ForkDetectionData {
     }
 
     public overlapCPV(cpvToCheck: ForkDetectionData, countCPVtoMatch: number) {
-        return this.getNumberOfBytesThatCPVMatch(cpvToCheck) >= countCPVtoMatch;
+        var trimCpvs: any = this.getTrimCPVOverlaps(cpvToCheck);
+
+        if(countCPVtoMatch > 7){
+            return false;
+        }
+
+        if (trimCpvs.cpv === trimCpvs.cpvToCompare) {
+            var matchLength = trimCpvs.cpv.length / 2;
+            return (7 - matchLength) <= countCPVtoMatch;
+        }
+
+        return false;
     }
 
     public toString(): string {
@@ -44,29 +55,41 @@ export class ForkDetectionData {
             this.BN === other.BN;
     }
 
-    public getNumberOfBytesThatCPVMatch(forkDetectionDataToCompare: ForkDetectionData): number {
+    public getTrimCPVOverlaps(forkDetectionDataToCompare: ForkDetectionData): any {
         let height = Math.floor((this.BN - 1) / 64);
         let heightToCompare = Math.floor((forkDetectionDataToCompare.BN - 1) / 64);
         let difference = Math.abs(height - heightToCompare);
+        let cpvs: any = {};
 
         if (difference > 7) {
-            return 0;
+            cpvs.cpv = '';
+            cpvs.cpvToCompare = '';
+            return cpvs;
         }
 
         let cpv;
-        let cpvToCheckSpplited;
+        let cpvToCompare;
 
         if (height < heightToCompare) {
             cpv = this.CPV.slice(0, this.CPV.length - 2 * difference);
-            cpvToCheckSpplited = forkDetectionDataToCompare.CPV.slice(2 * difference);
+            cpvToCompare = forkDetectionDataToCompare.CPV.slice(2 * difference);
         } else {
             cpv = forkDetectionDataToCompare.CPV.slice(0, this.CPV.length - 2 * difference);
-            cpvToCheckSpplited = this.CPV.slice(2 * difference);
+            cpvToCompare = this.CPV.slice(2 * difference);
         }
 
-        for (let i = 0; i < cpv.length; i = i + 2) {
-            var cpvSliced = cpv.slice(i);
-            if (cpvSliced === cpvToCheckSpplited.slice(i)) {
+        cpvs.cpv = cpv;
+        cpvs.cpvToCompare = cpvToCompare;
+
+        return cpvs;
+    }
+
+    public getNumberOfBytesThatCPVMatch(forkDetectionDataToCompare: ForkDetectionData): number {
+        const trimCpvs: any = this.getTrimCPVOverlaps(forkDetectionDataToCompare);
+        
+        for (let i = 0; i < trimCpvs.cpv.length; i = i + 2) {
+            var cpvSliced = trimCpvs.cpv.slice(i);
+            if (cpvSliced === trimCpvs.cpvToCompare.slice(i)) {
                 return cpvSliced.length / 2;
             }
         }
