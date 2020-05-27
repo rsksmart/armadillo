@@ -29,17 +29,8 @@ export class ForkDetectionData {
         }
     }
 
-    private hexToBytes(hex) {
-        var bytes = [];
-
-        for (var c = 0; c < hex.length; c += 2)
-            bytes.push(hex.substr(c, 2));
-
-        return bytes;
-    }
-
-    public overlapCPV(cpvToCheck: string, countCPVtoMatch: number) {
-        return this.getNumberOfOverlapInCPV(cpvToCheck) >= countCPVtoMatch;
+    public overlapCPV(cpvToCheck: ForkDetectionData, countCPVtoMatch: number) {
+        return this.getNumberOfBytesThatCPVMatch(cpvToCheck) >= countCPVtoMatch;
     }
 
     public toString(): string {
@@ -51,22 +42,6 @@ export class ForkDetectionData {
             this.CPV === other.CPV &&
             this.NU === other.NU &&
             this.BN === other.BN;
-    }
-
-    public getNumberOfOverlapInCPV(cpvToCheck: string): number {
-        const CPVLENGTH = 7;
-        let cpvSplit = this.hexToBytes(this.CPV);
-        let cpvToCheckSplit = this.hexToBytes(cpvToCheck);
-
-        for (var j = 0; j < cpvToCheckSplit.length; j++) {
-            if (cpvSplit[0] == cpvToCheckSplit[j]) {
-                if (cpvSplit.slice(0, CPVLENGTH - j).toString() == cpvToCheckSplit.slice(j, CPVLENGTH).toString()) {
-                    return CPVLENGTH - j;
-                };
-            }
-        }
-
-        return 0;
     }
 
     public getNumberOfBytesThatCPVMatch(forkDetectionDataToCompare: ForkDetectionData): number {
