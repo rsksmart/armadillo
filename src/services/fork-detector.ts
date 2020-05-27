@@ -221,7 +221,7 @@ export class ForkDetector {
         let lastTopsDetected: Fork[] = await this.getPossibleForks(rskTag.BN);
 
         for (const fork of lastTopsDetected) {
-            if (fork.getLastDetected().rskForkInfo.forkDetectionData.overlapCPV(rskTag.CPV, this.minimunOverlapCPV)) {
+            if (fork.getLastDetected().rskForkInfo.forkDetectionData.overlapCPV(rskTag, this.minimunOverlapCPV)) {
                 forksThatOverlap.push(fork);
             }
         }
