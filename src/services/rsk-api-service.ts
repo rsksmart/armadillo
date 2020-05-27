@@ -59,7 +59,7 @@ export class RskApiService {
     private async defineForkStart(forkDetectionData: ForkDetectionData, maxfddAtRskHeightCouldMatch: ForkDetectionData): Promise<RskBlockInfo> {
         let bytesOverlaps: number = forkDetectionData.getNumberOfBytesThatCPVMatch(maxfddAtRskHeightCouldMatch);
         let jumpsBackwards = (7 - bytesOverlaps) * 64;
-        let whenWasTheLastCPVChange = Math.floor((maxfddAtRskHeightCouldMatch.BN - 1) / 64) * 64;
+        let whenWasTheLastCPVChange = Math.floor((forkDetectionData.BN - 1) / 64) * 64;
         let heightBackwards =  whenWasTheLastCPVChange - jumpsBackwards;
         let startBlock: RskBlockInfo;
         
@@ -84,40 +84,13 @@ export class RskApiService {
     private async defineForkEnd(forkDetectionData: ForkDetectionData, maxfddAtRskHeightCouldMatch: ForkDetectionData): Promise<RskBlockInfo> {
         let bytesMatch: number = forkDetectionData.getNumberOfBytesThatCPVMatch(maxfddAtRskHeightCouldMatch);
         let jumpsBackwards = (7 - bytesMatch) * 64;
-        let whenWasTheLastCPVChange = Math.floor((maxfddAtRskHeightCouldMatch.BN - 1) / 64) * 64;
+        let whenWasTheLastCPVChange = Math.floor((forkDetectionData.BN - 1) / 64) * 64;
         let heightWhereForkShouldEnd = whenWasTheLastCPVChange - jumpsBackwards + 64
         
-        if (bytesMatch == 0) {
-
-            if(this.isFarInTheFuture(forkDetectionData, maxfddAtRskHeightCouldMatch)){
-                return await this.getBlock(maxfddAtRskHeightCouldMatch.BN);
-            }
-
-            //Esto esta mal:
-            if(this.isInTheFuture(forkDetectionData, maxfddAtRskHeightCouldMatch)){
-                return await this.getBlock(heightWhereForkShouldEnd);
-            }
-
-            //Is in the pass/present
-            return await this.getBlock(heightWhereForkShouldEnd);
-        }
-
         if (maxfddAtRskHeightCouldMatch.BN > heightWhereForkShouldEnd) {
             return await this.getBlock(heightWhereForkShouldEnd);
         }
 
         return await this.getBlock(maxfddAtRskHeightCouldMatch.BN);
-    }
-
-    private isInTheFuture(forkDetectionData: ForkDetectionData, maxfddAtRskHeightCouldMatch: ForkDetectionData) {
-        return forkDetectionData.BN > maxfddAtRskHeightCouldMatch.BN;
-    }
-
-    private isFarInTheFuture(forkDetectionData: ForkDetectionData, maxRskHeightCouldMatch: ForkDetectionData) {
-        return this.isInTheFuture(forkDetectionData, maxRskHeightCouldMatch) && this.heightDismatchForTheDistance(forkDetectionData, maxRskHeightCouldMatch);
-    }
-
-    private heightDismatchForTheDistance(forkDetectionData: ForkDetectionData, maxfddAtRskHeightCouldMatch: ForkDetectionData) {
-        return (forkDetectionData.BN - maxfddAtRskHeightCouldMatch.BN) > 448;
     }
 }
