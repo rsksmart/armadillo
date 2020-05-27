@@ -64,55 +64,29 @@ describe("Overlap CPV", () => {
     let forkData = new ForkDetectionData(RSKTAG);
 
     //match with "d2", "e4", "34"
-    let cpv1 = "d89d8bf4d2e434";
-    let overlapped = forkData.overlapCPV(cpv1, 1);
+    let fdd = new ForkDetectionData(RSKTAG);
+    let overlapped = forkData.overlapCPV(fdd, 1);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 2);
+    overlapped = forkData.overlapCPV(fdd, 2);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 3);
+    overlapped = forkData.overlapCPV(fdd, 3);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 4);
+    overlapped = forkData.overlapCPV(fdd, 4);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 5);
+    overlapped = forkData.overlapCPV(fdd, 5);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 6);
+    overlapped = forkData.overlapCPV(fdd, 6);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 7);
+    overlapped = forkData.overlapCPV(fdd, 7);
     expect(overlapped).to.equal(true);
 
-    overlapped = forkData.overlapCPV(cpv1, 8);
-    expect(overlapped).to.equal(false);
-  });
-
-  it("cpv match 3 lengh", () => {
-
-    let forkData = new ForkDetectionData(RSKTAG);
-
-    //match with "89", "9d", "8b"
-    let cpv1 = "11111111d89d8b";
-    let overlapped = forkData.overlapCPV(cpv1, 3);
-    expect(overlapped).to.equal(true);
-
-    //match with "e4", "34"
-    "d89d8bf4d2e434"
-    cpv1 = "1122334455e434"; //["11", "22", "33", "44", "55", "e4", "34"]
-    overlapped = forkData.overlapCPV(cpv1, 3);
-    expect(overlapped).to.equal(false);
-
-    //match with "34"
-    cpv1 = "11223344556634"; //["11", "22", "33", "44", "55", "66", "34"]
-    overlapped = forkData.overlapCPV(cpv1, 3);
-    expect(overlapped).to.equal(false);
-
-    //doesn"t match match anything
-    cpv1 = "11223344556677"; //["11", "22", "33", "44", "55", "66", "77"]
-    overlapped = forkData.overlapCPV(cpv1, 3);
+    overlapped = forkData.overlapCPV(fdd, 8);
     expect(overlapped).to.equal(false);
   });
 
@@ -238,7 +212,6 @@ describe('getNumberOfBytesThatCPVMatch method', () => {
       let matchBytes = fdd1.getNumberOfBytesThatCPVMatch(fdd2);
 
       expect(matchBytes).to.be.equals(0);
-
     });
 
     it('match 0 bytes', () => {
@@ -336,5 +309,5 @@ describe('getNumberOfBytesThatCPVMatch method', () => {
 
       expect(matchBytes).to.be.equals(5);
     });
-  });
+   });
 })
