@@ -102,12 +102,11 @@ describe('RSK Forks in the future tests', () => {
             const blockchainExpected: BlockchainHistory = new BlockchainHistory([itemExpected], [forkExpected]);
             expect(blockchain).to.be.eql(blockchainExpected);
         });
-        // TODO fix data and/or check for issue in armadillo
-        it('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 3 bytes CPV match', async () => {
+        it('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match', async () => {
             const initialHeight = heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff;
             const btcWitnessBlockHeight = initialHeight + 1;
             const blocksToMove = 1;
-            const cpvDiffExpected = 8;
+            const cpvDiffExpected = 2;
             // get actual blockchain
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             await btcService.save(firstToCheckBtc);
@@ -120,7 +119,6 @@ describe('RSK Forks in the future tests', () => {
             const btcWitnessBlock: BtcBlock = await btcApiService.getBlock(firstBtcBlock + btcWitnessBlockHeight);
             const heightStart: number = getStartHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected);
             const start: RskBlockInfo = await rskApiService.getBlock(heightStart);
-            start.forkDetectionData = null;
             const heightEnd: number = getEndHeightMainchainForCPVDiff(btcWitnessBlock.rskTag.BN, cpvDiffExpected, bestRskBlock);
             const end: RskBlockInfo = await rskApiService.getBlock(heightEnd);
             const range: RangeForkInMainchain = new RangeForkInMainchain(start, end);
@@ -202,12 +200,11 @@ describe('RSK Forks in the future tests', () => {
             expect(forks).to.be.eql([forkExpected]);
             expect(mainchain).to.be.eql([itemExpected]);
         });
-        // TODO FIX Mongo input and/or check for issue in armadillo
         it('should detect a future fork with the first RSK tag in BTC that height is larger than RSKs current best block, consecutive blocks, 5 bytes CPV match, mongo input validation', async () => {
             const initialHeight = heightOfConsecutiveBTCwithFutureRSKtags2bCPVdiff;
             const btcWitnessBlockHeight = initialHeight + 1;
             const blocksToMove = 1;
-            const cpvDiffExpected = 4;
+            const cpvDiffExpected = 2;
             const firstToCheckBtc: BtcBlock = await btcApiService.getBlock(firstBtcBlock + initialHeight - 1);
             await btcService.save(firstToCheckBtc);
             await btcApiMocker.setHeightInMockBTCApi(initialHeight);
