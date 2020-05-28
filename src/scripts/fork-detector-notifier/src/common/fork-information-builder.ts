@@ -135,7 +135,7 @@ export class ForkInformationBuilderImpl implements ForkInformationBuilder {
     
         var block = await this.rskApiService.getBlock(heightToFind);
         let info: any = {};
-        info.bytesMatch = fork.getFirstDetected().rskForkInfo.forkDetectionData.getNumberOfOverlapInCPV(block.forkDetectionData.toString());
+        info.bytesMatch = fork.getFirstDetected().rskForkInfo.forkDetectionData.getNumberOfBytesThatCPVMatch(block.forkDetectionData);
     
         //TODO: Do we need more info ?
     
