@@ -1,18 +1,23 @@
 import { RskBlockInfo } from '../../../src/common/rsk-block';
-import { Item } from '../../../src/common/forks';
 import { RskApiService } from '../../../src/services/rsk-api-service';
 
-export function getRskBlockHashOfSibling(blockArray: RskBlockInfo[]): string {
-    for (const block of blockArray) {
-        if (block.mainchain === false) {
-            return block.hash;
+export class RskOperations {
+    private rskApiService: RskApiService;
+    constructor(rskApiService: RskApiService) {
+        this.rskApiService = rskApiService;
+    }
+    public getRskBlockHashOfSibling(blockArray: RskBlockInfo[]): string {
+        for (const block of blockArray) {
+            if (block.mainchain === false) {
+                return block.hash;
+            }
         }
     }
-}
 
-export async function getSiblingFromRsk(rskBlockNumber: number, rskApi: RskApiService): Promise<Item> {
-    const blocksAtHeight: RskBlockInfo[] = await rskApi.getBlocksByNumber(rskBlockNumber);
-    const siblingHash: string = getRskBlockHashOfSibling(blocksAtHeight);
-    const rskBlock: RskBlockInfo = await rskApi.getBlockByHash(siblingHash);
-    return new Item(null, rskBlock);
+    public async getSiblingFromRsk(rskBlockNumber: number): Promise<RskBlockInfo> {
+        const blocksAtHeight: RskBlockInfo[] = await this.rskApiService.getBlocksByNumber(rskBlockNumber);
+        const siblingHash: string = this.getRskBlockHashOfSibling(blocksAtHeight);
+        const rskBlock: RskBlockInfo = await this.rskApiService.getBlockByHash(siblingHash);
+        return rskBlock;
+    }
 }

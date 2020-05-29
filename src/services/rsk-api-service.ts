@@ -44,7 +44,7 @@ export class RskApiService {
     }
 
     public async getBlockByHash(hash: string): Promise<RskBlockInfo> {
-        const block = await retry3Times(this.nod3.eth.getBlockByHash, [hash]);
+        const block = await retry3Times(this.nod3.eth.getBlock, [hash]);
         return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
     }
 

@@ -5,7 +5,7 @@ export function getStartHeightMainchainForCPVDiff(forkItemHeight: number, cpvDif
     return forkItemHeight - 1 - ((forkItemHeight - 1) % 64) - cpvDiff * 64;
 }
 
-export function getEndHeightMainchainForCPVDiff(forkItemHeight: number, cpvDiff: number, bestBlockHeight): number {
+export function getEndHeightMainchainForCPVDiff(forkItemHeight: number, cpvDiff: number, bestBlockHeight: number): number {
     if (cpvDiff <= 0) {
         if (forkItemHeight <= bestBlockHeight) {
             return forkItemHeight;
