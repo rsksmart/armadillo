@@ -1,4 +1,4 @@
-export function scrumbleHash(hash) {
+export function scrumbleHash(hash: string): string {
     let toReverse = hash;
     const hasPrefix = hash.indexOf('0x') !== -1;
     if (hasPrefix) {

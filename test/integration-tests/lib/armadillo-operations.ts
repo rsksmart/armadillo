@@ -1,19 +1,17 @@
 import fetch from 'node-fetch';
 import { Item } from '../../../src/common/forks';
 import { MainchainService } from '../../../src/services/mainchain-service';
-import {  } from './btc-api-mocker';
-import { getSiblingFromRsk } from './rsk-operations';
+import { RskOperations } from './rsk-operations';
 import { scrumbleHash } from './utils';
-import { RskApiService } from '../../../src/services/rsk-api-service';
 import { BlockchainHistory } from '../../../src/api/common/models';
 
 export class ArmadilloOperations {
     private mainchainService: MainchainService;
-    private rskApiService: RskApiService;
+    private rskOperations: RskOperations;
     private armadilloApiUrl: string;
-    constructor(mainchainService: MainchainService, rskApiService: RskApiService, forksApiConfig: any) {
+    constructor(mainchainService: MainchainService, rskOperations: RskOperations, forksApiConfig: any) {
         this.mainchainService = mainchainService;
-        this.rskApiService = rskApiService;
+        this.rskOperations = rskOperations;
         this.armadilloApiUrl = `http://${forksApiConfig.host}:${forksApiConfig.port}/`;
     }
 
@@ -27,16 +25,13 @@ export class ArmadilloOperations {
         const blockInfo: Item = await this.mainchainService.getBlock(rskBlockNumber);
         const prefixHash = scrumbleHash(blockInfo.rskInfo.forkDetectionData.prefixHash);
         const rskHash = scrumbleHash(blockInfo.rskInfo.hash);
-        console.log('======== rskBN', rskBlockNumber);
-        console.log('expected hash ', blockInfo.rskInfo.hash);
-        console.log('scrumbled hash', rskHash);
         blockInfo.rskInfo.forkDetectionData.prefixHash = prefixHash;
         blockInfo.rskInfo.hash = rskHash;
         await this.mainchainService.changeBlockInMainchain(rskBlockNumber, blockInfo);
     }
 
     public async swapMainchainBlockWithSibling(rskBlockNumber: number): Promise<void> {
-        const siblingItem: Item = await getSiblingFromRsk(rskBlockNumber, this.rskApiService);
+        const siblingItem: Item = new Item(null, await this.rskOperations.getSiblingFromRsk(rskBlockNumber));
         await this.mainchainService.changeBlockInMainchain(rskBlockNumber, siblingItem);
     }
 }
