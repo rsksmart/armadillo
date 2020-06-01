@@ -3,3 +3,6 @@ dist/
 *.log
 *.log.*
 *.nyc_output
+.prettierrc
+tslint.json
+tslint.json
