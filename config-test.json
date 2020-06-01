@@ -1,4 +1,12 @@
 {
+    "logger": {
+        "monitor": {
+            "configFile": "./log-monitor-config.json"
+        },
+        "api": {
+            "configFile": "./log-api-config.json"
+        }
+    },
     "store": {
         "port": "27017",
         "host": "localhost",
@@ -8,5 +16,20 @@
             "mainchain": "mainchain",
             "btc": "btc"
         }
+    },
+    "btcApi": {
+        "host": "localhost",
+        "port": 5000
+    },
+    "rskApi": {
+        "completeUrl": "http://localhost:4444"
+    },
+    "forkApi": {
+        "host": "localhost",
+        "port": "6000"
+    },
+    "forkDetector": {
+        "timeToSleepWaitingForkRskBlocks": 3000,
+        "rskBlocksToWait": 5
     }
 }

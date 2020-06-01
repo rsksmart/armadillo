@@ -43,6 +43,11 @@ export class RskApiService {
         return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
     }
 
+    public async getBlockByHash(hash: string): Promise<RskBlockInfo> {
+        const block = await retry3Times(this.nod3.eth.getBlock, [hash]);
+        return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
+    }
+
     //This method returns the nearest block in rsk blockchain where we thought the fork could have started
     public async getRangeForkWhenItCouldHaveStarted(forkDetectionData: ForkDetectionData, maxfddAtRskHeightCouldMatch: ForkDetectionData): Promise<RangeForkInMainchain> {
         let startBlock: RskBlockInfo = await this.defineForkStart(forkDetectionData, maxfddAtRskHeightCouldMatch);
