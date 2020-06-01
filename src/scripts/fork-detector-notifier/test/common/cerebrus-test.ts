@@ -29,8 +29,8 @@ function buildConfig() : CerebrusConfig {
 
 function buildDefconLevels() : DefconLevel[] {
     return [
-        new DefconLevel(1, 'low', 1, 0.0, 10000000, []),
-        new DefconLevel(2, 'high', 100, 0.5, 6000, [])
+        new DefconLevel(1, 'low', 1, 0.0, 10000000, 1, []),
+        new DefconLevel(2, 'high', 100, 0.5, 6000, 2, [])
     ]
 }
 
@@ -45,8 +45,9 @@ function createForkWithItems(nItems: number) : Fork[] {
         items.push(
             new ForkItem(
                 new BtcHeaderInfo(randInt(10000), '', ''), 
-                new RskForkItemInfo(new ForkDetectionData(randomBytes(32).toString('hex')), randInt(10000)))
-        )
+                new RskForkItemInfo(new ForkDetectionData(randomBytes(32).toString('hex')), randInt(10000)),
+                Date())
+                )
     }
 
     return [
@@ -145,13 +146,16 @@ describe("Cerebrus", async () => {
         expect(alertSender.sendAlert.calledTwice).to.be.false;
     })
 
-    it('sends alert for a fork and the base defconlevel (both parameters below higher levels thresholds)', async () => {
+    it('sends alert for a fork and the base defconlevel (some parameter below higher levels thresholds)', async () => {
         const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
         const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
 
         const forkInfo = buildForkInfo({
             forkLengthRskBlocks: 15,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.8
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.8,
+            bestBlockInRskInThatMoment: 10000,
+            endingRskHeight: 9000,
+            forkBTCitemsLength: 2
         });
         forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
 
@@ -168,13 +172,16 @@ describe("Cerebrus", async () => {
         expect(alertSender.sendAlert.calledWith(forkInfo, expectedDefconLevel)).to.be.true;
     })
 
-    it('sends alert for a fork and a higher defconlevel (both parameters above higher levels thresholds)', async () => {
+    it('sends alert for a fork and a higher defconlevel (all parameters above higher levels thresholds)', async () => {
         const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
         const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
 
         const forkInfo = buildForkInfo({
             forkLengthRskBlocks: 150,
-            btcForkBlockPercentageOverMergeMiningBlocks: 0.8
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.8,
+            bestBlockInRskInThatMoment: 10000,
+            endingRskHeight: 9000,
+            forkBTCitemsLength: 2
         });
         forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
 
@@ -225,9 +232,9 @@ describe("Cerebrus", async () => {
         forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
 
         const defconLevels: DefconLevel[] = [
-            new DefconLevel(1, 'low', 1, 0.0, 10000000, []),
-            new DefconLevel(2, 'med', 50, 0.5, 10000000, []),
-            new DefconLevel(3, 'high', 100, 0.5, 6000, [])
+            new DefconLevel(1, 'low', 1, 0.0, 10000000, 1, []),
+            new DefconLevel(2, 'med', 50, 0.5, 10000000, 1, []),
+            new DefconLevel(3, 'high', 100, 0.5, 6000, 1, [])
         ];
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels);
 
@@ -252,8 +259,8 @@ describe("Cerebrus", async () => {
         forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
 
         const defconLevels: DefconLevel[] = [
-            new DefconLevel(1, 'low', 5, 0.3, 10000000, []),
-            new DefconLevel(2, 'high', 50, 0.5, 6000, []),
+            new DefconLevel(1, 'low', 5, 0.3, 10000000, 1, []),
+            new DefconLevel(2, 'high', 50, 0.5, 6000, 1, []),
         ];
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels);
 

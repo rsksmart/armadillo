@@ -40,4 +40,9 @@ export const copy = (object: any) => {
 export const retry3Times = async (func, params = null) => {
     return retry(func, params, {retriesMax: 4, interval: 4000, exponential: true});
 }
-  
+
+export const numberToHex = (num: number) => {
+    const width = 8;
+    const n = num.toString(16);
+    return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
+}

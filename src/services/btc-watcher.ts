@@ -3,15 +3,10 @@ import { EventEmitter } from "events";
 import { HttpBtcApi } from "./btc-api";
 import { Logger, getLogger } from "log4js";
 import { BtcService } from "./btc-service";
+import { sleep } from "../util/helper";
 
 export enum BTCEvents {
     NEW_BLOCK = 'newBlock'
-}
-
-async function sleep(ms): Promise<void> {
-    return new Promise((res, rej) => {
-        setTimeout(res, ms);
-    });
 }
 
 export class BtcWatcher extends EventEmitter {

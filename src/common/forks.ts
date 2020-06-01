@@ -75,6 +75,12 @@ export class Fork {
     public getHeightForLastTagFoundInBTC() : number{
         return this.btcHeightLastTagFound;
     }
+    
+    public consideredStartRskBlock() : RskBlockInfo {
+        const startRange: RangeForkInMainchain = this.mainchainRangeWhereForkCouldHaveStarted;
+        const consideredStartBlock: RskBlockInfo = startRange.startBlock.height > 1 ? startRange.startBlock : startRange.endBlock;
+        return consideredStartBlock;
+    }
 }
 
 export class Item {

@@ -18,12 +18,22 @@
         "mocha-no-side-effect-code": false,
         "missing-jsdoc": false,
         "export-name": false,
+        "quotemark": [true, "single", "avoid-escape"],
         "promise-function-async": false,
         "no-void-expression": false,
         "no-redundant-jsdoc": false,
         "prefer-type-cast": false,
+        "max-classes-per-file": [true, 5, "exclude-class-expressions"],
         "no-suspicious-comment": false,
+        "only-arrow-functions": false,
         "no-unused-variable": true,
+        "max-line-length": [
+            true, 
+            {
+              "limit": 400, 
+              "ignore-pattern": "^import [^,]+ from |^export | implements"
+            }
+          ],
         "typedef": [
             true,
             "parameter",

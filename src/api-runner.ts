@@ -23,7 +23,7 @@ function logErrors(err, req, res, next) {
 }
 
 function errorHandler(err, req, res, next) {
-    res.status(500).send(new MessageResponse("Something was wrong", false));
+    res.status(500).send(new MessageResponse("Something went wrong", false));
 }
 
 function starBtcApi(){
@@ -40,12 +40,11 @@ function starBtcApi(){
     app.use(errorHandler);
 
     var apiServer = app.listen(apiConfig.forkApi.PORT, () => {
-        apiConfig.logger.log.debug(`API server running on port ${apiConfig.forkApi.PORT}`);
+        apiConfig.logger.log.info(`API server running on port ${apiConfig.forkApi.PORT}`);
     });
   
     process.on('SIGINT', async () => {
-        
-        apiConfig.logger.log.debug(`Caught interrupt signal - closing API server running on port ${apiConfig.forkApi.PORT}`);
+        apiConfig.logger.log.info(`Caught interrupt signal - closing API server running on port ${apiConfig.forkApi.PORT}`);
         apiServer.close();
         process.exit();
     });

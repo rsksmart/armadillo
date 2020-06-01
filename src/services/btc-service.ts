@@ -7,15 +7,23 @@ export class BtcService extends BaseService {
     }
 
     public async getLastBlockDetected(): Promise<any> {
-        return this.store.getCollection().findOne({});
+        let lastBlockDetected = await this.store.getCollection().findOne({});
+
+        // This is for testing purpose in prod
+        if (!lastBlockDetected) {
+            console.log("lastBlockDetected was found im null :) ", lastBlockDetected);
+        }
+        //
+
+        return lastBlockDetected;
     }
 
-    public async save(btc: any) : Promise<void> {
+    public async save(btc: any): Promise<void> {
         await this.store.getCollection().findOneAndDelete({});
         await this.store.getCollection().save(btc);
     }
 
     public async deleteAll() {
-        return this.store.getCollection().drop().catch(function(){});
+        return this.store.getCollection().drop().catch(function () { });
     }
 }

@@ -14,9 +14,11 @@ export async function get(url: string): Promise<any> {
                     const result = JSON.parse(body);
                     resolve(result);
                 } catch (e) {
-                    reject(e.message);
+                    reject(`Error parsing response from: ${url}. Error: ${e.message}`);
                 }
             });
+        }).on('error', (e) => {
+            reject(`Failed to GET ${url}. Error: ${e.message}`);
         });
     });
 }

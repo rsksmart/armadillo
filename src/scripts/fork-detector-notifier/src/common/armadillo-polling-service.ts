@@ -20,9 +20,13 @@ export default class ArmadilloPollingService {
         this.logger.info('Starting...');
 
         while (true) {
-            var forks: Fork[] = await this.armadilloApi.getCurrentMainchain(this.cerebrusConfig.chainDepth);
+            try {
+                var forks: Fork[] = await this.armadilloApi.getCurrentMainchain(this.cerebrusConfig.chainDepth);
 
-            await this.cerebrus.processForks(forks);
+                await this.cerebrus.processForks(forks);
+            } catch (e) {
+                this.logger.error(`Failed to process forks.`, e);
+            }
 
             await this.sleep(this.cerebrusConfig.pollIntervalMs);
         }
