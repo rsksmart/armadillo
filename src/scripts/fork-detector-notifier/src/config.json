@@ -8,5 +8,17 @@
     "pollIntervalMs": 60000,
     "minForkLength": 1,
     "rskNodeUrl": "https://public-node.rsk.co/1.2.1",
-    "nBlocksForBtcHashrateForRskMainchain": 144
+    "nBlocksForBtcHashrateForRskMainchain": 144,
+    "store": {
+        "auth": {
+            "user": "Please set the user mongo for authentication",
+            "password": "Please set the mongo password for authentication"
+        },
+        "port": "27017",
+        "host": "localhost",
+        "databaseName": "canary",
+        "collections": {
+            "forkNotification": "forkNotification"
+        }
+    }
 }

@@ -81,6 +81,10 @@ export class Fork {
         const consideredStartBlock: RskBlockInfo = startRange.startBlock.height > 1 ? startRange.startBlock : startRange.endBlock;
         return consideredStartBlock;
     }
+
+    public getIdentifier(){
+        return `${this.btcHeightLastTagFound}-${this.rskHeightLastTagFound}`
+    }
 }
 
 export class Item {
