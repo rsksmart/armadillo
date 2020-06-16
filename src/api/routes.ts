@@ -27,7 +27,8 @@ export function routersConfig(forkStore: MongoStore, mainchainStore: MongoStore,
         router.get('/blockchains/:n', blockchainsController.getLastBlocksInChain.bind(blockchainsController));
 
         //For testing 
-        if (true) {
+        //TODO: move this into a new routerConfigTest, also manchain and service controllers should have a testing class with the their corresponding methods
+        if (false) {
                 router.get('/mainchain/getAll', mainchainController.getAll.bind(mainchainController));
                 router.get('/mainchain/removeLastBLocks/:n', mainchainController.removeLastBlocks.bind(mainchainController));
                 router.get('/forks/removeAll', forkController.removeAll.bind(forkController));

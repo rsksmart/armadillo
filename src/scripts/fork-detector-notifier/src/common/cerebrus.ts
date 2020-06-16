@@ -3,6 +3,10 @@ import { Fork } from "../../../../common/forks";
 import { AlertSender } from "./alert-sender";
 import { DefconLevel } from "./defcon-level";
 import { ForkInformation, ForkInformationBuilder } from "./fork-information-builder";
+import { ForkEmail } from "./models/forkEmail";
+import { ForkEmailBuilder } from "./fork-email-builder";
+import ForkNotification from "./models/forkNotification";
+import { NotificationService } from "./notification-service";
 
 export interface CerebrusConfig {
     chainDepth: number;
@@ -16,51 +20,71 @@ export interface CerebrusConfig {
     armadilloUrl: string;
     rskNodeUrl: string;
     nBlocksForBtcHashrateForRskMainchain: number;
+    store: any;
 }
 
 export class Cerebrus {
     private config: CerebrusConfig;
     private alertSender: AlertSender;
     private logger: Logger;
-    private lastBtcHeightLastTagFound: number[];
     private forkInfoBuilder: ForkInformationBuilder;
     private defconLevels: DefconLevel[];
-    
+    private notificationService: NotificationService;
+    private emailBuilder: ForkEmailBuilder;
+
     constructor(config: CerebrusConfig, alertSender: AlertSender, forkInfoBuilder: ForkInformationBuilder,
-                defconLevels: DefconLevel[]) {
+                defconLevels: DefconLevel[], emailBuilder: ForkEmailBuilder, notificationService: NotificationService) {
         this.logger = getLogger('cerebrus');
         this.config = config;
         this.alertSender = alertSender;
         this.forkInfoBuilder = forkInfoBuilder;
         this.defconLevels = defconLevels || [];
+        this.emailBuilder = emailBuilder;
+        this.notificationService = notificationService;
 
         if (this.defconLevels.length === 0) {
             throw new Error('No Defcon levels provided');
         }
-
-        this.lastBtcHeightLastTagFound = [];
     }
 
     public async processForks(forks: Fork[]) : Promise<void> {
-        if (!this.shouldNotify(forks)) {
+
+        let forksToNotify : Fork[] = await this.filterForksAlreadyNotified(forks);
+        
+        if (forksToNotify.length == 0) {
             this.logger.info('No forks to notify');
             return;
         }
 
-        for (let fork of forks) {
+        let notificationsSent : ForkNotification[] = [];
+
+        for (let fork of forksToNotify) {
             const forkInfo: ForkInformation = await this.forkInfoBuilder.build(fork);
             const defconLevel: DefconLevel = this.findActiveDefconLevel(forkInfo);
             this.logger.info(`Fork detected, sending notifications to ${defconLevel.getRecipients().join(', ')}`);
-            await this.alertSender.sendAlert(forkInfo, defconLevel);
+            const email: ForkEmail = await this.emailBuilder.build(forkInfo, defconLevel);
+            await this.alertSender.sendAlert(email, defconLevel.getRecipients());
+
+            notificationsSent.push(new ForkNotification(fork.getIdentifier(), fork, email))
         }
 
-        this.lastBtcHeightLastTagFound = forks.map(x => x.getHeightForLastTagFoundInBTC());
+        this.logger.info(`Saving fork notifications, identifiers: ${notificationsSent.map(x => x.identifier).join(", ")}`);
+
+        await this.notificationService.saveForkNotifications(notificationsSent);
     }
 
-    private shouldNotify(forks: Fork[]) : boolean {
-        var forkFilted = forks.filter(x => !this.lastBtcHeightLastTagFound.includes(x.getHeightForLastTagFoundInBTC()));
+    private async filterForksAlreadyNotified(forks: Fork[]): Promise<Fork[]> {
+        let forksToNotify = [];
+        
+        for(let fork of forks){
+            let wasSent = await this.notificationService.notificationForkWasSent(fork.getIdentifier());
+            
+            if(!wasSent && fork.items.length >= this.config.minForkLength){
+                forksToNotify.push(fork);
+            }
+        }
 
-        return forkFilted.length > 0 && forkFilted.some(x => x.items.length >= this.config.minForkLength);
+        return forksToNotify
     }
 
     private findActiveDefconLevel(forkInfo: ForkInformation) : DefconLevel {
