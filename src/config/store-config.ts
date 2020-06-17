@@ -8,9 +8,9 @@ export class StoreConfig {
     public readonly btc: MongoConfig;
 
     public static fromObject(config: any): StoreConfig {
-        
-        let auth = config.auth ? AuthConfig.fromObject(config.auth) : null;
-        
+       
+        let auth : any = config.auth ? AuthConfig.fromObject(config.auth) : {};
+
         return new StoreConfig(
             new MongoConfig(auth, config.host, config.port, config.databaseName, config.collections.forks),
             new MongoConfig(auth, config.host, config.port, config.databaseName, config.collections.mainchain),
