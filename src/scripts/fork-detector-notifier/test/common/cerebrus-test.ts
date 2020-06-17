@@ -13,6 +13,7 @@ import { ForkInformation, ForkInformationBuilder, ForkInformationBuilderImpl } f
 import { NotificationService } from "../../src/common/notification-service";
 import { stubInterface } from "ts-sinon";
 import { ForkEmailBuilder } from "../../src/common/fork-email-builder";
+import ForkNotification from "../../src/common/models/forkNotification";
 
 function buildConfig() : CerebrusConfig {
     return {
@@ -42,7 +43,7 @@ function randInt(max) {
     return Math.trunc(Math.random() * max);
 }
 
-function createForkWithItems(nItems: number) : Fork[] {
+function createForkWithItems(nItems: number) : Fork {
     let items: ForkItem[] = [];
 
     for (let i = 0; i < nItems; i++) {
@@ -54,12 +55,10 @@ function createForkWithItems(nItems: number) : Fork[] {
                 )
     }
 
-    return [
-        new Fork(
+    return new Fork(
             sinon.createStubInstance(RangeForkInMainchain),
             items
         )
-    ]
 }
 
 function buildForkInfo(params) : ForkInformation {
@@ -102,11 +101,10 @@ describe("Cerebrus", async () => {
         const alertSender: sinon.SinonStubbedInstance<AlertSender> = stubInterface<MailAlertSender>();
         const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = stubInterface<ForkInformationBuilder>();
         const notificationService = stubInterface<NotificationService>();
-        const forkEmailBuilder = stubInterface<ForkEmailBuilder>();
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, buildDefconLevels(), null, notificationService);
-        const forks: Fork[] = createForkWithItems(1);
+        const fork: Fork = createForkWithItems(1);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         expect(alertSender.sendAlert.called).to.be.false;
     })
@@ -124,9 +122,9 @@ describe("Cerebrus", async () => {
 
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, buildDefconLevels(), forkEmailBuilder, notificationService);
 
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         expect(alertSender.sendAlert.calledOnce).to.be.true;
     })
@@ -144,10 +142,10 @@ describe("Cerebrus", async () => {
         })));
 
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, buildDefconLevels(), forkEmailBuilder, notificationService);
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
+        await cerebrus.processForks([fork]);
 
         expect(alertSender.sendAlert.calledOnce).to.be.true;
         expect(alertSender.sendAlert.calledTwice).to.be.false;
@@ -171,9 +169,9 @@ describe("Cerebrus", async () => {
         const defconLevels: DefconLevel[] = buildDefconLevels();
         const expectedDefconLevel: DefconLevel = defconLevels.find(d => d.getName() === 'low');
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         expect(alertSender.sendAlert.calledOnce).to.be.true;
         expect(forkEmailBuilder.build.calledOnce).to.be.true;
@@ -199,9 +197,9 @@ describe("Cerebrus", async () => {
         const defconLevels: DefconLevel[] = buildDefconLevels();
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
 
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         const expectedDefconLevel: DefconLevel = defconLevels.find(d => d.getName() === 'high');
 
@@ -225,9 +223,9 @@ describe("Cerebrus", async () => {
 
         const defconLevels: DefconLevel[] = buildDefconLevels();
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         const expectedDefconLevel: DefconLevel = defconLevels.find(d => d.getName() === 'low');
 
@@ -257,9 +255,9 @@ describe("Cerebrus", async () => {
         ];
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
 
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         const expectedDefconLevel: DefconLevel = defconLevels.find(d => d.getName() === 'med');
 
@@ -287,9 +285,9 @@ describe("Cerebrus", async () => {
         ];
         const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
 
-        const forks: Fork[] = createForkWithItems(2);
+        const fork: Fork = createForkWithItems(2);
 
-        await cerebrus.processForks(forks);
+        await cerebrus.processForks([fork]);
 
         const expectedDefconLevel: DefconLevel = defconLevels.find(d => d.getName() === 'low');
 
@@ -297,6 +295,136 @@ describe("Cerebrus", async () => {
         expect(forkEmailBuilder.build.calledOnce).to.be.true;
         expect(forkEmailBuilder.build.calledWith(forkInfo, expectedDefconLevel)).to.be.true;
         expect(alertSender.sendAlert.calledWith(undefined, expectedDefconLevel.getRecipients())).to.be.true;
+    })
+
+    it('Notifications were sent, do not save it', async () => {
+        const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
+        const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
+        const notificationService = stubInterface<NotificationService>();
+        const forkEmailBuilder = stubInterface<ForkEmailBuilder>();
+        const forkInfo = buildForkInfo({
+            forkLengthRskBlocks: 3,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.2
+        });
+
+        notificationService.notificationForkWasSent.resolves(true)
+        forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
+
+        const defconLevels: DefconLevel[] = [
+            new DefconLevel(1, 'low', 5, 0.3, 10000000, 1, []),
+            new DefconLevel(2, 'high', 50, 0.5, 6000, 1, []),
+        ];
+
+        const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
+
+        const fork: Fork = createForkWithItems(2);
+
+        await cerebrus.processForks([fork]);
+
+        expect(notificationService.notificationForkWasSent.calledOnce).to.be.true;
+        expect(notificationService.saveForkNotifications.called).to.be.false;
+        expect(notificationService.notificationForkWasSent.calledWith(fork.getIdentifier())).to.be.true;
+    })
+
+    it('3 Notifications were sent, do not save them', async () => {
+        const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
+        const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
+        const notificationService = stubInterface<NotificationService>();
+        const forkEmailBuilder = stubInterface<ForkEmailBuilder>();
+        const forkInfo = buildForkInfo({
+            forkLengthRskBlocks: 3,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.2
+        });
+
+        notificationService.notificationForkWasSent.resolves(true)
+        forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
+
+        const defconLevels: DefconLevel[] = [
+            new DefconLevel(1, 'low', 5, 0.3, 10000000, 1, []),
+            new DefconLevel(2, 'high', 50, 0.5, 6000, 1, []),
+        ];
+
+        const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
+
+        const fork: Fork = createForkWithItems(2);
+
+        await cerebrus.processForks([fork, fork, fork]);
+
+        expect(notificationService.notificationForkWasSent.calledThrice).to.be.true;
+        expect(notificationService.saveForkNotifications.called).to.be.false;
+        expect(notificationService.notificationForkWasSent.calledWith(fork.getIdentifier())).to.be.true;
+    })
+
+    it('2 forks arrived, 1 was already notified, just save the one which was not sent', async () => {
+        const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
+        const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
+        const notificationService = stubInterface<NotificationService>();
+        const forkEmailBuilder = stubInterface<ForkEmailBuilder>();
+        const forkInfo = buildForkInfo({
+            forkLengthRskBlocks: 3,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.2
+        });
+
+        notificationService.notificationForkWasSent.onCall(0).resolves(true)
+        notificationService.notificationForkWasSent.onCall(1).resolves(false)
+        notificationService.notificationForkWasSent.resolves()
+        forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
+
+        const defconLevels: DefconLevel[] = [
+            new DefconLevel(1, 'low', 5, 0.3, 10000000, 1, []),
+            new DefconLevel(2, 'high', 50, 0.5, 6000, 1, []),
+        ];
+
+        const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
+
+        const fork: Fork = createForkWithItems(2);
+        const fork1: Fork = createForkWithItems(3);
+
+        await cerebrus.processForks([fork, fork1]);
+
+        expect(notificationService.notificationForkWasSent.calledTwice).to.be.true;
+        expect(notificationService.notificationForkWasSent.calledWith(fork.getIdentifier())).to.be.true;
+        expect(notificationService.notificationForkWasSent.calledWith(fork1.getIdentifier())).to.be.true;
+        expect(notificationService.saveForkNotifications.calledOnce).to.be.true;
+
+        let forkNotificatioToValidate = new ForkNotification(fork1.getIdentifier(), fork1, undefined)
+        expect(notificationService.saveForkNotifications.calledWith([forkNotificatioToValidate])).to.be.true;
+    })
+
+    it('2 forks arrived, were not sent, save them', async () => {
+        const alertSender: sinon.SinonStubbedInstance<AlertSender> = sinon.createStubInstance(MailAlertSender);
+        const forkInfoBuilder: sinon.SinonStubbedInstance<ForkInformationBuilder> = sinon.createStubInstance(ForkInformationBuilderImpl);
+        const notificationService = stubInterface<NotificationService>();
+        const forkEmailBuilder = stubInterface<ForkEmailBuilder>();
+        const forkInfo = buildForkInfo({
+            forkLengthRskBlocks: 3,
+            btcForkBlockPercentageOverMergeMiningBlocks: 0.2
+        });
+
+        notificationService.notificationForkWasSent.resolves(false)
+        notificationService.notificationForkWasSent.resolves()
+        forkInfoBuilder.build.returns(Promise.resolve(forkInfo));
+
+        const defconLevels: DefconLevel[] = [
+            new DefconLevel(1, 'low', 5, 0.3, 10000000, 1, []),
+            new DefconLevel(2, 'high', 50, 0.5, 6000, 1, []),
+        ];
+
+        const cerebrus: Cerebrus = new Cerebrus(buildConfig(), alertSender, forkInfoBuilder, defconLevels, forkEmailBuilder, notificationService);
+
+        const fork: Fork = createForkWithItems(2);
+        const fork1: Fork = createForkWithItems(3);
+
+        await cerebrus.processForks([fork, fork1]);
+
+        expect(notificationService.notificationForkWasSent.calledTwice).to.be.true;
+        expect(notificationService.notificationForkWasSent.calledWith(fork.getIdentifier())).to.be.true;
+        expect(notificationService.notificationForkWasSent.calledWith(fork1.getIdentifier())).to.be.true;
+        expect(notificationService.saveForkNotifications.calledOnce).to.be.true;
+
+        let forkNotificatioToValidate = new ForkNotification(fork.getIdentifier(), fork, undefined)
+        let forkNotificatioToValidate1 = new ForkNotification(fork1.getIdentifier(), fork1, undefined)
+        expect(notificationService.saveForkNotifications.calledWith([forkNotificatioToValidate, forkNotificatioToValidate1])).to.be.true;
     })
 
     it('constructor fails due to null defcon levels array', async () => {
