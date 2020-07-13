@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { ForkInformation } from "./fork-information-builder";
-import { ForkEmail } from "./model";
+import { ForkEmail } from "./models/forkEmail";
 import { DefconLevel } from "./defcon-level";
 
 export interface ForkEmailBuilder {

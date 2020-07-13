@@ -8,6 +8,9 @@ import ForkEmailBuilderImpl, { ForkEmailBuilder } from './common/fork-email-buil
 import { ForkInformationBuilder, ForkInformationBuilderImpl } from './common/fork-information-builder';
 import { DefconLevel } from './common/defcon-level';
 import ArmadilloPollingService from './common/armadillo-polling-service';
+import { NotificationService } from './common/notification-service';
+import { MongoStore } from '../../../storage/mongo-store';
+import { MongoConfig } from '../../../config/mongo-config';
 
 const logger = getLogger('main');
 
@@ -22,23 +25,24 @@ async function main() {
 
     const rskApiService: RskApiService = new RskApiService(new RskApiConfig(cerebrusConfig.rskNodeUrl, 0));
     const armadilloApi: ArmadilloApi = new ArmadilloApiImpl(cerebrusConfig.armadilloUrl);
-
     const forkInformationBuilder: ForkInformationBuilder = new ForkInformationBuilderImpl(rskApiService, armadilloApi, cerebrusConfig);
     const forkEmailBuilder: ForkEmailBuilder = new ForkEmailBuilderImpl();
-    const alertSender: AlertSender = new MailAlertSender(cerebrusConfig, forkEmailBuilder);
-
-    const cerebrus: Cerebrus = new Cerebrus(cerebrusConfig, alertSender, forkInformationBuilder, defconLevels);
-
+    const alertSender: AlertSender = new MailAlertSender(cerebrusConfig);
+    const mongoConf: MongoConfig = new MongoConfig(cerebrusConfig.store.auth, cerebrusConfig.store.host, cerebrusConfig.store.port, cerebrusConfig.store.databaseName, cerebrusConfig.store.collections.forkNotification)
+    const mongoDb = new MongoStore(mongoConf);
+    const notificationService: NotificationService = new NotificationService(mongoDb);
+    await notificationService.connect();
+    const cerebrus: Cerebrus = new Cerebrus(cerebrusConfig, alertSender, forkInformationBuilder, defconLevels, forkEmailBuilder, notificationService);
     const pollingService: ArmadilloPollingService = new ArmadilloPollingService(cerebrusConfig, cerebrus, armadilloApi);
 
     pollingService.start();
 }
 
-function loadDefconLevels() : DefconLevel[] {
+function loadDefconLevels(): DefconLevel[] {
     const levels: any[] = require('./defcon-levels.json');
 
     return levels.map(l => new DefconLevel(l.level, l.name, l.forkLengthThreshold, l.hashrateThreshold,
-                                        l.distanceToBestBlockThreshold, l.btcBlocksThreshold, l.recipients))
+        l.distanceToBestBlockThreshold, l.btcBlocksThreshold, l.recipients))
 }
 
 main();
