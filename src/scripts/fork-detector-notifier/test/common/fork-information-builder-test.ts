@@ -9,7 +9,6 @@ import { RskBlockInfo, RskForkItemInfo } from "../../../../common/rsk-block";
 import { ForkDetectionData } from "../../../../common/fork-detection-data";
 import { BtcHeaderInfo } from "../../../../common/btc-block";
 import { CerebrusConfig } from "../../src/common/cerebrus";
-import { RskApiConfig } from "../../../../config/rsk-api-config";
 
 const PREFIX = "9bc86e9bfe800d46b85d48f4bc7ca056d2af88a0";
 const CPV = "d89d8bf4d2e434"; // ["d8", "9d", "8b", "f4", "d2", "e4", "34"]
@@ -27,7 +26,8 @@ function buildConfig(nBlocksForBtcHashrateForRskMainchain = 144) : CerebrusConfi
         sender: '',
         armadilloUrl: '',
         rskNodeUrl: '',
-        nBlocksForBtcHashrateForRskMainchain: nBlocksForBtcHashrateForRskMainchain
+        nBlocksForBtcHashrateForRskMainchain: nBlocksForBtcHashrateForRskMainchain,
+        store: {}
     }
 }
 

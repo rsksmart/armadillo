@@ -17,7 +17,7 @@ export default class ArmadilloPollingService {
     }
 
     public async start() : Promise<void> {
-        this.logger.info('Starting...');
+        this.logger.info('Starting Pooling Fork Service...');
 
         while (true) {
             try {
@@ -28,6 +28,7 @@ export default class ArmadilloPollingService {
                 this.logger.error(`Failed to process forks.`, e);
             }
 
+            this.logger.info(`Waiting ${this.cerebrusConfig.pollIntervalMs}ms to make a request again...`);
             await this.sleep(this.cerebrusConfig.pollIntervalMs);
         }
     }
