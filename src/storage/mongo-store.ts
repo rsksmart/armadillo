@@ -19,7 +19,7 @@ export class MongoStore {
 
         let authPath =  "";
         
-        if(mongoConfig.auth){
+        if(mongoConfig.auth.user && mongoConfig.auth.password){
             var user = encodeURIComponent(mongoConfig.auth.user);
             var password = encodeURIComponent(mongoConfig.auth.password);
             authPath = `${user}:${password}@`;
