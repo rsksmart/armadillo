@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  mongo:
+    image: mongo:4.2-bionic
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ""
+      MONGO_INITDB_ROOT_PASSWORD: ""
+    volumes:
+      - /var/lib/mongo:/data/db
+
+  api:
+    build:
+      context: .
+    image: armadillo/armadillo:1.0.0
+    container_name: api
+    command: start-api
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./logs/:/usr/src/app/logs/
+    depends_on:
+      - mongo
+ 
+  monitor:
+    build:
+      context: .
+    image: armadillo/armadillo:1.0.0
+    container_name: monitor
+    command: start-monitor
+    volumes:
+      - ./logs/:/usr/src/app/logs/
+    depends_on:
+      - mongo

@@ -2,7 +2,7 @@
     "appenders": {
         "file": {
             "type": "dateFile",
-            "filename": "output-api.log",
+            "filename": "logs/output-api.log",
             "daysToKeep": 10
         },
         "console": {
@@ -12,6 +12,7 @@
     "categories": {
         "default": {
             "appenders": ["file", "console"],
-            "level": "all" }
+            "level": "all"
+        }
     }
 }
