@@ -8,7 +8,7 @@
         }
     },
     "rskApi": {
-        "completeUrl": "https://public-node.rsk.co/1.2.1",
+        "completeUrl": "https://public-node.rsk.co",
         "lastBtcBlockDetectedCheckpoint": 613800
     },
     "btcApi": {
