@@ -13,7 +13,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
-    "mocha": "^6.2.0",
+    "mocha": "^10.2.0",
     "ts-sinon": "^1.0.17",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
