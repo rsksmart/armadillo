@@ -35,7 +35,7 @@
     "@types/web3": "^1.0.12",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
-    "mocha": "^6.2.0",
+    "mocha": "^6.2.3",
     "nod3": "git+https://github.com/rsksmart/nod3.git",
     "nyc": "^14.1.1",
     "ts-node": "^8.3.0",
