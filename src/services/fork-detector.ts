@@ -32,6 +32,9 @@ export class ForkDetector {
         this.forkDetectorConfig = forkDetectorConfig;
 
         this.btcWatcher.on(BTCEvents.NEW_BLOCK, (block: BtcBlock) => this.onNewBlock(block))
+        this.btcWatcher.on(BTCEvents.ERROR, (err) => {
+            this.logger.error(`An unhandled error ocurred: ${err}`);
+        });
     }
 
     public stop() {
@@ -54,7 +57,7 @@ export class ForkDetector {
         try{
             await this.processBlock(newBtcBlock);
         } catch(e){
-            this.logger.error(`Error processing new btc block: ${e}`);
+            this.logger.error(`Error processing new btc block: ${e}. Block: ${newBtcBlock}.`);
         }
     }
 
