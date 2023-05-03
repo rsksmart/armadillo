@@ -6,7 +6,8 @@ import { BtcService } from "./btc-service";
 import { sleep } from "../util/helper";
 
 export enum BTCEvents {
-    NEW_BLOCK = 'newBlock'
+    NEW_BLOCK = 'newBlock',
+    ERROR = 'error'
 }
 
 export class BtcWatcher extends EventEmitter {
@@ -65,9 +66,12 @@ export class BtcWatcher extends EventEmitter {
 
                 if (this.lastBLockDetected.btcInfo.height < bestBtcBlock.btcInfo.height) {
                     let blockMissing = this.lastBLockDetected.btcInfo.height + 1;
-                    let blockAtHeightN: BtcBlock = await this.btcApi.getBlock(blockMissing);
-
-                    await this.saveBlock(blockAtHeightN);
+                    try {
+                        let blockAtHeightN: BtcBlock = await this.btcApi.getBlock(blockMissing);
+                        await this.saveBlock(blockAtHeightN);
+                    } catch (err) {
+                        this.logger.error(`Error while processing block ${err}`);
+                    }
                 }
             }
 
