@@ -40,7 +40,7 @@ export const copy = (object: any) => {
 
 export const retry3Times = async (func, params = null) => {
     return retry(func, params, {retriesMax: 4, interval: 4000, exponential: true, onAttemptFail: (data) => {
-        getLogger('helper').error("Error while executing function. Try", data.currentRetry, " of ", data.retriesMax, ". Error ", data.error);
+        getLogger('helper').error("Error while executing function. Try ", data.currentRetry, " of ", data.retriesMax, ". Error ", data.error);
     }});
 }
 

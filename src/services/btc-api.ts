@@ -30,7 +30,7 @@ export class HttpBtcApi {
     public async getBlock(n: number): Promise<BtcBlock> {
         this.logger.info(`Getting block header for block at height ${n}`);
         const blockAtHeightN: PlainBtcHeader = await this.getBlockHeader(n);
-        this.logger.info(`Header obtained. Block Hash: ${blockAtHeightN.hash}, Previous Hash: ${blockAtHeightN.hash}. Getting coinbase now.`);
+        this.logger.info(`Block header obtained. Block Hash: ${blockAtHeightN.hash}, Previous Hash: ${blockAtHeightN.hash}. Getting coinbase now.`);
         const coinbase: any = await this.getCoinbase(blockAtHeightN.hash);
         this.logger.info(`Coinbase obtained. Extracting tag from coinbase now.`);
         const rskTag = this.extractTagFromCoinbase(coinbase);
