@@ -70,7 +70,7 @@ export class BtcWatcher extends EventEmitter {
                         let blockAtHeightN: BtcBlock = await this.btcApi.getBlock(blockMissing);
                         await this.saveBlock(blockAtHeightN);
                     } catch (err) {
-                        this.logger.error(`Error while getting block from BTC API ${err}`);
+                        this.logger.error(`Error while processing block ${err}`);
                     }
                 }
             }
