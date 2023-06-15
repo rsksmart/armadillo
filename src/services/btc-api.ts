@@ -2,6 +2,7 @@ import { BtcApiConfig } from '../config/btc-api-config';
 import { get } from '../util/http';
 import { BtcBlock } from '../common/btc-block';
 import { retry3Times } from '../util/helper';
+import { getLogger } from 'log4js';
  
 interface PlainBtcHeader {
     height: number;
@@ -11,13 +12,18 @@ interface PlainBtcHeader {
 
 export class HttpBtcApi {
     private config: BtcApiConfig;
+    private logger;
 
     constructor(btcApiConfig: BtcApiConfig) {
         this.config = btcApiConfig;
+
+        this.logger = getLogger('btc-api');
     }
 
     public async getBestBlock(): Promise<BtcBlock> {
+        this.logger.info("Get Best Block");
         const bestHeader: PlainBtcHeader = await this.getBestBlockHeader();
+        this.logger.info("Heigth from best block: ", bestHeader.height);
         const coinbase: any = await this.getCoinbase(bestHeader.hash);
         const rskTag = this.extractTagFromCoinbase(coinbase);
 
@@ -25,6 +31,7 @@ export class HttpBtcApi {
     }
 
     public async getBlock(n: number): Promise<BtcBlock> {
+        this.logger.info("Get Block");
         const blockAtHeightN: PlainBtcHeader = await this.getBlockHeader(n);
         const coinbase: any = await this.getCoinbase(blockAtHeightN.hash);
         const rskTag = this.extractTagFromCoinbase(coinbase);
@@ -37,18 +44,21 @@ export class HttpBtcApi {
     }
 
     private async getBestBlockHeader() : Promise<PlainBtcHeader> {
+        this.logger.info("Get Best Block Header from API");
         const response: any = await retry3Times(get, [this.baseUrl() + '/block/getBestBlock']);
 
         return response.block.header;
     }
 
     private async getBlockHeader(n: number) : Promise<PlainBtcHeader> {
+        this.logger.info("Get Block Header from API");
         const response: any = await retry3Times(get, [this.baseUrl() + '/block/getBlock/' + n]);
 
         return response.block.header;
     }
 
     private async getCoinbase(hash: string) : Promise<any> {
+        this.logger.info("Get Coinbase from API");
         const response: any = await retry3Times(get, [this.baseUrl() + '/block/getCoinbase/' + hash]);
 
         return response.coinbase;
