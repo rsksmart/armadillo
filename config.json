@@ -8,20 +8,20 @@
         }
     },
     "rskApi": {
-        "completeUrl": "https://public-node.rsk.co/1.2.1",
-        "lastBtcBlockDetectedCheckpoint": 613800
+        "completeUrl": "rskj",
+        "lastBtcBlockDetectedCheckpoint": 0
     },
     "btcApi": {
-        "host": "Please set the btc api host",
+        "host": "btc-api",
         "port": 5000
     },
     "store": {
         "auth": {
-            "user": "Please set the user mongo for authentication",
-            "password": "Please set the mongo password for authentication"
+            "user": "",
+            "password": ""
         },
-        "port": "27017",
-        "host": "localhost",
+        "port": "27018",
+        "host": "armadillo-db",
         "databaseName": "armadillo",
         "collections": {
             "forks": "branches",

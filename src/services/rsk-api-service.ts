@@ -21,6 +21,11 @@ export class RskApiService {
         this.logger = getLogger('rsk-api-service');
     }
 
+    // Just for testing. TODO -> Refactor constructor
+    public setNod3(nod3: Nod3) {
+        this.nod3 = nod3;
+    }
+
     public async getBlocksByNumber(height: number): Promise<RskBlockInfo[]> {
         var blocksInfo: any[] = await retry3Times(this.nod3.rsk.getBlocksByNumber, ['0x' + height.toString(16), true]);
         var blocks: RskBlockInfo[] = [];
