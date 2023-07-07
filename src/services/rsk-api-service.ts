@@ -3,7 +3,7 @@ import { RskBlockInfo, RskForkItemInfo } from "../common/rsk-block";
 import Nod3 from 'nod3';
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { RangeForkInMainchain } from "../common/forks";
-import { retry3Times } from "../util/helper";
+import { doRetry, retry3Times } from "../util/helper";
 import { getLogger, Logger } from "log4js";
 
 export class RskApiService {
@@ -49,7 +49,7 @@ export class RskApiService {
 
     public async getBlock(height: number): Promise<RskBlockInfo> {
         try {
-            let block = await retry3Times(this.nod3.eth.getBlock, [height]);
+            let block = await doRetry(this.nod3.eth.getBlock, [height], 1, 100, false);
             return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
         } catch (err) {
             this.logger.error(`getBlock execution failed: ${err}`);
