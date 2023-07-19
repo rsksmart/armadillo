@@ -3,11 +3,13 @@ import { RskBlockInfo, RskForkItemInfo } from "../common/rsk-block";
 import Nod3 from 'nod3';
 import { ForkDetectionData } from "../common/fork-detection-data";
 import { RangeForkInMainchain } from "../common/forks";
-import { retry3Times } from "../util/helper";
+import { doRetry, retry3Times } from "../util/helper";
+import { getLogger, Logger } from "log4js";
 
 export class RskApiService {
     private config: RskApiConfig;
     private nod3: any;
+    private logger: Logger;
 
     constructor(config: RskApiConfig) {
         this.config = config;
@@ -15,6 +17,13 @@ export class RskApiService {
         this.nod3 = new Nod3(
             new Nod3.providers.HttpProvider(this.config.completeUrl)
         );
+
+        this.logger = getLogger('rsk-api-service');
+    }
+
+    // Just for testing. TODO -> Refactor constructor
+    public setNod3(nod3: Nod3) {
+        this.nod3 = nod3;
     }
 
     public async getBlocksByNumber(height: number): Promise<RskBlockInfo[]> {
@@ -39,8 +48,13 @@ export class RskApiService {
     }
 
     public async getBlock(height: number): Promise<RskBlockInfo> {
-        let block = await retry3Times(this.nod3.eth.getBlock, [height]);
-        return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
+        try {
+            let block = await doRetry(this.nod3.eth.getBlock, [height], 1, 100, false);
+            return new RskBlockInfo(block.number, block.hash, block.parentHash, true, block.miner, new ForkDetectionData(block.hashForMergedMining));
+        } catch (err) {
+            this.logger.error(`getBlock execution failed: ${err}`);
+            return;
+        }
     }
 
     public async getBlockByHash(hash: string): Promise<RskBlockInfo> {

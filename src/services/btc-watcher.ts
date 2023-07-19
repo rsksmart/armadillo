@@ -17,6 +17,7 @@ export class BtcWatcher extends EventEmitter {
     private lastBLockDetected: BtcBlock;
     private checkpoint: BtcBlock;
     private prevBlockProcessed: boolean;
+    
     constructor(btcApi: HttpBtcApi, btcService: BtcService, heightBtcCheckpoint?: number) {
         super();
 
@@ -26,7 +27,7 @@ export class BtcWatcher extends EventEmitter {
         this.btcService = btcService;
         this.prevBlockProcessed = true;
 
-        if (heightBtcCheckpoint != null && heightBtcCheckpoint > 1) {
+        if (heightBtcCheckpoint != null && heightBtcCheckpoint > 0) {
             this.checkpoint = new BtcBlock(heightBtcCheckpoint, "", "", "");
             this.logger.info("CHECKPOINT: There is a checkpoint at BTC heignt", heightBtcCheckpoint, "check if is posible to start from it");
         }

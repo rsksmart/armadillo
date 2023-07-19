@@ -178,6 +178,10 @@ export class ForkDetector {
 
         for (let i = searchFromHeight; i < searchToHeight; i++) {
             let block: RskBlockInfo = await this.rskApiService.getBlock(i);
+            if (typeof block === undefined) {
+                this.logger.error(`Mainchain: error while trying to get RSK block at height: ${i} with prev hash: ${prevRskHashToMatch}`);
+                return false;
+            }
             if (block.prevHash != prevRskHashToMatch) {
                 this.logger.fatal("Mainchain: building mainchain can not find a block in RSK at height:", i, "with prev hash:", prevRskHashToMatch)
                 return false;

@@ -41,6 +41,10 @@ export const retry3Times = async (func, params = null) => {
     return retry(func, params, {retriesMax: 4, interval: 4000, exponential: true});
 }
 
+export const doRetry = async (func, params = null, retries, interval, exponential) => {
+    return retry(func, params, {retriesMax: retries, interval: interval, exponential: exponential});
+}
+
 export const numberToHex = (num: number) => {
     const width = 8;
     const n = num.toString(16);
